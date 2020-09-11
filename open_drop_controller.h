@@ -2,6 +2,7 @@
 #define OPEN_DROP_CONTROLLER_H_
 
 #include "absl/types/span.h"
+#include "libopendrop/gl_interface.h"
 #include "libopendrop/open_drop_controller_interface.h"
 
 namespace opendrop {
@@ -19,6 +20,7 @@ class OpenDropController : public OpenDropControllerInterface {
  protected:
   int width_, height_;
   std::shared_ptr<gl::GlContext> compile_context_;
+  std::shared_ptr<gl::GlProgram> program_;
 };
 
 }  // namespace opendrop

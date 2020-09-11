@@ -2,8 +2,41 @@
 #define GL_INTERFACE_H_
 
 #include <memory>
+#include <string>
 
 namespace gl {
+
+enum class GlShaderType : int {
+  kVertex = 0,
+  kFragment = 1,
+  kGeometry = 2,
+  kCompute = 3,
+};
+
+class GlShader {
+ public:
+  GlShader(GlShaderType type, std::string shader_text);
+  ~GlShader();
+  bool Compile(std::string* error_text) const;
+  unsigned int GetHandle() const { return shader_handle_; }
+
+ private:
+  unsigned int shader_handle_;
+};
+
+class GlProgram {
+ public:
+  GlProgram();
+  ~GlProgram();
+
+  const GlProgram& Attach(const GlShader& shader) const;
+
+  bool Link(std::string* error_text) const;
+  void Use() const;
+
+ private:
+  unsigned int program_handle_;
+};
 
 class GlContextActivation {
  public:
