@@ -1,6 +1,9 @@
 #ifndef OPEN_DROP_CONTROLLER_H_
 #define OPEN_DROP_CONTROLLER_H_
 
+#include <mutex>
+#include <vector>
+
 #include "absl/types/span.h"
 #include "libopendrop/gl_interface.h"
 #include "libopendrop/open_drop_controller_interface.h"
@@ -18,6 +21,9 @@ class OpenDropController : public OpenDropControllerInterface {
   void DrawFrame(float dt) override;
 
  protected:
+  std::mutex samples_interleaved_mu_;
+  std::vector<float> samples_interleaved_;
+
   int width_, height_;
   std::shared_ptr<gl::GlContext> compile_context_;
   std::shared_ptr<gl::GlProgram> program_;
