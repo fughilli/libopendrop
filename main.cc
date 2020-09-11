@@ -114,7 +114,9 @@ extern "C" int main(int argc, char *argv[]) {
     std::cout << "Initializing OpenDrop..." << std::endl;
 
     std::shared_ptr<OpenDropControllerInterface> open_drop_controller =
-        std::make_shared<OpenDropController>(sdl_gl_interface);
+        std::make_shared<OpenDropController>(
+            sdl_gl_interface, absl::GetFlag(FLAGS_window_width),
+            absl::GetFlag(FLAGS_window_height));
 
     auto callback_data = std::make_shared<CallbackData>();
     callback_data->open_drop_controller = open_drop_controller;
@@ -138,10 +140,14 @@ extern "C" int main(int argc, char *argv[]) {
     int late_frame_counter = 0;
     int late_frames_to_skip_preset =
         absl::GetFlag(FLAGS_late_frames_to_skip_preset);
+    float prev_dt = 1.0f / kFps;
+
+    auto main_context = sdl_gl_interface->AllocateSharedContext();
+    auto main_context_activation = main_context->Activate();
     while (!exit_event_received) {
       frame_timer.Start(SDL_GetTicks());
-      glClearColor(0.0, 0.0, 0.0, 0.0);
-      glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+      // glClearColor(0.0, 0.0, 0.0, 0.0);
+      // glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
       {
         std::lock_guard<std::mutex> audio_queue_lock(audio_queue_mutex);
         while (!audio_queue.empty()) {
@@ -150,7 +156,7 @@ extern "C" int main(int argc, char *argv[]) {
         }
       }
 
-      open_drop_controller->DrawFrame();
+      open_drop_controller->DrawFrame(prev_dt);
 
       SDL_Event event;
       while (SDL_PollEvent(&event)) {
@@ -162,7 +168,7 @@ extern "C" int main(int argc, char *argv[]) {
             switch (event.window.event) {
               case SDL_WINDOWEVENT_RESIZED:
               case SDL_WINDOWEVENT_SIZE_CHANGED:
-                open_drop_controller->UpdateGeometry();
+                open_drop_controller->UpdateGeometry(new_width, new_height);
                 break;
             }
             break;
@@ -194,6 +200,7 @@ extern "C" int main(int argc, char *argv[]) {
       sdl_gl_interface->SwapBuffers();
 
       uint32_t frame_time = frame_timer.End(SDL_GetTicks());
+      prev_dt = static_cast<float>(frame_time) / 1000;
       if (frame_time >= kTargetFrameTimeMs) {
         if (late_frames_to_skip_preset <= 0) {
           continue;

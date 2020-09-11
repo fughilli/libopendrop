@@ -10,13 +10,11 @@ SdlGlContextActivation::SdlGlContextActivation(
     std::shared_ptr<SdlGlInterface> interface, SDL_GLContext context)
     : interface_(interface), context_(context) {
   // Activate the GL context.
-  std::cout << "Activating context" << std::endl;
   SDL_GL_MakeCurrent(interface_->GetWindow().get(), context_);
 }
 
 SdlGlContextActivation::~SdlGlContextActivation() {
   // Deactivate the GL context.
-  std::cout << "Deactivating context" << std::endl;
   SDL_GL_MakeCurrent(interface_->GetWindow().get(), 0);
 }
 

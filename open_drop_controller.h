@@ -8,15 +8,16 @@ namespace opendrop {
 
 class OpenDropController : public OpenDropControllerInterface {
  public:
-  OpenDropController(std::shared_ptr<gl::GlInterface> gl_interface);
+  OpenDropController(std::shared_ptr<gl::GlInterface> gl_interface, int width,
+                     int height);
   void AddPcmSamples(PcmFormat format,
                      absl::Span<const float> samples) override;
 
-  void UpdateGeometry() override;
-  void DrawFrame() override;
+  void UpdateGeometry(int width, int height) override;
+  void DrawFrame(float dt) override;
 
  protected:
-  std::shared_ptr<gl::GlContext> main_context_;
+  int width_, height_;
   std::shared_ptr<gl::GlContext> compile_context_;
 };
 
