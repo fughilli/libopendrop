@@ -41,6 +41,7 @@ cc_binary(
     ],
     linkstatic = 1,
     deps = [
+        ":cleanup",
         ":gl_interface",
         ":open_drop_controller",
         ":open_drop_controller_interface",
@@ -84,4 +85,9 @@ cc_library(
         ":open_drop_controller_interface",
         "@com_google_absl//absl/types:span",
     ],
+)
+
+cc_library(
+    name = "cleanup",
+    hdrs = ["cleanup.h"],
 )

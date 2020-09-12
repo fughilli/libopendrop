@@ -39,6 +39,7 @@
 #include "absl/types/span.h"
 #include "led_driver/performance_timer.h"
 #include "led_driver/pulseaudio_interface.h"
+#include "libopendrop/cleanup.h"
 #include "libopendrop/gl_interface.h"
 #include "libopendrop/open_drop_controller.h"
 #include "libopendrop/open_drop_controller_interface.h"
@@ -101,6 +102,7 @@ extern "C" int main(int argc, char *argv[]) {
       std::cout << "could not initialize SDL" << std::endl;
       return 1;
     }
+    auto sdl_cleanup = MakeCleanup([&] { SDL_Quit(); });
 
     auto sdl_gl_interface =
         std::make_shared<gl::SdlGlInterface>(SDL_CreateWindow(
@@ -131,8 +133,9 @@ extern "C" int main(int argc, char *argv[]) {
               callback_data,
               std::vector<const float>(samples.begin(), samples.end())));
         });
-    pa_interface->Initialize();
+    auto pa_interface_cleanup = MakeCleanup([&] { pa_interface->Stop(); });
 
+    pa_interface->Initialize();
     pa_interface->Start();
 
     bool exit_event_received = false;
@@ -146,8 +149,6 @@ extern "C" int main(int argc, char *argv[]) {
     auto main_context_activation = main_context->Activate();
     while (!exit_event_received) {
       frame_timer.Start(SDL_GetTicks());
-      // glClearColor(0.0, 0.0, 0.0, 0.0);
-      // glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
       {
         std::lock_guard<std::mutex> audio_queue_lock(audio_queue_mutex);
         while (!audio_queue.empty()) {
@@ -221,9 +222,7 @@ extern "C" int main(int argc, char *argv[]) {
 
       SDL_Delay(kTargetFrameTimeMs - frame_time);
     }
-    pa_interface->Stop();
   }
-  SDL_Quit();
   return 0;
 }
 }  // namespace led_driver
