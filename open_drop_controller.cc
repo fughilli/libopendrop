@@ -11,8 +11,6 @@
 namespace opendrop {
 
 namespace {
-constexpr ptrdiff_t kSampleBufferNumSamples = 256;
-constexpr int kChannelsPerSample = 2;
 constexpr float kScaleFactor = 5.0f;
 
 const std::string kVertexShaderCode = R"(
@@ -57,10 +55,10 @@ constexpr uint8_t kFullscreenIndices[] = {
 }  // namespace
 
 OpenDropController::OpenDropController(
-    std::shared_ptr<gl::GlInterface> gl_interface, int height, int width)
-    : OpenDropControllerInterface(gl_interface) {
+    std::shared_ptr<gl::GlInterface> gl_interface, ptrdiff_t audio_buffer_size,
+    int height, int width)
+    : OpenDropControllerInterface(gl_interface, audio_buffer_size) {
   UpdateGeometry(height, width);
-  samples_interleaved_.resize(kSampleBufferNumSamples * kChannelsPerSample, 0);
   compile_context_ = gl_interface_->AllocateSharedContext();
 
   program_ = std::make_shared<gl::GlProgram>();
@@ -82,37 +80,6 @@ OpenDropController::OpenDropController(
   }
 }
 
-void OpenDropController::AddPcmSamples(PcmFormat format,
-                                       absl::Span<const float> samples) {
-  if (format == PcmFormat::kMono) {
-    std::vector<float> intermediate_buffer;
-    intermediate_buffer.resize(samples.size() * 2);
-    for (int i = 0; i < samples.size(); ++i) {
-      intermediate_buffer[i * 2] = samples[i];
-      intermediate_buffer[i * 2 + 1] = samples[i];
-    }
-    AddPcmSamples(PcmFormat::kStereoInterleaved,
-                  absl::Span<const float>(intermediate_buffer));
-    return;
-  }
-
-  std::unique_lock<std::mutex> samples_lock(samples_interleaved_mu_);
-
-  if (samples.size() >= samples_interleaved_.size()) {
-    std::copy(samples.begin() + (samples.size() - samples_interleaved_.size()),
-              samples.end(), samples_interleaved_.begin());
-    return;
-  }
-
-  // Move samples forward in buffer
-  std::copy(samples_interleaved_.begin() + samples.size(),
-            samples_interleaved_.end(), samples_interleaved_.begin());
-  // Append new samples to end of old samples
-  std::copy(samples.begin(), samples.end(),
-            samples_interleaved_.begin() +
-                (samples_interleaved_.size() - samples.size()));
-}
-
 void OpenDropController::UpdateGeometry(int width, int height) {
   width_ = width;
   height_ = height;
@@ -127,23 +94,29 @@ void OpenDropController::DrawFrame(float dt) {
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
   std::vector<float> vertices;
-  vertices.resize(kSampleBufferNumSamples * 3, 0);
-  {
-    std::unique_lock<std::mutex> samples_lock(samples_interleaved_mu_);
-    for (int i = 0; i < kSampleBufferNumSamples; ++i) {
-      float x_pos = samples_interleaved_[i * 2] * kScaleFactor;
-      float y_pos = samples_interleaved_[i * 2 + 1] * kScaleFactor;
-      float z_pos = -0.1;
-
-      vertices[i * 3] = x_pos;
-      vertices[i * 3 + 1] = y_pos;
-      vertices[i * 3 + 2] = z_pos;
-    }
+  auto buffer_size = GetAudioProcessor().buffer_size();
+  vertices.resize(buffer_size * 3, 0);
+  std::vector<float> samples_interleaved;
+  samples_interleaved.resize(buffer_size *
+                             GetAudioProcessor().channels_per_sample());
+  if (!GetAudioProcessor().GetSamples(absl::Span<float>(samples_interleaved))) {
+    std::cerr << "Failed to get samples" << std::endl;
+    return;
   }
-  std::vector<uint16_t> indices;
-  indices.resize(kSampleBufferNumSamples, 0);
+  for (int i = 0; i < buffer_size; ++i) {
+    float x_pos = samples_interleaved[i * 2] * kScaleFactor;
+    float y_pos = samples_interleaved[i * 2 + 1] * kScaleFactor;
+    float z_pos = -0.1;
 
-  for (int i = 0; i < kSampleBufferNumSamples; ++i) {
+    vertices[i * 3] = x_pos;
+    vertices[i * 3 + 1] = y_pos;
+    vertices[i * 3 + 2] = z_pos;
+  }
+
+  std::vector<uint16_t> indices;
+  indices.resize(buffer_size, 0);
+
+  for (int i = 0; i < buffer_size; ++i) {
     indices[i] = i;
   }
 
@@ -158,8 +131,7 @@ void OpenDropController::DrawFrame(float dt) {
   glEnable(GL_LINE_SMOOTH);
   glColor4f(0, 1, 0, 1);
   glVertexPointer(3, GL_FLOAT, 0, vertices.data());
-  glDrawElements(GL_LINE_STRIP, kSampleBufferNumSamples, GL_UNSIGNED_SHORT,
-                 indices.data());
+  glDrawElements(GL_LINE_STRIP, buffer_size, GL_UNSIGNED_SHORT, indices.data());
   glDisableClientState(GL_VERTEX_ARRAY);
   glFlush();
 }

@@ -73,7 +73,10 @@ cc_library(
 cc_library(
     name = "open_drop_controller_interface",
     hdrs = ["open_drop_controller_interface.h"],
-    deps = [":gl_interface"],
+    deps = [
+        ":audio_processor",
+        ":gl_interface",
+    ],
 )
 
 cc_library(
@@ -90,4 +93,14 @@ cc_library(
 cc_library(
     name = "cleanup",
     hdrs = ["cleanup.h"],
+)
+
+cc_library(
+    name = "audio_processor",
+    srcs = ["audio_processor.cc"],
+    hdrs = ["audio_processor.h"],
+    linkstatic = 1,
+    deps = [
+        "@com_google_absl//absl/types:span",
+    ],
 )

@@ -63,9 +63,11 @@ using ::opendrop::OpenDropController;
 using ::opendrop::OpenDropControllerInterface;
 using ::opendrop::PcmFormat;
 // Target FPS.
-constexpr static int kFps = 60;
+constexpr int kFps = 60;
 // Target frame time, in milliseconds.
-constexpr static int kTargetFrameTimeMs = 1000 / kFps;
+constexpr int kTargetFrameTimeMs = 1000 / kFps;
+// Size of the audio processor buffer, in samples.
+constexpr int kAudioBufferSize = 256;
 struct CallbackData {
   std::shared_ptr<OpenDropControllerInterface> open_drop_controller;
   int channel_count;
@@ -79,11 +81,11 @@ void AddAudioData(std::shared_ptr<CallbackData> callback_data,
                   absl::Span<const float> samples) {
   switch (callback_data->channel_count) {
     case 1:
-      callback_data->open_drop_controller->AddPcmSamples(PcmFormat::kMono,
-                                                         samples);
+      callback_data->open_drop_controller->GetAudioProcessor().AddPcmSamples(
+          PcmFormat::kMono, samples);
       break;
     case 2:
-      callback_data->open_drop_controller->AddPcmSamples(
+      callback_data->open_drop_controller->GetAudioProcessor().AddPcmSamples(
           PcmFormat::kStereoInterleaved, samples);
       break;
     default:
@@ -117,7 +119,8 @@ extern "C" int main(int argc, char *argv[]) {
 
     std::shared_ptr<OpenDropControllerInterface> open_drop_controller =
         std::make_shared<OpenDropController>(
-            sdl_gl_interface, absl::GetFlag(FLAGS_window_width),
+            sdl_gl_interface, kAudioBufferSize,
+            absl::GetFlag(FLAGS_window_width),
             absl::GetFlag(FLAGS_window_height));
 
     auto callback_data = std::make_shared<CallbackData>();
