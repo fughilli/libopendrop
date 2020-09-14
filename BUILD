@@ -71,6 +71,17 @@ cc_library(
 )
 
 cc_library(
+    name = "gl_render_target",
+    srcs = ["gl_render_target.cc"],
+    hdrs = ["gl_render_target.h"],
+    linkstatic = 1,
+    deps = [
+        ":gl_interface",
+        "//libopendrop/util:logging",
+    ],
+)
+
+cc_library(
     name = "open_drop_controller_interface",
     hdrs = ["open_drop_controller_interface.h"],
     deps = [
