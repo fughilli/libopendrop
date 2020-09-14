@@ -34,6 +34,8 @@ class GlProgram {
   bool Link(std::string* error_text) const;
   void Use() const;
 
+  unsigned int program_handle() const { return program_handle_; }
+
  private:
   unsigned int program_handle_;
 };
@@ -57,6 +59,7 @@ class GlInterface {
   // Swaps double-buffers.
   virtual void SwapBuffers() = 0;
 };
+
 
 };  // namespace gl
 

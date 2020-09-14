@@ -96,7 +96,9 @@ cc_library(
     hdrs = ["open_drop_controller.h"],
     linkstatic = 1,
     deps = [
+        ":gl_render_target",
         ":open_drop_controller_interface",
+        "//libopendrop/util:logging",
         "@com_google_absl//absl/types:span",
     ],
 )
