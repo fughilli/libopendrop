@@ -14,23 +14,10 @@ GlRenderTargetActivation::GlRenderTargetActivation(
     std::shared_ptr<GlRenderTarget> render_target)
     : render_target_(render_target) {
   // Configure the backing texture.
-  glActiveTexture(GL_TEXTURE0);
-  glBindTexture(GL_TEXTURE_2D, render_target->texture_handle());
-  LOG(DEBUG) << "Bound texture: " << render_target->texture_handle();
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, render_target->width(),
-               render_target->height(), 0, GL_RGB, GL_UNSIGNED_BYTE, 0);
-  LOG(DEBUG) << "Applied texture properties";
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-  glBindTexture(GL_TEXTURE_2D, 0);
-  LOG(DEBUG) << "Unbound texture";
-
   glBindFramebuffer(GL_FRAMEBUFFER, render_target_->framebuffer_handle());
   glBindRenderbuffer(GL_RENDERBUFFER, render_target_->renderbuffer_handle());
   LOG(DEBUG) << "Bound framebuffer " << render_target_->framebuffer_handle()
              << " and renderbuffer " << render_target_->renderbuffer_handle();
-  glRenderbufferStorage(GL_RENDERBUFFER, GL_RGB10_A2, render_target_->width(),
-                        render_target_->height());
 
   glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D,
                          render_target_->texture_handle(), 0);
@@ -39,8 +26,6 @@ GlRenderTargetActivation::GlRenderTargetActivation(
              << render_target_->texture_handle() << " for framebuffer "
              << render_target_->framebuffer_handle() << " and renderbuffer "
              << render_target_->renderbuffer_handle();
-  GLenum draw_buffer = GL_COLOR_ATTACHMENT0;
-  glDrawBuffers(1, &draw_buffer);
   if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
     LOG(ERROR) << "Failed to configure framebuffer";
     return;
@@ -70,6 +55,17 @@ GlRenderTarget::GlRenderTarget(int width, int height)
   // Generate a backing texture.
   glGenTextures(1, &texture_handle_);
   LOG(DEBUG) << "Generated texture: " << texture_handle_;
+
+  glActiveTexture(GL_TEXTURE0);
+  glBindTexture(GL_TEXTURE_2D, texture_handle_);
+  LOG(DEBUG) << "Bound texture: " << texture_handle_;
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width_, height_, 0, GL_RGB,
+               GL_UNSIGNED_BYTE, 0);
+  LOG(DEBUG) << "Applied texture properties";
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+  glBindTexture(GL_TEXTURE_2D, 0);
+  LOG(DEBUG) << "Unbound texture";
 }
 
 GlRenderTarget::~GlRenderTarget() {
@@ -80,8 +76,16 @@ GlRenderTarget::~GlRenderTarget() {
 
 void GlRenderTarget::UpdateGeometry(int width, int height) {
   std::unique_lock<std::mutex> lock(render_target_mu_);
+
   width_ = width;
   height_ = height;
+
+  glActiveTexture(GL_TEXTURE0);
+  glBindTexture(GL_TEXTURE_2D, texture_handle_);
+  LOG(DEBUG) << "Bound texture: " << texture_handle_;
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width_, height_, 0, GL_RGB,
+               GL_UNSIGNED_BYTE, 0);
+  glBindTexture(GL_TEXTURE_2D, 0);
 }
 
 std::shared_ptr<GlRenderTargetActivation> GlRenderTarget::Activate() {
