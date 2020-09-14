@@ -97,6 +97,7 @@ cc_library(
     linkstatic = 1,
     deps = [
         ":gl_render_target",
+        ":global_state",
         ":open_drop_controller_interface",
         "//libopendrop/util:logging",
         "@com_google_absl//absl/types:span",
@@ -112,6 +113,16 @@ cc_library(
     name = "audio_processor",
     srcs = ["audio_processor.cc"],
     hdrs = ["audio_processor.h"],
+    linkstatic = 1,
+    deps = [
+        "@com_google_absl//absl/types:span",
+    ],
+)
+
+cc_library(
+    name = "global_state",
+    srcs = ["global_state.cc"],
+    hdrs = ["global_state.h"],
     linkstatic = 1,
     deps = [
         "@com_google_absl//absl/types:span",

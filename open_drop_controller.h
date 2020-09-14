@@ -5,6 +5,7 @@
 
 #include "libopendrop/gl_interface.h"
 #include "libopendrop/gl_render_target.h"
+#include "libopendrop/global_state.h"
 #include "libopendrop/open_drop_controller_interface.h"
 
 namespace opendrop {
@@ -22,6 +23,7 @@ class OpenDropController : public OpenDropControllerInterface {
   std::shared_ptr<gl::GlProgram> program_;
   std::shared_ptr<gl::GlRenderTarget> render_target_;
   std::shared_ptr<gl::GlProgram> render_target_program_;
+  std::shared_ptr<GlobalState> global_state_;
 };
 
 }  // namespace opendrop

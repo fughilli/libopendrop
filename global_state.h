@@ -1,0 +1,44 @@
+#ifndef GLOBAL_STATE_H_
+#define GLOBAL_STATE_H_
+
+#include "absl/types/span.h"
+
+namespace opendrop {
+
+class GlobalState {
+ public:
+  // Updates the global state. `samples` is a const view of the current buffer
+  // of audio samples, and `dt` is the elapsed time, in seconds, since the last
+  // time `Update` was invoked.
+  void Update(absl::Span<const float> samples, float dt);
+
+  // Accessors for global state properties.
+  float t() { return properties_.time; }
+  float dt() { return properties_.dt; }
+  float power() { return properties_.power; }
+  float energy() { return properties_.energy; }
+
+ private:
+  struct Properties {
+    Properties() : dt(0), time(0), power(0), energy(0) {}
+
+    // Elapsed time, in seconds, since last frame.
+    float dt;
+
+    // Time since program start, in seconds.
+    float time;
+
+    // Power of last buffer of audio samples.
+    float power;
+
+    // Integral of audio signal power over time.
+    float energy;
+  };
+
+  // Storage for global properties.
+  Properties properties_;
+};
+
+}  // namespace opendrop
+
+#endif  // GLOBAL_STATE_H_
