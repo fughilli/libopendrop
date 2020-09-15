@@ -6,6 +6,8 @@
 
 #include <iostream>
 
+#include "libopendrop/util/logging.h"
+
 namespace gl {
 
 namespace {
@@ -75,5 +77,36 @@ bool GlProgram::Link(std::string* error_text) const {
 }
 
 void GlProgram::Use() const { glUseProgram(program_handle_); }
+
+std::shared_ptr<gl::GlProgram> GlProgram::MakeShared(
+    std::string vertex_code, std::string fragment_code) {
+  LOG(DEBUG) << "[Compiling program]\nVERTEX SHADER CODE:\n"
+             << "========================================" << vertex_code
+             << "========================================"
+             << "\nFRAGMENT SHADER CODE:\n"
+             << "========================================" << fragment_code
+             << "========================================";
+  auto gl_program = std::make_shared<gl::GlProgram>();
+  gl::GlShader vertex_shader(gl::GlShaderType::kVertex, vertex_code);
+  std::string error_string = "";
+  if (!vertex_shader.Compile(&error_string)) {
+    LOG(ERROR) << "Failed to compile vertex shader: " << error_string;
+    return nullptr;
+  }
+  gl::GlShader fragment_shader(gl::GlShaderType::kFragment, fragment_code);
+  if (!fragment_shader.Compile(&error_string)) {
+    LOG(ERROR) << "Failed to compile fragment shader: " << error_string;
+    return nullptr;
+  }
+
+  if (!gl_program->Attach(vertex_shader)
+           .Attach(fragment_shader)
+           .Link(&error_string)) {
+    LOG(ERROR) << "Failed to link program: " << error_string;
+    return nullptr;
+  }
+
+  return gl_program;
+}
 
 }  // namespace gl

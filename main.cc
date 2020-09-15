@@ -34,6 +34,7 @@
 #include <utility>
 #include <vector>
 
+#include "absl/debugging/failure_signal_handler.h"
 #include "absl/flags/flag.h"
 #include "absl/flags/parse.h"
 #include "absl/types/span.h"
@@ -43,6 +44,7 @@
 #include "libopendrop/gl_interface.h"
 #include "libopendrop/open_drop_controller.h"
 #include "libopendrop/open_drop_controller_interface.h"
+#include "libopendrop/preset/simple_preset/simple_preset.h"
 #include "libopendrop/sdl_gl_interface.h"
 
 ABSL_FLAG(std::string, pulseaudio_server, "",
@@ -98,6 +100,8 @@ void AddAudioData(std::shared_ptr<CallbackData> callback_data,
 
 extern "C" int main(int argc, char *argv[]) {
   absl::ParseCommandLine(argc, argv);
+
+  absl::InstallFailureSignalHandler(absl::FailureSignalHandlerOptions());
 
   {
     if (SDL_Init(SDL_INIT_VIDEO) < 0) {
@@ -155,6 +159,9 @@ extern "C" int main(int argc, char *argv[]) {
 
     auto main_context = sdl_gl_interface->AllocateSharedContext();
     auto main_context_activation = main_context->Activate();
+
+    open_drop_controller->SetPreset(std::make_shared<opendrop::SimplePreset>(
+        absl::GetFlag(FLAGS_window_width), absl::GetFlag(FLAGS_window_height)));
     while (!exit_event_received) {
       frame_timer.Start(SDL_GetTicks());
       {

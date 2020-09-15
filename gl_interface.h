@@ -36,6 +36,9 @@ class GlProgram {
 
   unsigned int program_handle() const { return program_handle_; }
 
+  static std::shared_ptr<GlProgram> MakeShared(std::string vertex_code,
+                                               std::string fragment_code);
+
  private:
   unsigned int program_handle_;
 };
@@ -59,7 +62,6 @@ class GlInterface {
   // Swaps double-buffers.
   virtual void SwapBuffers() = 0;
 };
-
 
 };  // namespace gl
 

@@ -1,5 +1,7 @@
 load("@com_google_protobuf//:protobuf.bzl", "py_proto_library")
 
+package(default_visibility = ["//libopendrop:__subpackages__"])
+
 VIDEOCORE_COPTS = [
     "-isystem",
     "external/raspberry_pi/sysroot/opt/vc/include",
@@ -48,6 +50,8 @@ cc_binary(
         ":sdl_gl_interface",
         "//led_driver:performance_timer",
         "//led_driver:pulseaudio_interface",
+        "//libopendrop/preset/simple_preset",
+        "@com_google_absl//absl/debugging:failure_signal_handler",
         "@com_google_absl//absl/flags:flag",
         "@com_google_absl//absl/flags:parse",
         "@com_google_absl//absl/types:span",
@@ -68,6 +72,7 @@ cc_library(
     srcs = ["gl_interface.cc"],
     hdrs = ["gl_interface.h"],
     linkstatic = 1,
+    deps = ["//libopendrop/util:logging"],
 )
 
 cc_library(
@@ -87,6 +92,7 @@ cc_library(
     deps = [
         ":audio_processor",
         ":gl_interface",
+        "//libopendrop/preset",
     ],
 )
 
@@ -99,6 +105,7 @@ cc_library(
         ":gl_render_target",
         ":global_state",
         ":open_drop_controller_interface",
+        "//libopendrop/preset",
         "//libopendrop/util:logging",
         "@com_google_absl//absl/types:span",
     ],
