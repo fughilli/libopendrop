@@ -42,7 +42,7 @@ void main() {
 
   float blur_distance = 2 - power * 10;
 
-  gl_FragData[0] =
+  gl_FragColor =
       gl_Color * 0.5 +
       (texture2D(last_frame, texture_uv + vec2(offset.x, 0.) * blur_distance) +
        texture2D(last_frame, texture_uv - vec2(offset.x, 0.) * blur_distance) +
