@@ -65,7 +65,7 @@ using ::opendrop::OpenDropController;
 using ::opendrop::OpenDropControllerInterface;
 using ::opendrop::PcmFormat;
 // Target FPS.
-constexpr int kFps = 60;
+constexpr int kFps = 120;
 // Target frame time, in milliseconds.
 constexpr int kTargetFrameTimeMs = 1000 / kFps;
 // Size of the audio processor buffer, in samples.
