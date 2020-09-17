@@ -44,8 +44,8 @@ GlRenderTargetActivation::~GlRenderTargetActivation() {
   LOG(DEBUG) << "Unbound framebuffer";
 }
 
-GlRenderTarget::GlRenderTarget(int width, int height)
-    : width_(width), height_(height) {
+GlRenderTarget::GlRenderTarget(int width, int height, int texture_unit)
+    : width_(width), height_(height), texture_unit_(texture_unit) {
   // Create a new renderbuffer.
   glGenFramebuffers(1, &renderbuffer_handle_);
   LOG(DEBUG) << "Generated renderbuffer: " << renderbuffer_handle_;
@@ -56,7 +56,7 @@ GlRenderTarget::GlRenderTarget(int width, int height)
   glGenTextures(1, &texture_handle_);
   LOG(DEBUG) << "Generated texture: " << texture_handle_;
 
-  glActiveTexture(GL_TEXTURE0);
+  glActiveTexture(GL_TEXTURE0 + texture_unit_);
   glBindTexture(GL_TEXTURE_2D, texture_handle_);
   LOG(DEBUG) << "Bound texture: " << texture_handle_;
   glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width_, height_, 0, GL_RGB,
@@ -80,7 +80,7 @@ void GlRenderTarget::UpdateGeometry(int width, int height) {
   width_ = width;
   height_ = height;
 
-  glActiveTexture(GL_TEXTURE0);
+  glActiveTexture(GL_TEXTURE0 + texture_unit_);
   glBindTexture(GL_TEXTURE_2D, texture_handle_);
   LOG(DEBUG) << "Bound texture: " << texture_handle_;
   glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width_, height_, 0, GL_RGB,
@@ -90,6 +90,20 @@ void GlRenderTarget::UpdateGeometry(int width, int height) {
 
 std::shared_ptr<GlRenderTargetActivation> GlRenderTarget::Activate() {
   return std::make_shared<GlRenderTargetActivation>(shared_from_this());
+}
+
+bool GlRenderTarget::swap_texture_unit(GlRenderTarget* other) {
+  std::unique_lock<std::mutex> lock(render_target_mu_);
+  std::unique_lock<std::mutex> other_lock(other->render_target_mu_,
+                                          std::defer_lock);
+  if (!other_lock.try_lock()) {
+    return false;
+  }
+
+  int intermediate_texture_handle = other->texture_handle_;
+  other->texture_handle_ = texture_handle_;
+  texture_handle_ = intermediate_texture_handle;
+  return true;
 }
 
 }  // namespace gl

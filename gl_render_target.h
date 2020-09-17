@@ -21,7 +21,7 @@ class GlRenderTargetActivation {
 
 class GlRenderTarget : public std::enable_shared_from_this<GlRenderTarget> {
  public:
-  GlRenderTarget(int width, int height);
+  GlRenderTarget(int width, int height, int texture_unit);
   virtual ~GlRenderTarget();
 
   virtual std::shared_ptr<GlRenderTargetActivation> Activate();
@@ -40,9 +40,12 @@ class GlRenderTarget : public std::enable_shared_from_this<GlRenderTarget> {
     return height_;
   }
 
+  bool swap_texture_unit(GlRenderTarget* other);
+
  private:
   std::mutex render_target_mu_;
   int width_, height_;
+  int texture_unit_;
   unsigned int framebuffer_handle_;
   unsigned int renderbuffer_handle_;
   unsigned int texture_handle_;

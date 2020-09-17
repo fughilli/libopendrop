@@ -31,13 +31,17 @@ SimplePreset::SimplePreset(int width, int height) : Preset(width, height) {
     abort();
   }
 
-  render_target_ = std::make_shared<gl::GlRenderTarget>(width, height);
+  front_render_target_ = std::make_shared<gl::GlRenderTarget>(width, height, 0);
+  back_render_target_ = std::make_shared<gl::GlRenderTarget>(width, height, 1);
 }
 
 void SimplePreset::OnUpdateGeometry() {
   glViewport(0, 0, width(), height());
-  if (render_target_ != nullptr) {
-    render_target_->UpdateGeometry(width(), height());
+  if (front_render_target_ != nullptr) {
+    front_render_target_->UpdateGeometry(width(), height());
+  }
+  if (back_render_target_ != nullptr) {
+    back_render_target_->UpdateGeometry(width(), height());
   }
 }
 
@@ -68,7 +72,7 @@ void SimplePreset::OnDrawFrame(absl::Span<const float> samples,
   }
 
   {
-    auto activation = render_target_->Activate();
+    auto back_activation = back_render_target_->Activate();
 
     warp_program_->Use();
 
@@ -92,8 +96,8 @@ void SimplePreset::OnDrawFrame(absl::Span<const float> samples,
     int texture_number = 0;
     glActiveTexture(GL_TEXTURE0 + texture_number);
     LOG(DEBUG) << "Configured active texture: " << GL_TEXTURE0 + texture_number;
-    glBindTexture(GL_TEXTURE_2D, render_target_->texture_handle());
-    LOG(DEBUG) << "Bound texture: " << render_target_->texture_handle();
+    glBindTexture(GL_TEXTURE_2D, front_render_target_->texture_handle());
+    LOG(DEBUG) << "Bound texture: " << front_render_target_->texture_handle();
     glUniform1i(texture_location, texture_number);
     LOG(DEBUG) << "Configured uniform at location: " << texture_location
                << " to texture index: " << texture_number;
@@ -112,8 +116,8 @@ void SimplePreset::OnDrawFrame(absl::Span<const float> samples,
   int texture_number = 0;
   glActiveTexture(GL_TEXTURE0 + texture_number);
   LOG(DEBUG) << "Configured active texture: " << GL_TEXTURE0 + texture_number;
-  glBindTexture(GL_TEXTURE_2D, render_target_->texture_handle());
-  LOG(DEBUG) << "Bound texture: " << render_target_->texture_handle();
+  glBindTexture(GL_TEXTURE_2D, back_render_target_->texture_handle());
+  LOG(DEBUG) << "Bound texture: " << back_render_target_->texture_handle();
   glUniform1i(texture_location, texture_number);
   LOG(DEBUG) << "Configured uniform at location: " << texture_location
              << " to texture index: " << texture_number;
@@ -124,6 +128,8 @@ void SimplePreset::OnDrawFrame(absl::Span<const float> samples,
 
   glViewport(0, 0, width(), height());
   Rectangle().Draw();
+
+  back_render_target_->swap_texture_unit(front_render_target_.get());
   glFlush();
 }
 

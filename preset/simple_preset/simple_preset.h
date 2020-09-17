@@ -17,7 +17,8 @@ class SimplePreset : public Preset {
   void OnUpdateGeometry() override;
 
  private:
-  std::shared_ptr<gl::GlRenderTarget> render_target_;
+  std::shared_ptr<gl::GlRenderTarget> front_render_target_;
+  std::shared_ptr<gl::GlRenderTarget> back_render_target_;
   std::shared_ptr<gl::GlProgram> warp_program_;
   std::shared_ptr<gl::GlProgram> composite_program_;
 };
