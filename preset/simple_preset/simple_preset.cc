@@ -60,6 +60,9 @@ void SimplePreset::OnDrawFrame(absl::Span<const float> samples,
                                std::shared_ptr<GlobalState> state) {
   float energy = state->energy();
   float power = state->power();
+  float average_power = state->average_power();
+  float normalized_power =
+      (average_power > 0.0f) ? power / average_power : 0.0f;
 
   static auto buffer_size = samples.size() / 2;
   static std::vector<glm::vec2> vertices;
@@ -74,10 +77,10 @@ void SimplePreset::OnDrawFrame(absl::Span<const float> samples,
     float x_pos = x_int * c3 - y_int * s3;
     float y_pos = x_int * s3 + y_int * c3;
 
-    x_pos += cos(energy / 1.25 + power / 100) / 2;
-    x_pos += cos(energy / 5.23 + 0.5) / 5;
-    y_pos += sin(energy / 1.25 + power / 100) / 2;
-    y_pos += sin(energy / 5.23 + 0.5) / 5;
+    x_pos += cos(sin(2 * energy) * 5 * energy / 1.25 + power / 100) / 2;
+    x_pos += cos(sin(2 * energy) * 5 * energy / 5.23 + 0.5) / 5;
+    y_pos += sin(sin(2 * energy) * 5 * energy / 1.25 + power / 100) / 2;
+    y_pos += sin(sin(2 * energy) * 5 * energy / 5.23 + 0.5) / 5;
 
     vertices[i] = glm::vec2(x_pos, y_pos);
   }
@@ -119,7 +122,7 @@ void SimplePreset::OnDrawFrame(absl::Span<const float> samples,
     glm::vec3 hsv = HsvToRgb(glm::vec3(energy, 1, 0.5));
     static Polyline polyline(hsv, vertices, 1);
     polyline.UpdateVertices(vertices);
-    polyline.UpdateWidth(energy * 30);
+    polyline.UpdateWidth(log(normalized_power) * 50);
     polyline.Draw();
 
     glFlush();
