@@ -29,4 +29,10 @@ void Polyline::Draw() {
   glDisableClientState(GL_VERTEX_ARRAY);
 }
 
+void Polyline::UpdateVertices(absl::Span<const glm::vec2> vertices) {
+  vertices_ = vertices;
+}
+
+void Polyline::UpdateWidth(float width) { width_ = width; }
+
 }  // namespace opendrop

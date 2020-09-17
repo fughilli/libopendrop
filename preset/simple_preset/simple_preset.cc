@@ -61,8 +61,8 @@ void SimplePreset::OnDrawFrame(absl::Span<const float> samples,
   float energy = state->energy();
   float power = state->power();
 
-  auto buffer_size = samples.size() / 2;
-  std::vector<glm::vec2> vertices;
+  static auto buffer_size = samples.size() / 2;
+  static std::vector<glm::vec2> vertices;
   vertices.resize(buffer_size);
 
   for (int i = 0; i < buffer_size; ++i) {
@@ -81,6 +81,8 @@ void SimplePreset::OnDrawFrame(absl::Span<const float> samples,
 
     vertices[i] = glm::vec2(x_pos, y_pos);
   }
+
+  static Rectangle rectangle;
 
   {
     auto back_activation = back_render_target_->Activate();
@@ -113,9 +115,12 @@ void SimplePreset::OnDrawFrame(absl::Span<const float> samples,
     LOG(DEBUG) << "Configured uniform at location: " << texture_location
                << " to texture index: " << texture_number;
 
-    Rectangle().Draw();
+    rectangle.Draw();
     glm::vec3 hsv = HsvToRgb(glm::vec3(energy, 1, 0.5));
-    Polyline(hsv, vertices, energy * 30).Draw();
+    static Polyline polyline(hsv, vertices, 1);
+    polyline.UpdateVertices(vertices);
+    polyline.UpdateWidth(energy * 30);
+    polyline.Draw();
 
     glFlush();
   }
@@ -139,7 +144,7 @@ void SimplePreset::OnDrawFrame(absl::Span<const float> samples,
   glUniform2i(texture_size_location, width(), height());
 
   glViewport(0, 0, width(), height());
-  Rectangle().Draw();
+  rectangle.Draw();
 
   back_render_target_->swap_texture_unit(front_render_target_.get());
   glFlush();

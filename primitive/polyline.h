@@ -18,6 +18,12 @@ class Polyline : public Primitive {
   Polyline(glm::vec3 color, absl::Span<const glm::vec2> vertices, float width);
   void Draw() override;
 
+  // Updates the const view of vertices for this polyline.
+  void UpdateVertices(absl::Span<const glm::vec2> vertices);
+
+  // Updates the width of this polyline.
+  void UpdateWidth(float width);
+
  private:
   glm::vec3 color_;
   absl::Span<const glm::vec2> vertices_;
