@@ -3,6 +3,7 @@
 
 #include <cstdint>
 #include <glm/vec2.hpp>
+#include <glm/vec3.hpp>
 #include <vector>
 
 #include "absl/types/span.h"
@@ -14,10 +15,11 @@ namespace opendrop {
 // underlying data exceeds that of the Polyline instance.
 class Polyline : public Primitive {
  public:
-  Polyline(absl::Span<const glm::vec2> vertices, float width);
+  Polyline(glm::vec3 color, absl::Span<const glm::vec2> vertices, float width);
   void Draw() override;
 
  private:
+  glm::vec3 color_;
   absl::Span<const glm::vec2> vertices_;
   float width_;
   std::vector<uint16_t> indices_;

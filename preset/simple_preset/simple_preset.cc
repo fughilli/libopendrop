@@ -1,5 +1,7 @@
 #include "libopendrop/preset/simple_preset/simple_preset.h"
 
+#define _USE_MATH_DEFINES
+#include <cmath>
 #define GL_GLEXT_PROTOTYPES
 #include <GL/gl.h>
 #include <GL/glext.h>
@@ -43,6 +45,15 @@ void SimplePreset::OnUpdateGeometry() {
   if (back_render_target_ != nullptr) {
     back_render_target_->UpdateGeometry(width(), height());
   }
+}
+
+glm::vec3 HsvToRgb(glm::vec3 hsv) {
+  auto normalized_offset_sin = [&](float x, float offset) {
+    return (1.0f + sin((x + offset) * M_PI * 2)) / 2;
+  };
+  return glm::vec3(normalized_offset_sin(hsv.x, 0.0f),
+                   normalized_offset_sin(hsv.x, 0.333f),
+                   normalized_offset_sin(hsv.x, 0.666f));
 }
 
 void SimplePreset::OnDrawFrame(absl::Span<const float> samples,
@@ -103,7 +114,8 @@ void SimplePreset::OnDrawFrame(absl::Span<const float> samples,
                << " to texture index: " << texture_number;
 
     Rectangle().Draw();
-    Polyline(vertices, energy * 30).Draw();
+    glm::vec3 hsv = HsvToRgb(glm::vec3(energy, 1, 0.5));
+    Polyline(hsv, vertices, energy * 30).Draw();
 
     glFlush();
   }
