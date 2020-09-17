@@ -16,6 +16,7 @@ class GlobalState {
   float t() { return properties_.time; }
   float dt() { return properties_.dt; }
   float power() { return properties_.power; }
+  float average_power() { return properties_.average_power; }
   float energy() { return properties_.energy; }
 
  private:
@@ -33,6 +34,9 @@ class GlobalState {
 
     // Integral of audio signal power over time.
     float energy;
+
+    // Average power over time.
+    float average_power;
   };
 
   // Storage for global properties.
