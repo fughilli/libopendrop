@@ -53,8 +53,14 @@ ABSL_FLAG(std::string, pulseaudio_source, "",
           "PulseAudio source device to capture audio from");
 ABSL_FLAG(int, channel_count, 2,
           "Audio channel count to request from the audio source");
-ABSL_FLAG(int, window_width, 100, "ProjectM window width");
-ABSL_FLAG(int, window_height, 100, "ProjectM window height");
+ABSL_FLAG(int, window_width, 100, "OpenDrop window width");
+ABSL_FLAG(int, window_height, 100, "OpenDrop window height");
+ABSL_FLAG(int, window_x, -1,
+          "OpenDrop window position in x. If this value is -1, no position "
+          "override is applied.");
+ABSL_FLAG(int, window_y, -1,
+          "OpenDrop window position in y. If this value is -1, no position "
+          "override is applied.");
 ABSL_FLAG(int, late_frames_to_skip_preset, 20,
           "Number of late frames required to skip preset");
 
@@ -110,13 +116,19 @@ extern "C" int main(int argc, char *argv[]) {
     }
     auto sdl_cleanup = MakeCleanup([&] { SDL_Quit(); });
 
-    auto sdl_gl_interface =
-        std::make_shared<gl::SdlGlInterface>(SDL_CreateWindow(
-            "OpenDrop", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
-            absl::GetFlag(FLAGS_window_width),
-            absl::GetFlag(FLAGS_window_height),
-            SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN | SDL_WINDOW_ALLOW_HIGHDPI |
-                SDL_WINDOW_RESIZABLE));
+    auto position_x = (absl::GetFlag(FLAGS_window_x) == -1)
+                          ? SDL_WINDOWPOS_UNDEFINED
+                          : absl::GetFlag(FLAGS_window_x);
+    auto position_y = (absl::GetFlag(FLAGS_window_y) == -1)
+                          ? SDL_WINDOWPOS_UNDEFINED
+                          : absl::GetFlag(FLAGS_window_y);
+
+    auto sdl_gl_interface = std::make_shared<gl::SdlGlInterface>(
+        SDL_CreateWindow("OpenDrop", position_x, position_y,
+                         absl::GetFlag(FLAGS_window_width),
+                         absl::GetFlag(FLAGS_window_height),
+                         SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN |
+                             SDL_WINDOW_ALLOW_HIGHDPI | SDL_WINDOW_RESIZABLE));
     sdl_gl_interface->SetVsync(true);
 
     std::cout << "Initializing OpenDrop..." << std::endl;
