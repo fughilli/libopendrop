@@ -179,9 +179,9 @@ void SimplePreset::OnDrawFrame(absl::Span<const float> samples,
     // polyline.Draw();
     //
 
-    float a1 = cos(energy / 0.512 + power / 10) * energy;
-    float a2 = cos(energy / 2 + power / 10) / 10;
-    float a3 = sin(energy / 2 + power / 10) / 10;
+    float a1 = M_PI * (cos(10 * energy / 0.512 + power / 10) * 0.3);
+    float a2 = cos(10 * energy / 2 + power / 10) / 10;
+    float a3 = sin(10 * energy / 2 + power / 10) / 10;
 
     a2 += cos(sin(2 * energy) * 5 * energy / 1.25 + power / 100) / 2;
     a2 += cos(sin(2 * energy) * 5 * energy / 5.23 + 0.5) / 5;
@@ -192,7 +192,7 @@ void SimplePreset::OnDrawFrame(absl::Span<const float> samples,
                      glm::vec2(a2, a3));
     int letter_index = static_cast<int>(energy * 30) % kLetters.size();
     letter.UpdateVertices(kLetters[letter_index]);
-    letter.UpdateWidth(log(normalized_power) * 50);
+    letter.UpdateWidth(std::max(0.1, log(normalized_power) * 20));
     letter.UpdateColor(HsvToRgb(glm::vec3(energy, 1, 0.5)));
     letter.Draw();
 

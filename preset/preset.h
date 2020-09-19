@@ -1,6 +1,7 @@
 #ifndef PRESET_H_
 #define PRESET_H_
 
+#include <memory>
 #include <mutex>
 
 #include "absl/types/span.h"

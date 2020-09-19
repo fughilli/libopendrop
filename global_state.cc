@@ -1,5 +1,7 @@
 #include "libopendrop/global_state.h"
 
+#include <cmath>
+
 namespace opendrop {
 
 namespace {
@@ -19,7 +21,7 @@ void GlobalState::Update(absl::Span<const float> samples, float dt) {
   // this is a mono buffer has the same outcome as averaging the power of the
   // left and right channels independently.
   for (auto sample : samples) {
-    properties_.power += pow(sample, 2);
+    properties_.power += std::pow(sample, 2);
   }
   properties_.power /= samples.size();
 
