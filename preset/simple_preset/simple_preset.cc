@@ -68,6 +68,9 @@ void SimplePreset::OnDrawFrame(absl::Span<const float> samples,
   static std::vector<glm::vec2> vertices;
   vertices.resize(buffer_size);
 
+  static Rectangle rectangle;
+  static Polyline polyline;
+
   for (int i = 0; i < buffer_size; ++i) {
     float c3 = cos(energy / 10 + power / 100);
     float s3 = sin(energy / 10 + power / 100);
@@ -84,8 +87,6 @@ void SimplePreset::OnDrawFrame(absl::Span<const float> samples,
 
     vertices[i] = glm::vec2(x_pos, y_pos);
   }
-
-  static Rectangle rectangle;
 
   {
     auto back_activation = back_render_target_->Activate();
@@ -119,10 +120,10 @@ void SimplePreset::OnDrawFrame(absl::Span<const float> samples,
                << " to texture index: " << texture_number;
 
     rectangle.Draw();
-    glm::vec3 hsv = HsvToRgb(glm::vec3(energy, 1, 0.5));
-    static Polyline polyline(hsv, vertices, 1);
+
     polyline.UpdateVertices(vertices);
     polyline.UpdateWidth(log(normalized_power) * 50);
+    polyline.UpdateColor(HsvToRgb(glm::vec3(energy, 1, 0.5)));
     polyline.Draw();
 
     glFlush();
