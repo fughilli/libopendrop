@@ -50,7 +50,10 @@ void SdlGlInterface::SetVsync(bool enable) {
     if (avsync == -1) {
       SDL_GL_SetSwapInterval(1);
     }
+    return;
   }
+
+  SDL_GL_SetSwapInterval(0);
 }
 
 void SdlGlInterface::SwapBuffers() { SDL_GL_SwapWindow(window_.get()); }

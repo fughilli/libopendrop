@@ -15,11 +15,15 @@ namespace opendrop {
 // underlying data exceeds that of the Polyline instance.
 class Polyline : public Primitive {
  public:
+   Polyline();
   Polyline(glm::vec3 color, absl::Span<const glm::vec2> vertices, float width);
   void Draw() override;
 
   // Updates the const view of vertices for this polyline.
   void UpdateVertices(absl::Span<const glm::vec2> vertices);
+
+  // Updates the color of the polyline.
+  void UpdateColor(glm::vec3 color);
 
   // Updates the width of this polyline.
   void UpdateWidth(float width);

@@ -22,6 +22,7 @@
 #include <GL/gl.h>
 #include <GL/glext.h>
 #include <SDL2/SDL.h>
+#include <mcheck.h>
 
 #include <algorithm>
 #include <cmath>
@@ -46,6 +47,7 @@
 #include "libopendrop/open_drop_controller_interface.h"
 #include "libopendrop/preset/simple_preset/simple_preset.h"
 #include "libopendrop/sdl_gl_interface.h"
+#include "libopendrop/util/logging.h"
 
 ABSL_FLAG(std::string, pulseaudio_server, "",
           "PulseAudio server to connect to");
@@ -53,8 +55,14 @@ ABSL_FLAG(std::string, pulseaudio_source, "",
           "PulseAudio source device to capture audio from");
 ABSL_FLAG(int, channel_count, 2,
           "Audio channel count to request from the audio source");
-ABSL_FLAG(int, window_width, 100, "ProjectM window width");
-ABSL_FLAG(int, window_height, 100, "ProjectM window height");
+ABSL_FLAG(int, window_width, 100, "OpenDrop window width");
+ABSL_FLAG(int, window_height, 100, "OpenDrop window height");
+ABSL_FLAG(int, window_x, -1,
+          "OpenDrop window position in x. If this value is -1, no position "
+          "override is applied.");
+ABSL_FLAG(int, window_y, -1,
+          "OpenDrop window position in y. If this value is -1, no position "
+          "override is applied.");
 ABSL_FLAG(int, late_frames_to_skip_preset, 20,
           "Number of late frames required to skip preset");
 
@@ -70,38 +78,16 @@ constexpr int kFps = 120;
 constexpr int kTargetFrameTimeMs = 1000 / kFps;
 // Size of the audio processor buffer, in samples.
 constexpr int kAudioBufferSize = 256;
-struct CallbackData {
-  std::shared_ptr<OpenDropControllerInterface> open_drop_controller;
-  int channel_count;
-};
-
-std::mutex audio_queue_mutex;
-std::queue<std::pair<std::shared_ptr<CallbackData>, std::vector<const float>>>
-    audio_queue;
-
-void AddAudioData(std::shared_ptr<CallbackData> callback_data,
-                  absl::Span<const float> samples) {
-  switch (callback_data->channel_count) {
-    case 1:
-      callback_data->open_drop_controller->GetAudioProcessor().AddPcmSamples(
-          PcmFormat::kMono, samples);
-      break;
-    case 2:
-      callback_data->open_drop_controller->GetAudioProcessor().AddPcmSamples(
-          PcmFormat::kStereoInterleaved, samples);
-      break;
-    default:
-      std::cerr << "Unsupported PCM channel count: "
-                << callback_data->channel_count << std::endl;
-      SDL_Quit();
-  }
-}
+// Minimum number of milliseconds that should be delayed.
+constexpr int kMinimumDelayMs = 2;
 }  // namespace
 
 extern "C" int main(int argc, char *argv[]) {
   absl::ParseCommandLine(argc, argv);
 
   absl::InstallFailureSignalHandler(absl::FailureSignalHandlerOptions());
+
+  mtrace();
 
   {
     if (SDL_Init(SDL_INIT_VIDEO) < 0) {
@@ -110,13 +96,19 @@ extern "C" int main(int argc, char *argv[]) {
     }
     auto sdl_cleanup = MakeCleanup([&] { SDL_Quit(); });
 
-    auto sdl_gl_interface =
-        std::make_shared<gl::SdlGlInterface>(SDL_CreateWindow(
-            "OpenDrop", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
-            absl::GetFlag(FLAGS_window_width),
-            absl::GetFlag(FLAGS_window_height),
-            SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN | SDL_WINDOW_ALLOW_HIGHDPI |
-                SDL_WINDOW_RESIZABLE));
+    auto position_x = (absl::GetFlag(FLAGS_window_x) == -1)
+                          ? SDL_WINDOWPOS_UNDEFINED
+                          : absl::GetFlag(FLAGS_window_x);
+    auto position_y = (absl::GetFlag(FLAGS_window_y) == -1)
+                          ? SDL_WINDOWPOS_UNDEFINED
+                          : absl::GetFlag(FLAGS_window_y);
+
+    auto sdl_gl_interface = std::make_shared<gl::SdlGlInterface>(
+        SDL_CreateWindow("OpenDrop", position_x, position_y,
+                         absl::GetFlag(FLAGS_window_width),
+                         absl::GetFlag(FLAGS_window_height),
+                         SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN |
+                             SDL_WINDOW_ALLOW_HIGHDPI | SDL_WINDOW_RESIZABLE));
     sdl_gl_interface->SetVsync(true);
 
     std::cout << "Initializing OpenDrop..." << std::endl;
@@ -127,18 +119,28 @@ extern "C" int main(int argc, char *argv[]) {
             absl::GetFlag(FLAGS_window_width),
             absl::GetFlag(FLAGS_window_height));
 
-    auto callback_data = std::make_shared<CallbackData>();
-    callback_data->open_drop_controller = open_drop_controller;
-    callback_data->channel_count = absl::GetFlag(FLAGS_channel_count);
+    int channel_count = absl::GetFlag(FLAGS_channel_count);
+
+    if (channel_count > 2 || channel_count < 0) {
+      std::cerr << "Unsupported PCM channel count: " << channel_count
+                << std::endl;
+      SDL_Quit();
+    }
     auto pa_interface = std::make_shared<PulseAudioInterface>(
         absl::GetFlag(FLAGS_pulseaudio_server),
-        absl::GetFlag(FLAGS_pulseaudio_source), "input_stream",
-        callback_data->channel_count,
-        [&callback_data](absl::Span<const float> samples) {
-          std::lock_guard<std::mutex> audio_queue_lock(audio_queue_mutex);
-          audio_queue.push(std::make_pair(
-              callback_data,
-              std::vector<const float>(samples.begin(), samples.end())));
+        absl::GetFlag(FLAGS_pulseaudio_source), "input_stream", channel_count,
+        [&](absl::Span<const float> samples) {
+          switch (channel_count) {
+            case 1:
+              open_drop_controller->GetAudioProcessor().AddPcmSamples(
+                  PcmFormat::kMono, samples);
+              break;
+            default:
+            case 2:
+              open_drop_controller->GetAudioProcessor().AddPcmSamples(
+                  PcmFormat::kStereoInterleaved, samples);
+              break;
+          }
         });
     auto pa_interface_cleanup = MakeCleanup([&] { pa_interface->Stop(); });
 
@@ -152,6 +154,7 @@ extern "C" int main(int argc, char *argv[]) {
 
     bool exit_event_received = false;
     PerformanceTimer<uint32_t> frame_timer;
+    PerformanceTimer<uint32_t> draw_timer;
     int late_frame_counter = 0;
     int late_frames_to_skip_preset =
         absl::GetFlag(FLAGS_late_frames_to_skip_preset);
@@ -163,14 +166,15 @@ extern "C" int main(int argc, char *argv[]) {
     open_drop_controller->SetPreset(std::make_shared<opendrop::SimplePreset>(
         absl::GetFlag(FLAGS_window_width), absl::GetFlag(FLAGS_window_height)));
     while (!exit_event_received) {
-      frame_timer.Start(SDL_GetTicks());
-      {
-        std::lock_guard<std::mutex> audio_queue_lock(audio_queue_mutex);
-        while (!audio_queue.empty()) {
-          AddAudioData(audio_queue.front().first, audio_queue.front().second);
-          audio_queue.pop();
-        }
-      }
+      // Record the start of the frame in the draw timer.
+      auto frame_start_time = SDL_GetTicks();
+      draw_timer.Start(frame_start_time);
+
+      // Compute the frame time. This is the total elapsed time since the last
+      // frame.
+      auto frame_time = frame_timer.End(frame_start_time);
+      float prev_dt = static_cast<float>(frame_time) / 1000.0f;
+      frame_timer.Start(frame_start_time);
 
       open_drop_controller->DrawFrame(prev_dt);
 
@@ -215,9 +219,17 @@ extern "C" int main(int argc, char *argv[]) {
       }
       sdl_gl_interface->SwapBuffers();
 
-      uint32_t frame_time = frame_timer.End(SDL_GetTicks());
-      prev_dt = static_cast<float>(frame_time) / 1000;
-      if (frame_time >= kTargetFrameTimeMs) {
+      // Record the end of the draw operations.
+      uint32_t draw_time = draw_timer.End(SDL_GetTicks());
+
+      static int counter = 0;
+      ++counter;
+      if (counter == 100) {
+        LOG(INFO) << "Draw time: " << draw_time
+                  << "\tFrame time: " << frame_time << "\tFPS: " << 1 / prev_dt;
+        counter = 0;
+      }
+      if (draw_time >= kTargetFrameTimeMs) {
         if (late_frames_to_skip_preset <= 0) {
           continue;
         }
@@ -235,7 +247,9 @@ extern "C" int main(int argc, char *argv[]) {
         late_frame_counter = 0;
       }
 
-      SDL_Delay(kTargetFrameTimeMs - frame_time);
+      if ((kTargetFrameTimeMs - draw_time) > kMinimumDelayMs) {
+        // SDL_Delay(kTargetFrameTimeMs - draw_time);
+      }
     }
   }
   return 0;

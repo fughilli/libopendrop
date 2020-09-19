@@ -51,6 +51,7 @@ cc_binary(
         "//led_driver:performance_timer",
         "//led_driver:pulseaudio_interface",
         "//libopendrop/preset/simple_preset",
+        "//libopendrop/util:logging",
         "@com_google_absl//absl/debugging:failure_signal_handler",
         "@com_google_absl//absl/flags:flag",
         "@com_google_absl//absl/flags:parse",

@@ -4,6 +4,13 @@
 #include <iostream>
 #include <sstream>
 
+#define __FXN_DEBUG(level) _DummyLogger()
+#define __FXN_INFO(level) _Logger(level, __FILE__, __LINE__)
+#define __FXN_WARNING(level) __FXN_INFO(level)
+#define __FXN_ERROR(level) __FXN_INFO(level)
+
+#define __MASK_FOR_DEBUG(symbol, level) (__FXN_##symbol(level))
+
 #if defined(ENABLE_DEBUG_LOGGING)
 constexpr static bool kDebugLoggingEnabled = true;
 #else
@@ -69,6 +76,7 @@ class _Logger {
 };
 
 class _DummyLogger {
+ public:
   template <typename T>
   _DummyLogger& operator<<(const T& value) {
     return *this;
@@ -78,7 +86,8 @@ class _DummyLogger {
 #if defined(DISABLE_LOGGING)
 #define LOG(level) _DummyLogger()
 #else
-#define LOG(level) _Logger(level, __FILE__, __LINE__)
+#define LOG(level) __MASK_FOR_DEBUG(level, level)
+// _Logger(level, __FILE__, __LINE__)
 #endif
 
 #endif  // UTIL_LOGGING_H_
