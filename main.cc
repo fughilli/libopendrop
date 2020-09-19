@@ -147,10 +147,10 @@ extern "C" int main(int argc, char *argv[]) {
     pa_interface->Initialize();
     pa_interface->Start();
 
-    if (!pa_interface->WaitReady()) {
-      std::cerr << "PulseAudio interface failed to initialize." << std::endl;
-      return -1;
-    }
+    //if (!pa_interface->WaitReady()) {
+    //  std::cerr << "PulseAudio interface failed to initialize." << std::endl;
+    //  return -1;
+    //}
 
     bool exit_event_received = false;
     PerformanceTimer<uint32_t> frame_timer;
