@@ -6,6 +6,7 @@
 #include <GL/gl.h>
 #include <GL/glext.h>
 
+#include <algorithm>
 #include <vector>
 
 #include "libopendrop/preset/simple_preset/composite.fsh.h"
@@ -19,7 +20,57 @@ namespace opendrop {
 
 namespace {
 constexpr float kScaleFactor = 0.3f;
+
+const std::vector<std::vector<glm::vec2>> kLetters = {
+    {{-1, -1}, {-1, 1}, {-1, 0}, {1, 0}, {1, -1}, {1, 1}},           // H
+    {{-1, -1}, {0, 1}, {1, -1}, {0.5, 0}, {-0.5, 0}},                // A
+    {{-1, -1}, {-1, 1}, {1, 1}, {1, 0}, {-1, 0}},                    // P
+    {{-1, -1}, {-1, 1}, {1, 1}, {1, 0}, {-1, 0}},                    // P
+    {{0, -1}, {0, 0}, {-1, 1}, {0, 0}, {1, 1}},                      // Y
+    {},                                                              // <space>
+    {{-1, -1}, {-1, 1}, {1, 1}, {-1, 0}, {1, -1}, {-1, -1}},         // B
+    {{0, -1}, {0, 1}},                                               // I
+    {{-1, -1}, {-1, 1}, {1, 1}, {1, 0}, {-1, 0}, {1, -1}},           // R
+    {{0, -1}, {0, 1}, {-1, 1}, {1, 1}},                              // T
+    {{-1, -1}, {-1, 1}, {-1, 0}, {1, 0}, {1, -1}, {1, 1}},           // H
+    {{-1, -1}, {-1, 1}, {1, 0}, {-1, -1}},                           // D
+    {{-1, -1}, {0, 1}, {1, -1}, {0.5, 0}, {-0.5, 0}},                // A
+    {{0, -1}, {0, 0}, {-1, 1}, {0, 0}, {1, 1}},                      // Y
+    {{0, -0.5}, {-0.25, -1}},                                        // ,
+    {},                                                              // <space>
+    {{0, 0}, {1, 0}, {1, -1}, {-1, -1}, {-1, 1}, {1, 1}},            // G
+    {{1, 1}, {-1, 1}, {-1, 0}, {1, 0}, {-1, 0}, {-1, -1}, {1, -1}},  // E
+    {{-1, -1}, {-1, 1}, {1, 1}, {1, 0}, {-1, 0}, {1, -1}},           // R
+    {{0, 0}, {1, 0}, {1, -1}, {-1, -1}, {-1, 1}, {1, 1}},            // G
+    {{-0.25, -0.5},
+     {-0.25, 1},
+     {0.25, 1},
+     {0.25, -0.5},
+     {-0.25, -0.5},
+     {0, -0.5},
+     {0, -0.75},
+     {-0.25, -1},
+     {0.25, -1},
+     {0, -0.75}},  // !
+
+};
+
+std::vector<std::vector<glm::vec2>> ScaleLetters(float scale, float angle,
+                                                 glm::vec2 displacement) {
+  std::vector<std::vector<glm::vec2>> out_letters;
+  for (auto letter : kLetters) {
+    std::vector<glm::vec2> scaled_letter;
+    for (auto vec : letter) {
+      vec = glm::vec2(cos(angle) * vec.x - sin(angle) * vec.y,
+                      sin(angle) * vec.x + cos(angle) * vec.y);
+      scaled_letter.push_back(vec * scale + displacement);
+    }
+    out_letters.push_back(scaled_letter);
+  }
+  return out_letters;
 }
+
+}  // namespace
 
 SimplePreset::SimplePreset(int width, int height) : Preset(width, height) {
   warp_program_ =
@@ -70,23 +121,24 @@ void SimplePreset::OnDrawFrame(absl::Span<const float> samples,
 
   static Rectangle rectangle;
   static Polyline polyline;
+  static Polyline letter;
 
-  for (int i = 0; i < buffer_size; ++i) {
-    float c3 = cos(energy / 10 + power / 100);
-    float s3 = sin(energy / 10 + power / 100);
-    float x_int = samples[i * 2] * kScaleFactor;
-    float y_int = samples[i * 2 + 1] * kScaleFactor;
+  // for (int i = 0; i < buffer_size; ++i) {
+  //  float c3 = cos(energy / 10 + power / 100);
+  //  float s3 = sin(energy / 10 + power / 100);
+  //  float x_int = samples[i * 2] * kScaleFactor;
+  //  float y_int = samples[i * 2 + 1] * kScaleFactor;
 
-    float x_pos = x_int * c3 - y_int * s3;
-    float y_pos = x_int * s3 + y_int * c3;
+  //  float x_pos = x_int * c3 - y_int * s3;
+  //  float y_pos = x_int * s3 + y_int * c3;
 
-    x_pos += cos(sin(2 * energy) * 5 * energy / 1.25 + power / 100) / 2;
-    x_pos += cos(sin(2 * energy) * 5 * energy / 5.23 + 0.5) / 5;
-    y_pos += sin(sin(2 * energy) * 5 * energy / 1.25 + power / 100) / 2;
-    y_pos += sin(sin(2 * energy) * 5 * energy / 5.23 + 0.5) / 5;
+  //  x_pos += cos(sin(2 * energy) * 5 * energy / 1.25 + power / 100) / 2;
+  //  x_pos += cos(sin(2 * energy) * 5 * energy / 5.23 + 0.5) / 5;
+  //  y_pos += sin(sin(2 * energy) * 5 * energy / 1.25 + power / 100) / 2;
+  //  y_pos += sin(sin(2 * energy) * 5 * energy / 5.23 + 0.5) / 5;
 
-    vertices[i] = glm::vec2(x_pos, y_pos);
-  }
+  //  vertices[i] = glm::vec2(x_pos, y_pos);
+  //}
 
   {
     auto back_activation = back_render_target_->Activate();
@@ -121,10 +173,28 @@ void SimplePreset::OnDrawFrame(absl::Span<const float> samples,
 
     rectangle.Draw();
 
-    polyline.UpdateVertices(vertices);
-    polyline.UpdateWidth(log(normalized_power) * 50);
-    polyline.UpdateColor(HsvToRgb(glm::vec3(energy, 1, 0.5)));
-    polyline.Draw();
+    // polyline.UpdateVertices(vertices);
+    // polyline.UpdateWidth(log(normalized_power) * 50);
+    // polyline.UpdateColor(HsvToRgb(glm::vec3(energy, 1, 0.5)));
+    // polyline.Draw();
+    //
+
+    float a1 = cos(energy / 0.512 + power / 10) * energy;
+    float a2 = cos(energy / 2 + power / 10) / 10;
+    float a3 = sin(energy / 2 + power / 10) / 10;
+
+    a2 += cos(sin(2 * energy) * 5 * energy / 1.25 + power / 100) / 2;
+    a2 += cos(sin(2 * energy) * 5 * energy / 5.23 + 0.5) / 5;
+    a3 += sin(sin(2 * energy) * 5 * energy / 1.25 + power / 100) / 2;
+    a3 += sin(sin(2 * energy) * 5 * energy / 5.23 + 0.5) / 5;
+    auto kLetters =
+        ScaleLetters(std::max<float>(0.1, log(normalized_power) * 0.3), a1,
+                     glm::vec2(a2, a3));
+    int letter_index = static_cast<int>(energy * 30) % kLetters.size();
+    letter.UpdateVertices(kLetters[letter_index]);
+    letter.UpdateWidth(log(normalized_power) * 50);
+    letter.UpdateColor(HsvToRgb(glm::vec3(energy, 1, 0.5)));
+    letter.Draw();
 
     glFlush();
   }
