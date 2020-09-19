@@ -76,32 +76,8 @@ constexpr int kFps = 120;
 constexpr int kTargetFrameTimeMs = 1000 / kFps;
 // Size of the audio processor buffer, in samples.
 constexpr int kAudioBufferSize = 256;
-struct CallbackData {
-  std::shared_ptr<OpenDropControllerInterface> open_drop_controller;
-  int channel_count;
-};
-
-std::mutex audio_queue_mutex;
-std::queue<std::pair<std::shared_ptr<CallbackData>, std::vector<const float>>>
-    audio_queue;
-
-void AddAudioData(std::shared_ptr<CallbackData> callback_data,
-                  absl::Span<const float> samples) {
-  switch (callback_data->channel_count) {
-    case 1:
-      callback_data->open_drop_controller->GetAudioProcessor().AddPcmSamples(
-          PcmFormat::kMono, samples);
-      break;
-    case 2:
-      callback_data->open_drop_controller->GetAudioProcessor().AddPcmSamples(
-          PcmFormat::kStereoInterleaved, samples);
-      break;
-    default:
-      std::cerr << "Unsupported PCM channel count: "
-                << callback_data->channel_count << std::endl;
-      SDL_Quit();
-  }
-}
+// Minimum number of milliseconds that should be delayed.
+constexpr int kMinimumDelayMs = 2;
 }  // namespace
 
 extern "C" int main(int argc, char *argv[]) {
@@ -139,18 +115,28 @@ extern "C" int main(int argc, char *argv[]) {
             absl::GetFlag(FLAGS_window_width),
             absl::GetFlag(FLAGS_window_height));
 
-    auto callback_data = std::make_shared<CallbackData>();
-    callback_data->open_drop_controller = open_drop_controller;
-    callback_data->channel_count = absl::GetFlag(FLAGS_channel_count);
+    int channel_count = absl::GetFlag(FLAGS_channel_count);
+
+    if (channel_count > 2 || channel_count < 0) {
+      std::cerr << "Unsupported PCM channel count: " << channel_count
+                << std::endl;
+      SDL_Quit();
+    }
     auto pa_interface = std::make_shared<PulseAudioInterface>(
         absl::GetFlag(FLAGS_pulseaudio_server),
-        absl::GetFlag(FLAGS_pulseaudio_source), "input_stream",
-        callback_data->channel_count,
-        [&callback_data](absl::Span<const float> samples) {
-          std::lock_guard<std::mutex> audio_queue_lock(audio_queue_mutex);
-          audio_queue.push(std::make_pair(
-              callback_data,
-              std::vector<const float>(samples.begin(), samples.end())));
+        absl::GetFlag(FLAGS_pulseaudio_source), "input_stream", channel_count,
+        [&](absl::Span<const float> samples) {
+          switch (channel_count) {
+            case 1:
+              open_drop_controller->GetAudioProcessor().AddPcmSamples(
+                  PcmFormat::kMono, samples);
+              break;
+            default:
+            case 2:
+              open_drop_controller->GetAudioProcessor().AddPcmSamples(
+                  PcmFormat::kStereoInterleaved, samples);
+              break;
+          }
         });
     auto pa_interface_cleanup = MakeCleanup([&] { pa_interface->Stop(); });
 
@@ -176,13 +162,6 @@ extern "C" int main(int argc, char *argv[]) {
         absl::GetFlag(FLAGS_window_width), absl::GetFlag(FLAGS_window_height)));
     while (!exit_event_received) {
       frame_timer.Start(SDL_GetTicks());
-      {
-        std::lock_guard<std::mutex> audio_queue_lock(audio_queue_mutex);
-        while (!audio_queue.empty()) {
-          AddAudioData(audio_queue.front().first, audio_queue.front().second);
-          audio_queue.pop();
-        }
-      }
 
       open_drop_controller->DrawFrame(prev_dt);
 
