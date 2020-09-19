@@ -26,7 +26,7 @@ class SdlGlContextActivation : public GlContextActivation {
  public:
   SdlGlContextActivation(std::shared_ptr<SdlGlInterface> interface,
                          SDL_GLContext context);
-  ~SdlGlContextActivation();
+  virtual ~SdlGlContextActivation();
 
  private:
   std::shared_ptr<SdlGlInterface> interface_;
@@ -38,7 +38,7 @@ class SdlGlContext : public GlContext {
  public:
   SdlGlContext(std::shared_ptr<SdlGlInterface> interface,
                SDL_GLContext context);
-  ~SdlGlContext();
+  virtual ~SdlGlContext();
 
   std::shared_ptr<GlContextActivation> Activate() override;
 
@@ -54,6 +54,7 @@ class SdlGlInterface : public GlInterface,
   // Constructs an SdlGlInterface with the given window. The window is owned by
   // this SdlGlInterface after construction.
   SdlGlInterface(SDL_Window* window);
+  virtual ~SdlGlInterface() {}
 
   // Allocates a new shared GLContext.
   std::shared_ptr<GlContext> AllocateSharedContext() override;
