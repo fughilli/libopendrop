@@ -74,7 +74,7 @@ struct CallbackData {
 };
 
 std::mutex audio_queue_mutex;
-std::queue<std::pair<std::shared_ptr<CallbackData>, std::vector<const float>>>
+std::queue<std::pair<std::shared_ptr<CallbackData>, std::vector<float>>>
     audio_queue;
 
 void AddAudioData(std::shared_ptr<CallbackData> callback_data,
@@ -134,17 +134,17 @@ extern "C" int main(int argc, char *argv[]) {
           std::lock_guard<std::mutex> audio_queue_lock(audio_queue_mutex);
           audio_queue.push(std::make_pair(
               callback_data,
-              std::vector<const float>(samples.begin(), samples.end())));
+              std::vector<float>(samples.begin(), samples.end())));
         });
     auto pa_interface_cleanup = MakeCleanup([&] { pa_interface->Stop(); });
 
     pa_interface->Initialize();
     pa_interface->Start();
 
-    if (!pa_interface->WaitReady()) {
-      std::cerr << "PulseAudio interface failed to initialize." << std::endl;
-      return -1;
-    }
+    //if (!pa_interface->WaitReady()) {
+    //  std::cerr << "PulseAudio interface failed to initialize." << std::endl;
+    //  return -1;
+    //}
 
     bool exit_event_received = false;
     PerformanceTimer<uint32_t> frame_timer;
