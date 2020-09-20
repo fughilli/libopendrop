@@ -46,6 +46,7 @@
 #include "libopendrop/open_drop_controller_interface.h"
 #include "libopendrop/preset/simple_preset/simple_preset.h"
 #include "libopendrop/sdl_gl_interface.h"
+#include "libopendrop/util/logging.h"
 
 ABSL_FLAG(std::string, pulseaudio_server, "",
           "PulseAudio server to connect to");
@@ -87,7 +88,7 @@ extern "C" int main(int argc, char *argv[]) {
 
   {
     if (SDL_Init(SDL_INIT_VIDEO) < 0) {
-      std::cout << "could not initialize SDL" << std::endl;
+      LOG(INFO) << "could not initialize SDL";
       return 1;
     }
     auto sdl_cleanup = MakeCleanup([&] { SDL_Quit(); });
@@ -107,7 +108,7 @@ extern "C" int main(int argc, char *argv[]) {
                              SDL_WINDOW_ALLOW_HIGHDPI | SDL_WINDOW_RESIZABLE));
     sdl_gl_interface->SetVsync(true);
 
-    std::cout << "Initializing OpenDrop..." << std::endl;
+    LOG(INFO) << "Initializing OpenDrop...";
 
     std::shared_ptr<OpenDropControllerInterface> open_drop_controller =
         std::make_shared<OpenDropController>(
@@ -118,8 +119,7 @@ extern "C" int main(int argc, char *argv[]) {
     int channel_count = absl::GetFlag(FLAGS_channel_count);
 
     if (channel_count > 2 || channel_count < 0) {
-      std::cerr << "Unsupported PCM channel count: " << channel_count
-                << std::endl;
+      LOG(ERROR) << "Unsupported PCM channel count: " << channel_count;
       SDL_Quit();
     }
     auto pa_interface = std::make_shared<PulseAudioInterface>(
@@ -144,12 +144,13 @@ extern "C" int main(int argc, char *argv[]) {
     pa_interface->Start();
 
     if (!pa_interface->WaitReady()) {
-      std::cerr << "PulseAudio interface failed to initialize." << std::endl;
+      LOG(ERROR) << "PulseAudio interface failed to initialize.";
       return -1;
     }
 
     bool exit_event_received = false;
     PerformanceTimer<uint32_t> frame_timer;
+    PerformanceTimer<uint32_t> draw_timer;
     int late_frame_counter = 0;
     int late_frames_to_skip_preset =
         absl::GetFlag(FLAGS_late_frames_to_skip_preset);
@@ -161,7 +162,15 @@ extern "C" int main(int argc, char *argv[]) {
     open_drop_controller->SetPreset(std::make_shared<opendrop::SimplePreset>(
         absl::GetFlag(FLAGS_window_width), absl::GetFlag(FLAGS_window_height)));
     while (!exit_event_received) {
-      frame_timer.Start(SDL_GetTicks());
+      // Record the start of the frame in the draw timer.
+      auto frame_start_time = SDL_GetTicks();
+      draw_timer.Start(frame_start_time);
+
+      // Compute the frame time. This is the total elapsed time since the last
+      // frame.
+      auto frame_time = frame_timer.End(frame_start_time);
+      float prev_dt = static_cast<float>(frame_time) / 1000.0f;
+      frame_timer.Start(frame_start_time);
 
       open_drop_controller->DrawFrame(prev_dt);
 
@@ -183,19 +192,19 @@ extern "C" int main(int argc, char *argv[]) {
             // Handle key
             switch (event.key.keysym.sym) {
               case SDLK_n:
-                std::cout << "Next" << std::endl;
+                LOG(INFO) << "Next";
                 break;
               case SDLK_p:
-                std::cout << "Previous" << std::endl;
+                LOG(INFO) << "Previous";
                 break;
               case SDLK_r:
-                std::cout << "Random" << std::endl;
+                LOG(INFO) << "Random";
                 break;
               case SDLK_b:
-                std::cout << "Blacklist" << std::endl;
+                LOG(INFO) << "Blacklist";
                 break;
               case SDLK_w:
-                std::cout << "Whitelist" << std::endl;
+                LOG(INFO) << "Whitelist";
                 break;
             }
             break;
@@ -206,18 +215,25 @@ extern "C" int main(int argc, char *argv[]) {
       }
       sdl_gl_interface->SwapBuffers();
 
-      uint32_t frame_time = frame_timer.End(SDL_GetTicks());
-      prev_dt = static_cast<float>(frame_time) / 1000;
-      if (frame_time >= kTargetFrameTimeMs) {
+      // Record the end of the draw operations.
+      uint32_t draw_time = draw_timer.End(SDL_GetTicks());
+
+      static int counter = 0;
+      ++counter;
+      if (counter == 100) {
+        LOG(INFO) << "Draw time: " << draw_time
+                  << "\tFrame time: " << frame_time << "\tFPS: " << 1 / prev_dt;
+        counter = 0;
+      }
+      if (draw_time >= kTargetFrameTimeMs) {
         if (late_frames_to_skip_preset <= 0) {
           continue;
         }
         if (frame_time > (kTargetFrameTimeMs + 10)) {
           ++late_frame_counter;
           if (late_frame_counter >= late_frames_to_skip_preset) {
-            std::cerr << "Had too many late frames in a row ("
-                      << late_frame_counter << "), skipping preset"
-                      << std::endl;
+            LOG(ERROR) << "Had too many late frames in a row ("
+                       << late_frame_counter << "), skipping preset";
             late_frame_counter = 0;
           }
         }
@@ -226,7 +242,9 @@ extern "C" int main(int argc, char *argv[]) {
         late_frame_counter = 0;
       }
 
-      SDL_Delay(kTargetFrameTimeMs - frame_time);
+      if ((kTargetFrameTimeMs - draw_time) > kMinimumDelayMs) {
+        SDL_Delay(kTargetFrameTimeMs - draw_time);
+      }
     }
   }
   return 0;
