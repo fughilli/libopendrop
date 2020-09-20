@@ -154,7 +154,6 @@ extern "C" int main(int argc, char *argv[]) {
     int late_frame_counter = 0;
     int late_frames_to_skip_preset =
         absl::GetFlag(FLAGS_late_frames_to_skip_preset);
-    float prev_dt = 1.0f / kFps;
 
     auto main_context = sdl_gl_interface->AllocateSharedContext();
     auto main_context_activation = main_context->Activate();

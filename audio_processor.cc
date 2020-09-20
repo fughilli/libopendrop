@@ -42,7 +42,7 @@ bool AudioProcessor::GetSamples(absl::Span<float> out_samples) {
   if (out_samples.size() != buffer_size_ * kChannelsPerSample) {
     return false;
   }
-  std::unique_lock lock(samples_interleaved_mu_);
+  std::unique_lock<std::mutex> lock(samples_interleaved_mu_);
   std::copy(samples_interleaved_.begin(), samples_interleaved_.end(),
             out_samples.begin());
   return true;

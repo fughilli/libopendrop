@@ -6,6 +6,7 @@
 #include <GL/gl.h>
 #include <GL/glext.h>
 
+#include <algorithm>
 #include <vector>
 
 #include "libopendrop/preset/simple_preset/composite.fsh.h"
