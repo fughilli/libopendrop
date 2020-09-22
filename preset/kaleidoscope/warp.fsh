@@ -43,7 +43,9 @@ void main() {
   float mod_b = sin(energy_scaled * 0.0782 * PI) +
                 sin(10 * energy_scaled / 7.932) * power / 10;
 
-  float angle = atan(screen_uv.y, screen_uv.x) +
+  vec2 attractor =
+      vec2(cos(energy_scaled * 10) / 10, sin(energy_scaled * 10) / 10);
+  float angle = atan(screen_uv.y + attractor.y, screen_uv.x + attractor.x) +
                 sin(energy_scaled * 3.12) * sin(energy_scaled * 7.521) * 0.3;
 
   float mod_angle = mod(angle, PI / num_divisions);
@@ -52,9 +54,10 @@ void main() {
   }
 
   vec2 sampling_screen_uv =
-      rotate(screen_uv,
-             mod_angle - angle +
-                 sin(energy_scaled * 7.1) * sin(energy_scaled * 2.391) * 0.3);
+      rotate(vec2(length(screen_uv), 0),
+             mod_angle +
+                 sin(energy_scaled * 7.1) * sin(energy_scaled * 2.391) * 0.3) +
+      attractor;
   vec2 texture_uv = vec2(0.0, 0.0);
 
   if (kEnableWarp) {
@@ -63,7 +66,8 @@ void main() {
     // energy_scaled plus the power. Zoom by a similar coefficient.
     texture_uv = rotate(zoom(sampling_screen_uv, mod_a / 20 * power + 0.97),
                         sin(100 * energy_scaled / 7.334) *
-                            sin(10 * energy_scaled / 9.225) * mod_b * power);
+                            sin(10 * energy_scaled / 9.225) * mod_b * power) +
+                 attractor;
     // Compute a sampling displacement which is equivalent to the unit vector
     // along x scaled by a small value which is sinusoidally oscillating across
     // the y axis, all rotated by an angle which is a linear function of the

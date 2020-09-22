@@ -19,7 +19,7 @@
 namespace opendrop {
 
 namespace {
-constexpr float kScaleFactor = 2.0f;
+constexpr float kScaleFactor = 0.20f;
 }
 
 Kaleidoscope::Kaleidoscope(int width, int height) : Preset(width, height) {
@@ -59,8 +59,8 @@ glm::vec3 HsvToRgb(glm::vec3 hsv) {
 
 void Kaleidoscope::OnDrawFrame(absl::Span<const float> samples,
                                std::shared_ptr<GlobalState> state) {
-  float energy = state->energy();
-  float power = state->power();
+  float energy = state->energy() / 100;
+  float power = state->power() / 100;
   float average_power = state->average_power();
   float normalized_power =
       (average_power > 0.0f) ? power / average_power : 0.0f;
