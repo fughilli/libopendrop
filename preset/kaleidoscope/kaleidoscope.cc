@@ -124,11 +124,6 @@ void Kaleidoscope::OnDrawFrame(absl::Span<const float> samples,
 
     rectangle.Draw();
 
-    polyline.UpdateVertices(vertices);
-    polyline.UpdateWidth(log(normalized_power) * 50);
-    polyline.UpdateColor(HsvToRgb(glm::vec3(energy * 100, 1, 0.5)));
-    polyline.Draw();
-
     glFlush();
   }
 
@@ -152,6 +147,47 @@ void Kaleidoscope::OnDrawFrame(absl::Span<const float> samples,
 
   glViewport(0, 0, width(), height());
   rectangle.Draw();
+
+  glFlush();
+
+  {
+    auto back_activation = back_render_target_->Activate();
+
+    warp_program_->Use();
+
+    LOG(DEBUG) << "Using program";
+    int texture_location =
+        glGetUniformLocation(warp_program_->program_handle(), "last_frame");
+    LOG(DEBUG) << "Got texture location: " << texture_location;
+    int texture_size_location = glGetUniformLocation(
+        warp_program_->program_handle(), "last_frame_size");
+    LOG(DEBUG) << "Got texture size location: " << texture_size_location;
+    int power_location =
+        glGetUniformLocation(warp_program_->program_handle(), "power");
+    int energy_location =
+        glGetUniformLocation(warp_program_->program_handle(), "energy");
+    LOG(DEBUG) << "Got locations for power: " << power_location
+               << " and energy: " << energy_location;
+    glUniform1f(power_location, power);
+    glUniform1f(energy_location, energy);
+    LOG(DEBUG) << "Power: " << power << " energy: " << energy;
+    glUniform2i(texture_size_location, width(), height());
+    int texture_number = 0;
+    glActiveTexture(GL_TEXTURE0 + texture_number);
+    LOG(DEBUG) << "Configured active texture: " << GL_TEXTURE0 + texture_number;
+    glBindTexture(GL_TEXTURE_2D, front_render_target_->texture_handle());
+    LOG(DEBUG) << "Bound texture: " << front_render_target_->texture_handle();
+    glUniform1i(texture_location, texture_number);
+    LOG(DEBUG) << "Configured uniform at location: " << texture_location
+               << " to texture index: " << texture_number;
+
+    polyline.UpdateVertices(vertices);
+    polyline.UpdateWidth(log(normalized_power) * 50);
+    polyline.UpdateColor(HsvToRgb(glm::vec3(energy * 100, 1, 0.5)));
+    polyline.Draw();
+
+    glFlush();
+  }
 
   back_render_target_->swap_texture_unit(front_render_target_.get());
   glFlush();
