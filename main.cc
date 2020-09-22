@@ -44,6 +44,7 @@
 #include "libopendrop/gl_interface.h"
 #include "libopendrop/open_drop_controller.h"
 #include "libopendrop/open_drop_controller_interface.h"
+#include "libopendrop/preset/kaleidoscope/kaleidoscope.h"
 #include "libopendrop/preset/simple_preset/simple_preset.h"
 #include "libopendrop/sdl_gl_interface.h"
 #include "libopendrop/util/logging.h"
@@ -158,7 +159,7 @@ extern "C" int main(int argc, char *argv[]) {
     auto main_context = sdl_gl_interface->AllocateSharedContext();
     auto main_context_activation = main_context->Activate();
 
-    open_drop_controller->SetPreset(std::make_shared<opendrop::SimplePreset>(
+    open_drop_controller->SetPreset(std::make_shared<opendrop::Kaleidoscope>(
         absl::GetFlag(FLAGS_window_width), absl::GetFlag(FLAGS_window_height)));
     while (!exit_event_received) {
       // Record the start of the frame in the draw timer.

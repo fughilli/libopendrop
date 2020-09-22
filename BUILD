@@ -50,6 +50,7 @@ cc_binary(
         ":sdl_gl_interface",
         "//led_driver:performance_timer",
         "//led_driver:pulseaudio_interface",
+        "//libopendrop/preset/kaleidoscope",
         "//libopendrop/preset/simple_preset",
         "//libopendrop/util:logging",
         "@com_google_absl//absl/debugging:failure_signal_handler",
