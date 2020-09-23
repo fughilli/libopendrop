@@ -14,7 +14,8 @@ const bool kClamp = false;
 const bool kEnableWarp = true;
 const int kNumSamples = 4;
 const float kEnergyMultiplier = 100;
-const int kMaxDivisions = 8;
+const int kMaxDivisions = 6;
+const int kMinDivisions = 1;
 
 vec2 rotate(vec2 screen_uv, float angle) {
   float c = cos(angle);
@@ -34,7 +35,9 @@ vec2 screen_to_tex(vec2 screen_uv) { return (screen_uv + vec2(1., 1.)) * 0.5; }
 vec2 zoom(vec2 screen_uv, float zoom) { return screen_uv * zoom; }
 
 void main() {
-  int num_divisions = int((sin(energy * 3) + 1.) / 2. * kMaxDivisions);
+  int num_divisions =
+      int((sin(energy * 3) + 1.) / 2. * (kMaxDivisions - kMinDivisions)) +
+      kMinDivisions;
   float energy_scaled = energy * kEnergyMultiplier;
 
   vec2 offset = 1. / last_frame_size;
@@ -43,8 +46,9 @@ void main() {
   float mod_b = sin(energy_scaled * 0.0782 * PI) +
                 sin(10 * energy_scaled / 7.932) * power / 10;
 
-  vec2 attractor =
-      vec2(cos(energy_scaled * 10) / 10, sin(energy_scaled * 10) / 10);
+  vec2 attractor = vec2(0., 0.);
+  // vec2(cos(energy_scaled * 10) / 10 + cos(energy_scaled * 20) / 4,
+  //     sin(energy_scaled * 10) / 10 + cos(energy_scaled * 30) / 4);
   float angle = atan(screen_uv.y + attractor.y, screen_uv.x + attractor.x) +
                 sin(energy_scaled * 3.12) * sin(energy_scaled * 7.521) * 0.3;
 
@@ -64,10 +68,11 @@ void main() {
     // Compute the base texture sampling oordinate as a rotated screen-space uv
     // around the origin, with theta determined as a sinusoid of the input
     // energy_scaled plus the power. Zoom by a similar coefficient.
-    texture_uv = rotate(zoom(sampling_screen_uv, mod_a / 20 * power + 0.97),
-                        sin(100 * energy_scaled / 7.334) *
-                            sin(10 * energy_scaled / 9.225) * mod_b * power) +
-                 attractor;
+    texture_uv =
+        rotate(zoom(sampling_screen_uv, mod_a / 20 * power / 100 + 1.0),
+               sin(100 * energy_scaled / 7.334) *
+                   sin(10 * energy_scaled / 9.225) * mod_b * power / 100) +
+        attractor;
     // Compute a sampling displacement which is equivalent to the unit vector
     // along x scaled by a small value which is sinusoidally oscillating across
     // the y axis, all rotated by an angle which is a linear function of the
@@ -79,7 +84,7 @@ void main() {
 
     texture_uv += sampling_displacement;
   } else {
-    texture_uv = zoom(screen_uv, mod_a / 20 * power + 1.);
+    texture_uv = zoom(screen_uv, mod_a / 20 * power / 100 + 1.);
   }
 
   if (kScreenToTex) {
@@ -109,7 +114,8 @@ void main() {
   // have a "brightening" effect, and the other pinwheels have
   // a "darkening" effect.
   float brighten_darken_weight =
-      (sin(((screen_uv.y + energy_scaled) * screen_uv.x) * 5 + energy_scaled) /
+      (sin(((screen_uv.y + energy_scaled) * screen_uv.x) * 0.2 +
+           energy_scaled) /
            10 +
        0.99);
 
