@@ -74,25 +74,6 @@ void Kaleidoscope::OnDrawFrame(
   static Rectangle rectangle;
   static Polyline polyline;
 
-  for (int i = 0; i < buffer_size; ++i) {
-    float c3 = cos(energy / 10 + power / 100);
-    float s3 = sin(energy / 10 + power / 100);
-    float x_int = samples[i * 2] * kScaleFactor;
-    float y_int = samples[i * 2 + 1] * kScaleFactor;
-
-    float x_pos = x_int * c3 - y_int * s3;
-    float y_pos = x_int * s3 + y_int * c3;
-
-    x_pos += cos(sin(2 * energy) * 5 * energy / 1.25 + power / 100) / 5;
-    x_pos += cos(sin(2 * energy) * 5 * energy / 5.23 + 0.5) / 20;
-    y_pos += sin(sin(2 * energy) * 5 * energy / 1.25 + power / 100) / 5;
-    y_pos += sin(sin(2 * energy) * 5 * energy / 5.23 + 0.5) / 20;
-
-    x_pos += 0.5;
-
-    vertices[i] = glm::vec2(x_pos, y_pos);
-  }
-
   {
     auto back_activation = back_render_target_->Activate();
 
@@ -117,10 +98,32 @@ void Kaleidoscope::OnDrawFrame(
 
     rectangle.Draw();
 
-    polyline.UpdateVertices(vertices);
-    polyline.UpdateWidth(log(normalized_power) * 50);
-    polyline.UpdateColor(HsvToRgb(glm::vec3(energy * 100, 1, 0.5)));
-    polyline.Draw();
+    for (int j = 0; j < 4; j++) {
+      for (int i = 0; i < buffer_size; ++i) {
+        float c3 = cos(energy / 10 + power / 100);
+        float s3 = sin(energy / 10 + power / 100);
+        float x_int = samples[i * 2] * kScaleFactor;
+        float y_int = samples[i * 2 + 1] * kScaleFactor;
+
+        float x_pos = x_int * c3 - y_int * s3;
+        float y_pos = x_int * s3 + y_int * c3;
+
+        x_pos += cos(sin(2 * energy) * 5 * energy / 1.25 + power / 100) / 5;
+        x_pos += cos(sin(2 * energy) * 5 * energy / 5.23 + 0.5) / 20;
+        y_pos += sin(sin(2 * energy) * 5 * energy / 1.25 + power / 100) / 5;
+        y_pos += sin(sin(2 * energy) * 5 * energy / 5.23 + 0.5) / 20;
+
+        x_pos += cos(energy * 10 + (j / 4.0 * M_PI * 2)) / 2;
+        y_pos += sin(energy * 10 + (j / 4.0 * M_PI * 2)) / 2;
+
+        vertices[i] = glm::vec2(x_pos, y_pos);
+      }
+
+      polyline.UpdateVertices(vertices);
+      polyline.UpdateWidth(log(normalized_power) * 50);
+      polyline.UpdateColor(HsvToRgb(glm::vec3(energy, 1, 0.5)));
+      polyline.Draw();
+    }
 
     glFlush();
   }
