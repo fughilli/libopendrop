@@ -145,7 +145,10 @@ void Kaleidoscope::OnDrawFrame(absl::Span<const float> samples,
   LOG(DEBUG) << "Got texture size location: " << texture_size_location;
   glUniform2i(texture_size_location, width(), height());
 
-  glViewport(0, 0, width(), height());
+  auto longer_dim = std::max(width(), height());
+  int offset_x = -(longer_dim-width())/2;
+  int offset_y = -(longer_dim-height())/2;
+  glViewport(offset_x, offset_y, longer_dim, longer_dim);
   rectangle.Draw();
 
   glFlush();
