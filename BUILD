@@ -9,6 +9,8 @@ VIDEOCORE_COPTS = [
     "external/raspberry_pi/sysroot/opt/vc/include/interface/vcos/pthreads",
     "-isystem",
     "external/raspberry_pi/sysroot/opt/vc/include/interface/vmcs_host/linux",
+    "-L",
+    "external/raspberry_pi/sysroot/opt/vc/lib",
 ]
 
 SYSROOT_COPTS = [
