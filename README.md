@@ -82,3 +82,7 @@ is sampled as `last_frame`. The resulting texture is then sampled by
 `composite.fsh` to draw the final result to the display.
 
 See the shader implementation comments for more details.
+
+### Demo Video
+
+[![Watch the video](https://img.youtube.com/vi/-21v8h5zDC4/2.jpg)](https://www.youtube.com/watch?v=-21v8h5zDC4)
