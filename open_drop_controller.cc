@@ -17,6 +17,17 @@
 
 namespace opendrop {
 
+namespace {
+// Decay coefficient for the audio sample normalizer. This value should be
+// sufficiently close to 1 that quieter parts of songs do not cause the
+// normalization factor to decay significantly.
+constexpr float kNormalizerAlpha = 0.99f;
+
+// Whether or not to immediately increase the audio normalization coefficient
+// when a higher maximum value is detected.
+constexpr bool kNormalizerInstantUpscale = true;
+}  // namespace
+
 OpenDropController::OpenDropController(
     std::shared_ptr<gl::GlInterface> gl_interface, ptrdiff_t audio_buffer_size,
     int width, int height)
@@ -24,6 +35,8 @@ OpenDropController::OpenDropController(
   UpdateGeometry(height, width);
 
   global_state_ = std::make_shared<GlobalState>();
+  normalizer_ =
+      std::make_shared<Normalizer>(kNormalizerAlpha, kNormalizerInstantUpscale);
 
   output_render_target_ =
       std::make_shared<gl::GlRenderTarget>(width, height, 2);
@@ -39,10 +52,14 @@ void OpenDropController::UpdateGeometry(int width, int height) {
   if (preset_) {
     preset_->UpdateGeometry(width_, height_);
   }
+
+  if (output_render_target_) {
+    output_render_target_->UpdateGeometry(width_, height_);
+  }
 }
 
 void OpenDropController::DrawFrame(float dt) {
-  std::vector<float> samples_interleaved;
+  static std::vector<float> samples_interleaved;
   samples_interleaved.resize(GetAudioProcessor().buffer_size() *
                              GetAudioProcessor().channels_per_sample());
   if (!GetAudioProcessor().GetSamples(absl::Span<float>(samples_interleaved))) {
@@ -50,6 +67,8 @@ void OpenDropController::DrawFrame(float dt) {
     return;
   }
 
+  normalizer_->Normalize(absl::Span<const float>(samples_interleaved), dt,
+                         absl::Span<float>(samples_interleaved));
   global_state_->Update(absl::Span<const float>(samples_interleaved), dt);
 
   if (preset_) {
