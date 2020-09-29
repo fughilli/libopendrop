@@ -36,12 +36,12 @@ class Normalizer {
     if (instant_upscale_ && max_value > normalization_divisor_) {
       normalization_divisor_ = max_value;
     } else {
-      float alpha_compensated = alpha_ * dt;
+      float alpha_compensated = alpha_;
       normalization_divisor_ = normalization_divisor_ * alpha_compensated +
                                max_value * (1.0f - alpha_compensated);
     }
 
-    float normalization_factor = 1.0f / normalization_divisor_;
+    float normalization_factor = 1.0f / std::max(normalization_divisor_, 0.01f);
     for (int i = 0; i < samples.size(); ++i) {
       out_samples[i] = samples[i] * normalization_factor;
     }
