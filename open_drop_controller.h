@@ -6,6 +6,7 @@
 #include "libopendrop/gl_interface.h"
 #include "libopendrop/gl_render_target.h"
 #include "libopendrop/global_state.h"
+#include "libopendrop/normalizer.h"
 #include "libopendrop/open_drop_controller_interface.h"
 #include "libopendrop/preset/preset.h"
 
@@ -23,6 +24,7 @@ class OpenDropController : public OpenDropControllerInterface {
   int width_, height_;
   std::shared_ptr<Preset> preset_;
   std::shared_ptr<GlobalState> global_state_;
+  std::shared_ptr<Normalizer> normalizer_;
   std::shared_ptr<gl::GlRenderTarget> output_render_target_;
   std::shared_ptr<gl::GlProgram> blit_program_;
 };

@@ -109,6 +109,7 @@ cc_library(
         ":blit_vsh",
         ":gl_render_target",
         ":global_state",
+        ":normalizer",
         ":open_drop_controller_interface",
         "//libopendrop/preset",
         "//libopendrop/primitive:rectangle",
@@ -139,6 +140,15 @@ cc_library(
     hdrs = ["global_state.h"],
     linkstatic = 1,
     deps = [
+        "@com_google_absl//absl/types:span",
+    ],
+)
+
+cc_library(
+    name = "normalizer",
+    hdrs = ["normalizer.h"],
+    deps = [
+        "//libopendrop/util:logging",
         "@com_google_absl//absl/types:span",
     ],
 )
