@@ -14,6 +14,7 @@
 #include "libopendrop/preset/kaleidoscope/warp.fsh.h"
 #include "libopendrop/primitive/polyline.h"
 #include "libopendrop/primitive/rectangle.h"
+#include "libopendrop/util/colors.h"
 #include "libopendrop/util/gl_util.h"
 #include "libopendrop/util/logging.h"
 
@@ -49,20 +50,11 @@ void Kaleidoscope::OnUpdateGeometry() {
   }
 }
 
-glm::vec3 HsvToRgb(glm::vec3 hsv) {
-  auto normalized_offset_sin = [&](float x, float offset) {
-    return (1.0f + sin((x + offset) * M_PI * 2)) / 2;
-  };
-  return glm::vec3(normalized_offset_sin(hsv.x, 0.0f),
-                   normalized_offset_sin(hsv.x, 0.333f),
-                   normalized_offset_sin(hsv.x, 0.666f));
-}
-
 void Kaleidoscope::OnDrawFrame(
     absl::Span<const float> samples, std::shared_ptr<GlobalState> state,
     std::shared_ptr<gl::GlRenderTarget> output_render_target) {
-  float energy = state->energy() / 100;
-  float power = state->power() / 100;
+  float energy = state->energy();
+  float power = state->power();
   float average_power = state->average_power();
   float normalized_power =
       (average_power > 0.0f) ? power / average_power : 0.0f;
