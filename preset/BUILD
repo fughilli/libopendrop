@@ -6,6 +6,8 @@ cc_library(
     hdrs = ["preset.h"],
     linkstatic = 1,
     deps = [
+        "//libopendrop:gl_interface",
+        "//libopendrop:gl_render_target",
         "//libopendrop:global_state",
         "@com_google_absl//absl/types:span",
     ],

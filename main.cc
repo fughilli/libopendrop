@@ -109,6 +109,9 @@ extern "C" int main(int argc, char *argv[]) {
                              SDL_WINDOW_ALLOW_HIGHDPI | SDL_WINDOW_RESIZABLE));
     sdl_gl_interface->SetVsync(true);
 
+    auto main_context = sdl_gl_interface->AllocateSharedContext();
+    auto main_context_activation = main_context->Activate();
+
     LOG(INFO) << "Initializing OpenDrop...";
 
     std::shared_ptr<OpenDropControllerInterface> open_drop_controller =
@@ -155,9 +158,6 @@ extern "C" int main(int argc, char *argv[]) {
     int late_frame_counter = 0;
     int late_frames_to_skip_preset =
         absl::GetFlag(FLAGS_late_frames_to_skip_preset);
-
-    auto main_context = sdl_gl_interface->AllocateSharedContext();
-    auto main_context_activation = main_context->Activate();
 
     open_drop_controller->SetPreset(std::make_shared<opendrop::Kaleidoscope>(
         absl::GetFlag(FLAGS_window_width), absl::GetFlag(FLAGS_window_height)));

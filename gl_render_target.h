@@ -28,6 +28,7 @@ class GlRenderTarget : public std::enable_shared_from_this<GlRenderTarget> {
 
   void UpdateGeometry(int width, int height);
 
+  int texture_unit() const { return texture_unit_; }
   unsigned int renderbuffer_handle() const { return renderbuffer_handle_; }
   unsigned int framebuffer_handle() const { return framebuffer_handle_; }
   unsigned int texture_handle() const { return texture_handle_; }

@@ -9,6 +9,10 @@
 #include <cstdint>
 #include <iostream>
 
+#include "libopendrop/blit.fsh.h"
+#include "libopendrop/blit.vsh.h"
+#include "libopendrop/primitive/rectangle.h"
+#include "libopendrop/util/gl_util.h"
 #include "libopendrop/util/logging.h"
 
 namespace opendrop {
@@ -20,6 +24,13 @@ OpenDropController::OpenDropController(
   UpdateGeometry(height, width);
 
   global_state_ = std::make_shared<GlobalState>();
+
+  output_render_target_ =
+      std::make_shared<gl::GlRenderTarget>(width, height, 2);
+  CHECK_NULL(output_render_target_) << "Failed to create output render target";
+
+  blit_program_ = gl::GlProgram::MakeShared(blit_vsh::Code(), blit_fsh::Code());
+  CHECK_NULL(blit_program_) << "Failed to create blit program";
 }
 
 void OpenDropController::UpdateGeometry(int width, int height) {
@@ -43,7 +54,16 @@ void OpenDropController::DrawFrame(float dt) {
 
   if (preset_) {
     preset_->DrawFrame(absl::Span<const float>(samples_interleaved),
-                       global_state_);
+                       global_state_, output_render_target_);
+
+    {
+      blit_program_->Use();
+      gl::GlBindRenderTargetTextureToUniform(blit_program_, "source_texture",
+                                             output_render_target_);
+
+      static Rectangle rectangle;
+      rectangle.Draw();
+    }
   }
 }
 

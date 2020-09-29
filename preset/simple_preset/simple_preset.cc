@@ -14,6 +14,7 @@
 #include "libopendrop/preset/simple_preset/warp.fsh.h"
 #include "libopendrop/primitive/polyline.h"
 #include "libopendrop/primitive/rectangle.h"
+#include "libopendrop/util/gl_util.h"
 #include "libopendrop/util/logging.h"
 
 namespace opendrop {
@@ -57,8 +58,9 @@ glm::vec3 HsvToRgb(glm::vec3 hsv) {
                    normalized_offset_sin(hsv.x, 0.666f));
 }
 
-void SimplePreset::OnDrawFrame(absl::Span<const float> samples,
-                               std::shared_ptr<GlobalState> state) {
+void SimplePreset::OnDrawFrame(
+    absl::Span<const float> samples, std::shared_ptr<GlobalState> state,
+    std::shared_ptr<gl::GlRenderTarget> output_render_target) {
   float energy = state->energy();
   float power = state->power();
   float average_power = state->average_power();
@@ -95,9 +97,6 @@ void SimplePreset::OnDrawFrame(absl::Span<const float> samples,
     warp_program_->Use();
 
     LOG(DEBUG) << "Using program";
-    int texture_location =
-        glGetUniformLocation(warp_program_->program_handle(), "last_frame");
-    LOG(DEBUG) << "Got texture location: " << texture_location;
     int texture_size_location = glGetUniformLocation(
         warp_program_->program_handle(), "last_frame_size");
     LOG(DEBUG) << "Got texture size location: " << texture_size_location;
@@ -111,14 +110,8 @@ void SimplePreset::OnDrawFrame(absl::Span<const float> samples,
     glUniform1f(energy_location, energy);
     LOG(DEBUG) << "Power: " << power << " energy: " << energy;
     glUniform2i(texture_size_location, width(), height());
-    int texture_number = 0;
-    glActiveTexture(GL_TEXTURE0 + texture_number);
-    LOG(DEBUG) << "Configured active texture: " << GL_TEXTURE0 + texture_number;
-    glBindTexture(GL_TEXTURE_2D, front_render_target_->texture_handle());
-    LOG(DEBUG) << "Bound texture: " << front_render_target_->texture_handle();
-    glUniform1i(texture_location, texture_number);
-    LOG(DEBUG) << "Configured uniform at location: " << texture_location
-               << " to texture index: " << texture_number;
+    GlBindRenderTargetTextureToUniform(warp_program_, "last_frame",
+                                       front_render_target_);
 
     rectangle.Draw();
 
@@ -130,29 +123,23 @@ void SimplePreset::OnDrawFrame(absl::Span<const float> samples,
     glFlush();
   }
 
-  composite_program_->Use();
-  LOG(DEBUG) << "Using program";
-  int texture_location = glGetUniformLocation(
-      composite_program_->program_handle(), "render_target");
-  LOG(DEBUG) << "Got texture location: " << texture_location;
-  int texture_number = 0;
-  glActiveTexture(GL_TEXTURE0 + texture_number);
-  LOG(DEBUG) << "Configured active texture: " << GL_TEXTURE0 + texture_number;
-  glBindTexture(GL_TEXTURE_2D, back_render_target_->texture_handle());
-  LOG(DEBUG) << "Bound texture: " << back_render_target_->texture_handle();
-  glUniform1i(texture_location, texture_number);
-  LOG(DEBUG) << "Configured uniform at location: " << texture_location
-             << " to texture index: " << texture_number;
-  int texture_size_location = glGetUniformLocation(
-      composite_program_->program_handle(), "render_target_size");
-  LOG(DEBUG) << "Got texture size location: " << texture_size_location;
-  glUniform2i(texture_size_location, width(), height());
+  {
+    auto output_activation = output_render_target->Activate();
+    composite_program_->Use();
+    LOG(DEBUG) << "Using program";
+    int texture_size_location = glGetUniformLocation(
+        composite_program_->program_handle(), "render_target_size");
+    LOG(DEBUG) << "Got texture size location: " << texture_size_location;
+    glUniform2i(texture_size_location, width(), height());
+    GlBindRenderTargetTextureToUniform(composite_program_, "render_target",
+                                       back_render_target_);
 
-  glViewport(0, 0, width(), height());
-  rectangle.Draw();
+    glViewport(0, 0, width(), height());
+    rectangle.Draw();
 
-  back_render_target_->swap_texture_unit(front_render_target_.get());
-  glFlush();
+    back_render_target_->swap_texture_unit(front_render_target_.get());
+    glFlush();
+  }
 }
 
 }  // namespace opendrop
