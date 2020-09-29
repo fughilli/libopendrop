@@ -12,8 +12,9 @@ class Kaleidoscope : public Preset {
   Kaleidoscope(int width, int height);
 
  protected:
-  void OnDrawFrame(absl::Span<const float> samples,
-                   std::shared_ptr<GlobalState> state) override;
+  void OnDrawFrame(
+      absl::Span<const float> samples, std::shared_ptr<GlobalState> state,
+      std::shared_ptr<gl::GlRenderTarget> output_render_target) override;
   void OnUpdateGeometry() override;
 
  private:

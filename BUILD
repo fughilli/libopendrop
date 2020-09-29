@@ -1,4 +1,5 @@
 load("@com_google_protobuf//:protobuf.bzl", "py_proto_library")
+load("//libopendrop/preset:preset_defs.bzl", "shader_cc_library")
 
 package(default_visibility = ["//libopendrop:__subpackages__"])
 
@@ -104,10 +105,14 @@ cc_library(
     hdrs = ["open_drop_controller.h"],
     linkstatic = 1,
     deps = [
+        ":blit_fsh",
+        ":blit_vsh",
         ":gl_render_target",
         ":global_state",
         ":open_drop_controller_interface",
         "//libopendrop/preset",
+        "//libopendrop/primitive:rectangle",
+        "//libopendrop/util:gl_util",
         "//libopendrop/util:logging",
         "@com_google_absl//absl/types:span",
     ],
@@ -136,4 +141,14 @@ cc_library(
     deps = [
         "@com_google_absl//absl/types:span",
     ],
+)
+
+shader_cc_library(
+    name = "blit_fsh",
+    srcs = ["blit.fsh"],
+)
+
+shader_cc_library(
+    name = "blit_vsh",
+    srcs = ["blit.vsh"],
 )

@@ -49,8 +49,9 @@ void TemplatePreset::OnUpdateGeometry() {
   }
 }
 
-void TemplatePreset::OnDrawFrame(absl::Span<const float> samples,
-                               std::shared_ptr<GlobalState> state) {
+void TemplatePreset::OnDrawFrame(
+    absl::Span<const float> samples, std::shared_ptr<GlobalState> state,
+    std::shared_ptr<gl::GlRenderTarget> output_render_target) {
   float energy = state->energy();
   float power = state->power();
 
@@ -106,22 +107,25 @@ void TemplatePreset::OnDrawFrame(absl::Span<const float> samples,
     glFlush();
   }
 
-  composite_program_->Use();
-  int texture_number = 0;
-  glActiveTexture(GL_TEXTURE0 + texture_number);
-  glBindTexture(GL_TEXTURE_2D, back_render_target_->texture_handle());
-  glUniform1i(glGetUniformLocation(composite_program_->program_handle(),
-                                   "render_target"),
-              texture_number);
-  glUniform2i(glGetUniformLocation(composite_program_->program_handle(),
-                                   "render_target_size"),
-              width(), height());
+  {
+    auto output_activation = output_render_target->Activate();
+    composite_program_->Use();
+    int texture_number = 0;
+    glActiveTexture(GL_TEXTURE0 + texture_number);
+    glBindTexture(GL_TEXTURE_2D, back_render_target_->texture_handle());
+    glUniform1i(glGetUniformLocation(composite_program_->program_handle(),
+                                     "render_target"),
+                texture_number);
+    glUniform2i(glGetUniformLocation(composite_program_->program_handle(),
+                                     "render_target_size"),
+                width(), height());
 
-  glViewport(0, 0, width(), height());
-  rectangle.Draw();
+    glViewport(0, 0, width(), height());
+    rectangle.Draw();
 
-  back_render_target_->swap_texture_unit(front_render_target_.get());
-  glFlush();
+    back_render_target_->swap_texture_unit(front_render_target_.get());
+    glFlush();
+  }
 }
 
 }  // namespace opendrop

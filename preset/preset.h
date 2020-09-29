@@ -5,6 +5,8 @@
 #include <mutex>
 
 #include "absl/types/span.h"
+#include "libopendrop/gl_interface.h"
+#include "libopendrop/gl_render_target.h"
 #include "libopendrop/global_state.h"
 
 namespace opendrop {
@@ -19,7 +21,8 @@ class Preset {
   // Draws a single frame of this preset. `samples` is a buffer of interleaved
   // audio samples. `state` is the current global libopendrop state.
   void DrawFrame(absl::Span<const float> samples,
-                 std::shared_ptr<GlobalState> state);
+                 std::shared_ptr<GlobalState> state,
+                 std::shared_ptr<gl::GlRenderTarget> output_render_target);
 
   // Updates the preset render geometry. Subsequent calls to `DrawFrame` will
   // render at these dimensions.
@@ -32,8 +35,9 @@ class Preset {
 
   // Callbacks for subclass implementations.
   // Invoked by `DrawFrame` with lock held.
-  virtual void OnDrawFrame(absl::Span<const float> samples,
-                           std::shared_ptr<GlobalState> state) = 0;
+  virtual void OnDrawFrame(
+      absl::Span<const float> samples, std::shared_ptr<GlobalState> state,
+      std::shared_ptr<gl::GlRenderTarget> output_render_target) = 0;
   // Invoked by `UpdateGeometry` with lock held.
   virtual void OnUpdateGeometry() = 0;
 

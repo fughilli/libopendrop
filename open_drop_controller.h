@@ -23,6 +23,8 @@ class OpenDropController : public OpenDropControllerInterface {
   int width_, height_;
   std::shared_ptr<Preset> preset_;
   std::shared_ptr<GlobalState> global_state_;
+  std::shared_ptr<gl::GlRenderTarget> output_render_target_;
+  std::shared_ptr<gl::GlProgram> blit_program_;
 };
 
 }  // namespace opendrop
