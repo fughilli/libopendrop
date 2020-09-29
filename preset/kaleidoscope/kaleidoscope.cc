@@ -120,7 +120,7 @@ void Kaleidoscope::OnDrawFrame(
       }
 
       polyline.UpdateVertices(vertices);
-      polyline.UpdateWidth(log(normalized_power) * 50);
+      polyline.UpdateWidth(normalized_power * 5);
       polyline.UpdateColor(HsvToRgb(glm::vec3(energy, 1, 0.5)));
       polyline.Draw();
     }
@@ -138,6 +138,15 @@ void Kaleidoscope::OnDrawFrame(
         composite_program_->program_handle(), "render_target_size");
     LOG(DEBUG) << "Got texture size location: " << texture_size_location;
     glUniform2i(texture_size_location, width(), height());
+    int power_location =
+        glGetUniformLocation(composite_program_->program_handle(), "power");
+    int energy_location =
+        glGetUniformLocation(composite_program_->program_handle(), "energy");
+    LOG(DEBUG) << "Got locations for power: " << power_location
+               << " and energy: " << energy_location;
+    glUniform1f(power_location, power);
+    glUniform1f(energy_location, energy);
+    LOG(DEBUG) << "Power: " << power << " energy: " << energy;
 
     glViewport(0, 0, width(), height());
     rectangle.Draw();
