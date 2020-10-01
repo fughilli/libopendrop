@@ -163,7 +163,7 @@ extern "C" int main(int argc, char *argv[]) {
     int late_frames_to_skip_preset =
         absl::GetFlag(FLAGS_late_frames_to_skip_preset);
 
-    open_drop_controller->SetPreset(std::make_shared<opendrop::Kaleidoscope>(
+    open_drop_controller->SetPreset(std::make_shared<opendrop::AlienRorschach>(
         texture_manager, absl::GetFlag(FLAGS_window_width),
         absl::GetFlag(FLAGS_window_height)));
     while (!exit_event_received) {
