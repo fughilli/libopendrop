@@ -53,6 +53,7 @@ cc_binary(
         ":sdl_gl_interface",
         "//led_driver:performance_timer",
         "//led_driver:pulseaudio_interface",
+        "//libopendrop/preset/alien_rorschach",
         "//libopendrop/preset/kaleidoscope",
         "//libopendrop/preset/simple_preset",
         "//libopendrop/util:logging",
@@ -87,8 +88,17 @@ cc_library(
     linkstatic = 1,
     deps = [
         ":gl_interface",
+        ":gl_texture_manager",
         "//libopendrop/util:logging",
     ],
+)
+
+cc_library(
+    name = "gl_texture_manager",
+    srcs = ["gl_texture_manager.cc"],
+    hdrs = ["gl_texture_manager.h"],
+    linkstatic = 1,
+    deps = ["//libopendrop/util:logging"],
 )
 
 cc_library(

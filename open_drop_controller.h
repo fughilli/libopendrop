@@ -15,12 +15,14 @@ namespace opendrop {
 class OpenDropController : public OpenDropControllerInterface {
  public:
   OpenDropController(std::shared_ptr<gl::GlInterface> gl_interface,
+                     std::shared_ptr<gl::GlTextureManager> texture_manager,
                      ptrdiff_t audio_buffer_size, int width, int height);
   void UpdateGeometry(int width, int height) override;
   void DrawFrame(float dt) override;
   void SetPreset(std::shared_ptr<Preset> preset) override { preset_ = preset; }
 
  protected:
+  std::shared_ptr<gl::GlTextureManager> texture_manager_;
   int width_, height_;
   std::shared_ptr<Preset> preset_;
   std::shared_ptr<GlobalState> global_state_;

@@ -24,7 +24,10 @@ namespace {
 constexpr float kScaleFactor = 0.20f;
 }
 
-AlienRorschach::AlienRorschach(int width, int height) : Preset(width, height) {
+AlienRorschach::AlienRorschach(
+    std::shared_ptr<gl::GlTextureManager> texture_manager, int width,
+    int height)
+    : Preset(texture_manager, width, height) {
   warp_program_ =
       gl::GlProgram::MakeShared(passthrough_vsh::Code(), warp_fsh::Code());
   if (warp_program_ == nullptr) {
@@ -36,8 +39,10 @@ AlienRorschach::AlienRorschach(int width, int height) : Preset(width, height) {
     abort();
   }
 
-  front_render_target_ = std::make_shared<gl::GlRenderTarget>(width, height, 0);
-  back_render_target_ = std::make_shared<gl::GlRenderTarget>(width, height, 1);
+  front_render_target_ = std::make_shared<gl::GlRenderTarget>(
+      width, height, this->texture_manager());
+  back_render_target_ = std::make_shared<gl::GlRenderTarget>(
+      width, height, this->texture_manager());
 }
 
 void AlienRorschach::OnUpdateGeometry() {
