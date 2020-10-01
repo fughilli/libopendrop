@@ -5,6 +5,7 @@
 #include <mutex>
 
 #include "libopendrop/gl_interface.h"
+#include "libopendrop/gl_texture_manager.h"
 
 namespace gl {
 
@@ -21,7 +22,8 @@ class GlRenderTargetActivation {
 
 class GlRenderTarget : public std::enable_shared_from_this<GlRenderTarget> {
  public:
-  GlRenderTarget(int width, int height, int texture_unit);
+  GlRenderTarget(int width, int height,
+                 std::shared_ptr<gl::GlTextureManager> texture_manager);
   virtual ~GlRenderTarget();
 
   virtual std::shared_ptr<GlRenderTargetActivation> Activate();
@@ -50,6 +52,8 @@ class GlRenderTarget : public std::enable_shared_from_this<GlRenderTarget> {
   unsigned int framebuffer_handle_;
   unsigned int renderbuffer_handle_;
   unsigned int texture_handle_;
+
+  std::shared_ptr<gl::GlTextureManager> texture_manager_;
 };
 
 }  // namespace gl

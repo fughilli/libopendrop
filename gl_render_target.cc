@@ -44,8 +44,11 @@ GlRenderTargetActivation::~GlRenderTargetActivation() {
   LOG(DEBUG) << "Unbound framebuffer";
 }
 
-GlRenderTarget::GlRenderTarget(int width, int height, int texture_unit)
-    : width_(width), height_(height), texture_unit_(texture_unit) {
+GlRenderTarget::GlRenderTarget(
+    int width, int height,
+    std::shared_ptr<gl::GlTextureManager> texture_manager)
+    : width_(width), height_(height), texture_manager_(texture_manager) {
+  texture_unit_ = texture_manager_->Allocate();
   // Create a new renderbuffer.
   glGenFramebuffers(1, &renderbuffer_handle_);
   LOG(DEBUG) << "Generated renderbuffer: " << renderbuffer_handle_;
@@ -70,6 +73,7 @@ GlRenderTarget::GlRenderTarget(int width, int height, int texture_unit)
 
 GlRenderTarget::~GlRenderTarget() {
   LOG(DEBUG) << "Disposing render target";
+  texture_manager_->Deallocate(texture_unit_);
   glDeleteTextures(1, &texture_handle_);
   glDeleteFramebuffers(1, &framebuffer_handle_);
 }

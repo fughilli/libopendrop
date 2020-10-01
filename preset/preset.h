@@ -15,7 +15,9 @@ namespace opendrop {
 class Preset {
  public:
   // Constructs a preset which renders to a raster of the given dimensions.
-  Preset(int width, int height) : width_(width), height_(height) {}
+  Preset(std::shared_ptr<gl::GlTextureManager> texture_manager, int width,
+         int height)
+      : texture_manager_(texture_manager), width_(width), height_(height) {}
   virtual ~Preset() {}
 
   // Draws a single frame of this preset. `samples` is a buffer of interleaved
@@ -41,7 +43,14 @@ class Preset {
   // Invoked by `UpdateGeometry` with lock held.
   virtual void OnUpdateGeometry() = 0;
 
+  // Getter for texture manager.
+  std::shared_ptr<gl::GlTextureManager> texture_manager() {
+    return texture_manager_;
+  }
+
  private:
+  // the GlTextureManager providing texture units for this preset.
+  std::shared_ptr<gl::GlTextureManager> texture_manager_;
   // Mutex protecting preset state.
   std::mutex state_mu_;
   // Preset render dimensions.

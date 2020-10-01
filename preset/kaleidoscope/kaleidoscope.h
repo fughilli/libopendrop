@@ -3,13 +3,15 @@
 
 #include "libopendrop/gl_interface.h"
 #include "libopendrop/gl_render_target.h"
+#include "libopendrop/gl_texture_manager.h"
 #include "libopendrop/preset/preset.h"
 
 namespace opendrop {
 
 class Kaleidoscope : public Preset {
  public:
-  Kaleidoscope(int width, int height);
+  Kaleidoscope(std::shared_ptr<gl::GlTextureManager> texture_manager, int width,
+               int height);
 
  protected:
   void OnDrawFrame(

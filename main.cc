@@ -44,7 +44,9 @@
 #include "libopendrop/gl_interface.h"
 #include "libopendrop/open_drop_controller.h"
 #include "libopendrop/open_drop_controller_interface.h"
+#include "libopendrop/preset/alien_rorschach/alien_rorschach.h"
 #include "libopendrop/preset/kaleidoscope/kaleidoscope.h"
+#include "libopendrop/gl_texture_manager.h"
 #include "libopendrop/preset/simple_preset/simple_preset.h"
 #include "libopendrop/sdl_gl_interface.h"
 #include "libopendrop/util/logging.h"
@@ -114,9 +116,11 @@ extern "C" int main(int argc, char *argv[]) {
 
     LOG(INFO) << "Initializing OpenDrop...";
 
+    auto texture_manager = std::make_shared<gl::GlTextureManager>();
+
     std::shared_ptr<OpenDropControllerInterface> open_drop_controller =
         std::make_shared<OpenDropController>(
-            sdl_gl_interface, kAudioBufferSize,
+            sdl_gl_interface, texture_manager, kAudioBufferSize,
             absl::GetFlag(FLAGS_window_width),
             absl::GetFlag(FLAGS_window_height));
 
@@ -160,7 +164,8 @@ extern "C" int main(int argc, char *argv[]) {
         absl::GetFlag(FLAGS_late_frames_to_skip_preset);
 
     open_drop_controller->SetPreset(std::make_shared<opendrop::Kaleidoscope>(
-        absl::GetFlag(FLAGS_window_width), absl::GetFlag(FLAGS_window_height)));
+        texture_manager, absl::GetFlag(FLAGS_window_width),
+        absl::GetFlag(FLAGS_window_height)));
     while (!exit_event_received) {
       // Record the start of the frame in the draw timer.
       auto frame_start_time = SDL_GetTicks();
