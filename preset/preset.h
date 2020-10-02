@@ -21,9 +21,12 @@ class Preset {
   virtual ~Preset() {}
 
   // Draws a single frame of this preset. `samples` is a buffer of interleaved
-  // audio samples. `state` is the current global libopendrop state.
+  // audio samples. `state` is the current global libopendrop state. `alpha` is
+  // the alpha that should be premultiplied when rendering the output of the
+  // preset. `output_render_target` is the render target to render the preset
+  // output to.
   void DrawFrame(absl::Span<const float> samples,
-                 std::shared_ptr<GlobalState> state,
+                 std::shared_ptr<GlobalState> state, float alpha,
                  std::shared_ptr<gl::GlRenderTarget> output_render_target);
 
   // Updates the preset render geometry. Subsequent calls to `DrawFrame` will
@@ -39,6 +42,7 @@ class Preset {
   // Invoked by `DrawFrame` with lock held.
   virtual void OnDrawFrame(
       absl::Span<const float> samples, std::shared_ptr<GlobalState> state,
+      float alpha,
       std::shared_ptr<gl::GlRenderTarget> output_render_target) = 0;
   // Invoked by `UpdateGeometry` with lock held.
   virtual void OnUpdateGeometry() = 0;

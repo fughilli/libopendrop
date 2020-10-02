@@ -57,7 +57,7 @@ void AlienRorschach::OnUpdateGeometry() {
 
 void AlienRorschach::OnDrawFrame(
     absl::Span<const float> samples, std::shared_ptr<GlobalState> state,
-    std::shared_ptr<gl::GlRenderTarget> output_render_target) {
+    float alpha, std::shared_ptr<gl::GlRenderTarget> output_render_target) {
   float energy = state->energy();
   float power = state->power();
   float average_power = state->average_power();
@@ -135,6 +135,9 @@ void AlienRorschach::OnDrawFrame(
         glGetUniformLocation(composite_program_->program_handle(), "energy");
     glUniform1f(power_location, power);
     glUniform1f(energy_location, energy);
+    glUniform1f(
+        glGetUniformLocation(composite_program_->program_handle(), "alpha"),
+        alpha);
 
     glViewport(0, 0, width(), height());
     rectangle.Draw();

@@ -65,7 +65,7 @@ glm::vec3 HsvToRgb(glm::vec3 hsv) {
 
 void SimplePreset::OnDrawFrame(
     absl::Span<const float> samples, std::shared_ptr<GlobalState> state,
-    std::shared_ptr<gl::GlRenderTarget> output_render_target) {
+    float alpha, std::shared_ptr<gl::GlRenderTarget> output_render_target) {
   float energy = state->energy();
   float power = state->power();
   float average_power = state->average_power();
@@ -138,6 +138,9 @@ void SimplePreset::OnDrawFrame(
     glUniform2i(texture_size_location, width(), height());
     GlBindRenderTargetTextureToUniform(composite_program_, "render_target",
                                        back_render_target_);
+    glUniform1f(
+        glGetUniformLocation(composite_program_->program_handle(), "alpha"),
+        alpha);
 
     glViewport(0, 0, width(), height());
     rectangle.Draw();
