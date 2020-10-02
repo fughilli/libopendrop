@@ -1,5 +1,8 @@
 #include "libopendrop/util/colors.h"
 
+#define _USE_MATH_DEFINES
+#include <cmath>
+
 namespace opendrop {
 
 glm::vec3 HsvToRgb(glm::vec3 hsv) {
