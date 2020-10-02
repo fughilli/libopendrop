@@ -13,6 +13,21 @@ cc_library(
     ],
 )
 
+cc_library(
+    name = "preset_blender",
+    hdrs = ["preset_blender.h"],
+    srcs = ["preset_blender.cc"],
+    deps = [
+        ":preset",
+        "//libopendrop:blit_fsh",
+        "//libopendrop:blit_vsh",
+        "//libopendrop/primitive:rectangle",
+        "//libopendrop/util:gl_util",
+        "//libopendrop/util:logging",
+        "//libopendrop/util:oneshot",
+    ],
+)
+
 py_binary(
     name = "wrap_shader",
     srcs = ["wrap_shader.py"],
