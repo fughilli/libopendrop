@@ -75,7 +75,7 @@ void OpenDropController::DrawFrame(float dt) {
 
   if (preset_) {
     preset_->DrawFrame(absl::Span<const float>(samples_interleaved),
-                       global_state_, output_render_target_);
+                       global_state_, 1.0f, output_render_target_);
 
     {
       blit_program_->Use();
