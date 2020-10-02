@@ -23,3 +23,8 @@ cc_library(
         "//libopendrop:gl_render_target",
     ],
 )
+
+cc_library(
+    name = "oneshot",
+    hdrs = ["oneshot.h"],
+)
