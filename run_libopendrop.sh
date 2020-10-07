@@ -1,6 +1,7 @@
 #!/bin/bash
 
-set -o errexit,pipefail
+set -o errexit
+set -o pipefail
 
 function echoerr() {
   echo $@ 1>&2
@@ -41,7 +42,9 @@ case $source_type in
     ;;
 esac
 
-bazelisk run //libopendrop:main -c opt -- \
+bazelisk run //libopendrop:main -c opt \
+  --copt=-I/usr/include/SDL2 \
+  -- \
   --pulseaudio_source="${SOURCE}" \
   --window_width=600 \
   --window_height=600 $@
