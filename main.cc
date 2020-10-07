@@ -42,11 +42,11 @@
 #include "led_driver/pulseaudio_interface.h"
 #include "libopendrop/cleanup.h"
 #include "libopendrop/gl_interface.h"
+#include "libopendrop/gl_texture_manager.h"
 #include "libopendrop/open_drop_controller.h"
 #include "libopendrop/open_drop_controller_interface.h"
 #include "libopendrop/preset/alien_rorschach/alien_rorschach.h"
 #include "libopendrop/preset/kaleidoscope/kaleidoscope.h"
-#include "libopendrop/gl_texture_manager.h"
 #include "libopendrop/preset/simple_preset/simple_preset.h"
 #include "libopendrop/sdl_gl_interface.h"
 #include "libopendrop/util/logging.h"
@@ -65,7 +65,7 @@ ABSL_FLAG(int, window_x, -1,
 ABSL_FLAG(int, window_y, -1,
           "OpenDrop window position in y. If this value is -1, no position "
           "override is applied.");
-ABSL_FLAG(int, late_frames_to_skip_preset, 20,
+ABSL_FLAG(int, late_frames_to_skip_preset, 100,
           "Number of late frames required to skip preset");
 
 namespace led_driver {
@@ -226,8 +226,9 @@ extern "C" int main(int argc, char *argv[]) {
       static int counter = 0;
       ++counter;
       if (counter == 100) {
-        LOG(INFO) << "Draw time: " << draw_time
-                  << "\tFrame time: " << frame_time << "\tFPS: " << 1 / prev_dt;
+        LOG(DEBUG) << "Draw time: " << draw_time
+                   << "\tFrame time: " << frame_time
+                   << "\tFPS: " << 1 / prev_dt;
         counter = 0;
       }
       if (draw_time >= kTargetFrameTimeMs) {

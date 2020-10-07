@@ -127,6 +127,7 @@ cc_library(
         "//libopendrop/primitive:rectangle",
         "//libopendrop/util:gl_util",
         "//libopendrop/util:logging",
+        "//libopendrop/preset:preset_blender",
         "@com_google_absl//absl/types:span",
     ],
 )

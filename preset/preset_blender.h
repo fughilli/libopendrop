@@ -57,6 +57,8 @@ class PresetBlender {
                  std::shared_ptr<GlobalState> state,
                  std::shared_ptr<gl::GlRenderTarget> output_render_target);
 
+  void UpdateGeometry(int width, int height);
+
  private:
   void Update(float dt);
 

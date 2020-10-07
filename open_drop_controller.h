@@ -9,6 +9,7 @@
 #include "libopendrop/normalizer.h"
 #include "libopendrop/open_drop_controller_interface.h"
 #include "libopendrop/preset/preset.h"
+#include "libopendrop/preset/preset_blender.h"
 
 namespace opendrop {
 
@@ -19,12 +20,13 @@ class OpenDropController : public OpenDropControllerInterface {
                      ptrdiff_t audio_buffer_size, int width, int height);
   void UpdateGeometry(int width, int height) override;
   void DrawFrame(float dt) override;
-  void SetPreset(std::shared_ptr<Preset> preset) override { preset_ = preset; }
+
+  std::shared_ptr<PresetBlender> preset_blender() { return preset_blender_; }
 
  protected:
   std::shared_ptr<gl::GlTextureManager> texture_manager_;
   int width_, height_;
-  std::shared_ptr<Preset> preset_;
+  std::shared_ptr<PresetBlender> preset_blender_;
   std::shared_ptr<GlobalState> global_state_;
   std::shared_ptr<Normalizer> normalizer_;
   std::shared_ptr<gl::GlRenderTarget> output_render_target_;

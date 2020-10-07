@@ -16,6 +16,7 @@ cc_library(
         "//libopendrop/preset",
         "//libopendrop/primitive:polyline",
         "//libopendrop/primitive:rectangle",
+        "//libopendrop/util:colors",
         "//libopendrop/util:gl_util",
         "//libopendrop/util:logging",
     ],

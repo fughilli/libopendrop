@@ -1,5 +1,11 @@
 package(default_visibility = ["//libopendrop:__subpackages__"])
 
+PRESET_DEPS_LIST = [
+    "//libopendrop/preset/kaleidoscope",
+    "//libopendrop/preset/simple_preset",
+    "//libopendrop/preset/alien_rorschach",
+]
+
 cc_library(
     name = "preset",
     srcs = ["preset.cc"],
@@ -14,9 +20,19 @@ cc_library(
 )
 
 cc_library(
+    name = "preset_list",
+    srcs = ["preset_list.cc"],
+    hdrs = ["preset_list.h"],
+    linkstatic = 1,
+    deps = [
+        ":preset",
+    ] + PRESET_DEPS_LIST,
+)
+
+cc_library(
     name = "preset_blender",
-    hdrs = ["preset_blender.h"],
     srcs = ["preset_blender.cc"],
+    hdrs = ["preset_blender.h"],
     deps = [
         ":preset",
         "//libopendrop:blit_fsh",

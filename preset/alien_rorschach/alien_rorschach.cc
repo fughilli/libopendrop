@@ -114,7 +114,7 @@ void AlienRorschach::OnDrawFrame(
       polyline.UpdateVertices(vertices);
       polyline.UpdateWidth(normalized_power * 5);
       polyline.UpdateColor(
-          HsvToRgb(glm::vec3(energy * 10 + (j / 4.0f), 1, 0.5)));
+          HsvToRgb(glm::vec3(energy * 1 + (j / 4.0f), 1, 0.5)));
       polyline.Draw();
     }
 
