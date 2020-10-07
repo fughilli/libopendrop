@@ -24,8 +24,13 @@ To build `libopendrop`, first install the prerequisites:
 
 ```
 sudo apt-get install golang-go libpulse-dev libgl-dev libglm-dev \
-                     libncurses5-dev libncurses5 libsdl2-dev
+                     libncurses5-dev libncurses5 libsdl2-dev \
+                     python3-pip
+
 go get github.com/bazelbuild/bazelisk
+
+sudo -H pip3 install absl-py
+
 cat >>~/.bashrc << EOF
 export PATH=\$PATH:\$HOME/go/bin
 EOF
