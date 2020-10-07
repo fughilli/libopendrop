@@ -51,8 +51,8 @@ OpenDropController::OpenDropController(
 void OpenDropController::UpdateGeometry(int width, int height) {
   width_ = width;
   height_ = height;
-  if (preset_) {
-    preset_->UpdateGeometry(width_, height_);
+  if (preset_blender_) {
+    preset_blender_->UpdateGeometry(width_, height_);
   }
 
   if (output_render_target_) {
@@ -74,8 +74,8 @@ void OpenDropController::DrawFrame(float dt) {
   global_state_->Update(absl::Span<const float>(samples_interleaved), dt);
 
   if (preset_) {
-    preset_->DrawFrame(absl::Span<const float>(samples_interleaved),
-                       global_state_, 1.0f, output_render_target_);
+    preset_blender_->DrawFrame(absl::Span<const float>(samples_interleaved),
+                               global_state_, 1.0f, output_render_target_);
 
     {
       blit_program_->Use();

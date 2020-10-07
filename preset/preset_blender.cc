@@ -120,6 +120,12 @@ void PresetBlender::DrawFrame(
   }
 }
 
+void PresetBlender::UpdateGeometry(int width, int height) {
+  for (auto activation : preset_activations_) {
+    activation.preset()->UpdateGeometry(width, height);
+  }
+}
+
 void PresetBlender::Update(float dt) {
   static std::vector<PresetActivation*> activations_waiting;
   int activations_in = 0;

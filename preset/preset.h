@@ -33,6 +33,8 @@ class Preset {
   // render at these dimensions.
   void UpdateGeometry(int width, int height);
 
+  virtual std::string name() = 0;
+
  protected:
   // Getters for dimensions.
   int width() const { return width_; }
