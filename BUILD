@@ -53,6 +53,7 @@ cc_binary(
         ":sdl_gl_interface",
         "//led_driver:performance_timer",
         "//led_driver:pulseaudio_interface",
+        "//libopendrop/preset:preset_list",
         "//libopendrop/preset/alien_rorschach",
         "//libopendrop/preset/kaleidoscope",
         "//libopendrop/preset/simple_preset",
@@ -107,7 +108,7 @@ cc_library(
     deps = [
         ":audio_processor",
         ":gl_interface",
-        "//libopendrop/preset",
+        "@com_google_absl//absl/types:span",
     ],
 )
 
@@ -124,10 +125,10 @@ cc_library(
         ":normalizer",
         ":open_drop_controller_interface",
         "//libopendrop/preset",
+        "//libopendrop/preset:preset_blender",
         "//libopendrop/primitive:rectangle",
         "//libopendrop/util:gl_util",
         "//libopendrop/util:logging",
-        "//libopendrop/preset:preset_blender",
         "@com_google_absl//absl/types:span",
     ],
 )

@@ -7,7 +7,6 @@
 #include "absl/types/span.h"
 #include "libopendrop/audio_processor.h"
 #include "libopendrop/gl_interface.h"
-#include "libopendrop/preset/preset.h"
 
 namespace opendrop {
 
@@ -28,9 +27,6 @@ class OpenDropControllerInterface {
 
   // Draws a single frame.
   virtual void DrawFrame(float dt) = 0;
-
-  // Sets the current preset.
-  virtual void SetPreset(std::shared_ptr<Preset> preset) = 0;
 
   // Returns the AudioProcessor associated with this
   // OpenDropControllerInterface.

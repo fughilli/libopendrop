@@ -46,6 +46,9 @@ OpenDropController::OpenDropController(
 
   blit_program_ = gl::GlProgram::MakeShared(blit_vsh::Code(), blit_fsh::Code());
   CHECK_NULL(blit_program_) << "Failed to create blit program";
+
+  preset_blender_ = std::make_shared<PresetBlender>(width, height);
+  CHECK_NULL(preset_blender_) << "Failed to create preset blender";
 }
 
 void OpenDropController::UpdateGeometry(int width, int height) {
@@ -73,9 +76,9 @@ void OpenDropController::DrawFrame(float dt) {
                          absl::Span<float>(samples_interleaved));
   global_state_->Update(absl::Span<const float>(samples_interleaved), dt);
 
-  if (preset_) {
+  if (preset_blender_) {
     preset_blender_->DrawFrame(absl::Span<const float>(samples_interleaved),
-                               global_state_, 1.0f, output_render_target_);
+                               global_state_, output_render_target_);
 
     {
       blit_program_->Use();

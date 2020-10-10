@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "libopendrop/preset/preset.h"
+#include "libopendrop/util/logging.h"
 #include "libopendrop/util/oneshot.h"
 
 namespace opendrop {
@@ -45,11 +46,15 @@ class PresetActivation {
 };
 class PresetBlender {
  public:
-  PresetBlender();
+  PresetBlender(int width, int height);
 
   template <typename... Args>
   void AddPreset(Args&&... args) {
-    preset_activations_.emplace_front(std::forward<Args>(args)...);
+    LOG(INFO) << "Adding preset";
+    PresetActivation activation(std::forward<Args>(args)...);
+    activation.preset()->UpdateGeometry(width_, height_);
+    activation.render_target()->UpdateGeometry(width_, height_);
+    preset_activations_.push_front(std::move(activation));
   }
 
   // Draws a single frame of blended preset output.
@@ -62,6 +67,7 @@ class PresetBlender {
  private:
   void Update(float dt);
 
+  int width_, height_;
   std::shared_ptr<gl::GlProgram> blit_program_;
   std::list<PresetActivation> preset_activations_;
 };

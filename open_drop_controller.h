@@ -21,6 +21,8 @@ class OpenDropController : public OpenDropControllerInterface {
   void UpdateGeometry(int width, int height) override;
   void DrawFrame(float dt) override;
 
+  // Returns the `PresetBlender` associated with this `OpenDropController`
+  // instance.
   std::shared_ptr<PresetBlender> preset_blender() { return preset_blender_; }
 
  protected:

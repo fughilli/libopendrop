@@ -13,6 +13,8 @@ class AlienRorschach : public Preset {
   AlienRorschach(std::shared_ptr<gl::GlTextureManager> texture_manager,
                  int width, int height);
 
+  std::string name() override { return "AlienRorschach"; }
+
  protected:
   void OnDrawFrame(
       absl::Span<const float> samples, std::shared_ptr<GlobalState> state,

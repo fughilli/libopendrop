@@ -47,6 +47,7 @@
 #include "libopendrop/open_drop_controller_interface.h"
 #include "libopendrop/preset/alien_rorschach/alien_rorschach.h"
 #include "libopendrop/preset/kaleidoscope/kaleidoscope.h"
+#include "libopendrop/preset/preset_list.h"
 #include "libopendrop/preset/simple_preset/simple_preset.h"
 #include "libopendrop/sdl_gl_interface.h"
 #include "libopendrop/util/logging.h"
@@ -75,13 +76,27 @@ using ::opendrop::OpenDropController;
 using ::opendrop::OpenDropControllerInterface;
 using ::opendrop::PcmFormat;
 // Target FPS.
-constexpr int kFps = 120;
+constexpr int kFps = 60;
 // Target frame time, in milliseconds.
 constexpr int kTargetFrameTimeMs = 1000 / kFps;
 // Size of the audio processor buffer, in samples.
 constexpr int kAudioBufferSize = 256;
 // Minimum number of milliseconds that should be delayed.
 constexpr int kMinimumDelayMs = 2;
+
+void NextPreset(OpenDropController *controller,
+                std::shared_ptr<gl::GlTextureManager> texture_manager) {
+  // TODO: Refactor such that preset geometry is configured after attaching to
+  // the preset blender.
+  controller->preset_blender()->AddPreset(
+      opendrop::GetRandomPresetFromList(texture_manager,
+                                        absl::GetFlag(FLAGS_window_width),
+                                        absl::GetFlag(FLAGS_window_height)),
+      std::make_shared<gl::GlRenderTarget>(absl::GetFlag(FLAGS_window_width),
+                                           absl::GetFlag(FLAGS_window_height),
+                                           texture_manager),
+      2, 1);
+}
 }  // namespace
 
 extern "C" int main(int argc, char *argv[]) {
@@ -163,9 +178,6 @@ extern "C" int main(int argc, char *argv[]) {
     int late_frames_to_skip_preset =
         absl::GetFlag(FLAGS_late_frames_to_skip_preset);
 
-    open_drop_controller->SetPreset(std::make_shared<opendrop::AlienRorschach>(
-        texture_manager, absl::GetFlag(FLAGS_window_width),
-        absl::GetFlag(FLAGS_window_height)));
     while (!exit_event_received) {
       // Record the start of the frame in the draw timer.
       auto frame_start_time = SDL_GetTicks();
@@ -198,6 +210,9 @@ extern "C" int main(int argc, char *argv[]) {
             switch (event.key.keysym.sym) {
               case SDLK_n:
                 LOG(INFO) << "Next";
+                NextPreset(dynamic_cast<OpenDropController *>(
+                               open_drop_controller.get()),
+                           texture_manager);
                 break;
               case SDLK_p:
                 LOG(INFO) << "Previous";
