@@ -21,7 +21,6 @@ cc_library(
 
 cc_library(
     name = "preset_list",
-    srcs = ["preset_list.cc"],
     hdrs = ["preset_list.h"],
     linkstatic = 1,
     deps = [
