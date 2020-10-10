@@ -6,6 +6,7 @@
 #include "libopendrop/blit.vsh.h"
 #include "libopendrop/primitive/rectangle.h"
 #include "libopendrop/util/gl_util.h"
+#include "libopendrop/util/logging.h"
 
 namespace opendrop {
 PresetActivation::PresetActivation(
@@ -103,6 +104,7 @@ void PresetBlender::DrawFrame(
     if (activation.GetMixingCoefficient() == 0) {
       continue;
     }
+
     activation.preset()->DrawFrame(samples, state,
                                    activation.GetMixingCoefficient(),
                                    activation.render_target());
