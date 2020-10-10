@@ -4,8 +4,22 @@ set -o errexit
 set -o pipefail
 
 function echoerr() {
-  echo $@ 1>&2
+  echo -e $@ 1>&2
 }
+
+function usage() {
+  echoerr "USAGE: $0 -s SOURCE [-d]"
+  echoerr ""
+  echoerr "Options:"
+  echoerr "Flag\tDescription"
+  echoerr "----\t-----------"
+  echoerr "-s  \tPulseaudio source filter type. The first source of this type"
+  echoerr "    \twill be selected. Source type should be one of [system, "
+  echoerr "    \tbluetooth]."
+  echoerr "-d  \tEnable debug logging."
+}
+
+enable_debug=0
 
 while [[ ! -z "$@" ]]; do
   arg=$1
@@ -16,6 +30,10 @@ while [[ ! -z "$@" ]]; do
     '-s')
       source_type=$1
       shift
+      ;;
+
+    '-d')
+      enable_debug=1
       ;;
 
     *)
@@ -36,13 +54,31 @@ case $source_type in
       sed -n "s/\s\+Name.*\(alsa_output.*monitor$\)/\1/p" | head -n 1)
     ;;
 
+  'microphone')
+    SOURCE=$(pactl list sources |
+      sed -n "s/\s\+Name.*\(alsa_input.*analog\-stereo$\)/\1/p" | head -n 1)
+    ;;
+
+  '')
+    echoerr "Source type not provided!"
+    usage
+    exit 1
+    ;;
+
   *)
     echoerr "Unknown source type: $source"
+    usage
     exit 1
     ;;
 esac
 
-bazelisk run //libopendrop:main -c opt \
+if [[ $enable_debug == 1 ]]; then
+debug_options="-c dbg --copt=-ggdb --copt=-DENABLE_DEBUG_LOGGING"
+else
+debug_options=""
+fi
+
+bazelisk run //libopendrop:main $debug_options \
   --copt=-I/usr/include/SDL2 \
   -- \
   --pulseaudio_source="${SOURCE}" \
