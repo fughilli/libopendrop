@@ -19,7 +19,7 @@ namespace {namespace} {{
 
 extern const char* __kCode_{hash_string};
 
-inline const char* Code() {{
+static inline const char* Code() {{
   return __kCode_{hash_string};
 }}
 
