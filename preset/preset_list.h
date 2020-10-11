@@ -5,6 +5,7 @@
 #include <random>
 
 #include "libopendrop/preset/alien_rorschach/alien_rorschach.h"
+#include "libopendrop/preset/glowsticks_3d/glowsticks_3d.h"
 #include "libopendrop/preset/kaleidoscope/kaleidoscope.h"
 #include "libopendrop/preset/preset.h"
 #include "libopendrop/preset/simple_preset/simple_preset.h"
@@ -79,8 +80,8 @@ std::shared_ptr<opendrop::Preset> GetRandomPreset(Args&&... args) {
 template <typename... Args>
 std::shared_ptr<opendrop::Preset> GetRandomPresetFromList(Args&&... args) {
   return GetRandomPreset<opendrop::Kaleidoscope, opendrop::SimplePreset,
-                         opendrop::AlienRorschach, opendrop::TemplatePreset>(
-      std::forward<Args>(args)...);
+                         opendrop::AlienRorschach, opendrop::TemplatePreset,
+                         opendrop::Glowsticks3d>(std::forward<Args>(args)...);
 }
 
 }  // namespace opendrop

@@ -21,3 +21,13 @@ cc_library(
     hdrs = ["rectangle.h"],
     deps = [":primitive"],
 )
+
+cc_library(
+    name = "ribbon",
+    srcs = ["ribbon.cc"],
+    hdrs = ["ribbon.h"],
+    deps = [
+        ":primitive",
+        "//libopendrop/util:logging",
+    ],
+)
