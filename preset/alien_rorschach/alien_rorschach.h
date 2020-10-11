@@ -10,10 +10,9 @@ namespace opendrop {
 
 class AlienRorschach : public Preset {
  public:
-  AlienRorschach(std::shared_ptr<gl::GlTextureManager> texture_manager,
-                 int width, int height);
+  AlienRorschach(std::shared_ptr<gl::GlTextureManager> texture_manager);
 
-  std::string name() override { return "AlienRorschach"; }
+  std::string name() const override { return "AlienRorschach"; }
 
  protected:
   void OnDrawFrame(

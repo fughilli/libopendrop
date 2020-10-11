@@ -89,13 +89,8 @@ void NextPreset(OpenDropController *controller,
   // TODO: Refactor such that preset geometry is configured after attaching to
   // the preset blender.
   controller->preset_blender()->AddPreset(
-      opendrop::GetRandomPresetFromList(texture_manager,
-                                        absl::GetFlag(FLAGS_window_width),
-                                        absl::GetFlag(FLAGS_window_height)),
-      std::make_shared<gl::GlRenderTarget>(absl::GetFlag(FLAGS_window_width),
-                                           absl::GetFlag(FLAGS_window_height),
-                                           texture_manager),
-      2, 1);
+      opendrop::GetRandomPresetFromList(texture_manager),
+      std::make_shared<gl::GlRenderTarget>(texture_manager), 2, 1);
 }
 }  // namespace
 

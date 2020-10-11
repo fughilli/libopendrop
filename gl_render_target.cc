@@ -47,7 +47,7 @@ GlRenderTargetActivation::~GlRenderTargetActivation() {
 GlRenderTarget::GlRenderTarget(
     int width, int height,
     std::shared_ptr<gl::GlTextureManager> texture_manager)
-    : width_(width), height_(height), texture_manager_(texture_manager) {
+    : texture_manager_(texture_manager) {
   texture_unit_ = texture_manager_->Allocate();
   // Create a new renderbuffer.
   glGenFramebuffers(1, &renderbuffer_handle_);
@@ -59,17 +59,12 @@ GlRenderTarget::GlRenderTarget(
   glGenTextures(1, &texture_handle_);
   LOG(DEBUG) << "Generated texture: " << texture_handle_;
 
-  glActiveTexture(GL_TEXTURE0 + texture_unit_);
-  glBindTexture(GL_TEXTURE_2D, texture_handle_);
-  LOG(DEBUG) << "Bound texture: " << texture_handle_;
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width_, height_, 0, GL_RGB,
-               GL_UNSIGNED_BYTE, 0);
-  LOG(DEBUG) << "Applied texture properties";
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-  glBindTexture(GL_TEXTURE_2D, 0);
-  LOG(DEBUG) << "Unbound texture";
+  UpdateGeometry(width, height);
 }
+
+GlRenderTarget::GlRenderTarget(
+    std::shared_ptr<gl::GlTextureManager> texture_manager)
+    : GlRenderTarget(0, 0, texture_manager) {}
 
 GlRenderTarget::~GlRenderTarget() {
   LOG(DEBUG) << "Disposing render target";
@@ -84,15 +79,24 @@ void GlRenderTarget::UpdateGeometry(int width, int height) {
   width_ = width;
   height_ = height;
 
+  if (width_ == 0 || height_ == 0) {
+    return;
+  }
+
   glActiveTexture(GL_TEXTURE0 + texture_unit_);
   glBindTexture(GL_TEXTURE_2D, texture_handle_);
   LOG(DEBUG) << "Bound texture: " << texture_handle_;
   glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width_, height_, 0, GL_RGB,
                GL_UNSIGNED_BYTE, 0);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
   glBindTexture(GL_TEXTURE_2D, 0);
+  LOG(DEBUG) << "Unbound texture";
 }
 
 std::shared_ptr<GlRenderTargetActivation> GlRenderTarget::Activate() {
+  CHECK(width_ != 0 && height_ != 0)
+      << "Render target size must be nonzero before activation.";
   return std::make_shared<GlRenderTargetActivation>(shared_from_this());
 }
 

@@ -25,9 +25,8 @@ constexpr float kScaleFactor = 0.20f;
 }
 
 Kaleidoscope::Kaleidoscope(
-    std::shared_ptr<gl::GlTextureManager> texture_manager, int width,
-    int height)
-    : Preset(texture_manager, width, height) {
+    std::shared_ptr<gl::GlTextureManager> texture_manager)
+    : Preset(texture_manager) {
   warp_program_ =
       gl::GlProgram::MakeShared(passthrough_vsh::Code(), warp_fsh::Code());
   if (warp_program_ == nullptr) {
@@ -40,9 +39,9 @@ Kaleidoscope::Kaleidoscope(
   }
 
   front_render_target_ = std::make_shared<gl::GlRenderTarget>(
-      width, height, this->texture_manager());
+      width(), height(), this->texture_manager());
   back_render_target_ = std::make_shared<gl::GlRenderTarget>(
-      width, height, this->texture_manager());
+      width(), height(), this->texture_manager());
 }
 
 void Kaleidoscope::OnUpdateGeometry() {

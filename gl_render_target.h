@@ -24,6 +24,7 @@ class GlRenderTarget : public std::enable_shared_from_this<GlRenderTarget> {
  public:
   GlRenderTarget(int width, int height,
                  std::shared_ptr<gl::GlTextureManager> texture_manager);
+  GlRenderTarget(std::shared_ptr<gl::GlTextureManager> texture_manager);
   virtual ~GlRenderTarget();
 
   virtual std::shared_ptr<GlRenderTargetActivation> Activate();

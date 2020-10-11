@@ -1,5 +1,5 @@
-#ifndef PRESETS_SIMPLE_PRESET_SIMPLE_H_
-#define PRESETS_SIMPLE_PRESET_SIMPLE_H_
+#ifndef PRESETS_SIMPLE_PRESET_SIMPLE_PRESET_H_
+#define PRESETS_SIMPLE_PRESET_SIMPLE_PRESET_H_
 
 #include "libopendrop/gl_interface.h"
 #include "libopendrop/gl_render_target.h"
@@ -10,10 +10,9 @@ namespace opendrop {
 
 class SimplePreset : public Preset {
  public:
-  SimplePreset(std::shared_ptr<gl::GlTextureManager> texture_manager, int width,
-               int height);
+  SimplePreset(std::shared_ptr<gl::GlTextureManager> texture_manager);
 
-  std::string name() override { return "SimplePreset"; }
+  std::string name() const override { return "SimplePreset"; }
 
  protected:
   void OnDrawFrame(
@@ -31,4 +30,4 @@ class SimplePreset : public Preset {
 
 }  // namespace opendrop
 
-#endif  // PRESETS_SIMPLE_PRESET_SIMPLE_H_
+#endif  // PRESETS_SIMPLE_PRESET_SIMPLE_PRESET_H_

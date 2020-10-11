@@ -10,10 +10,9 @@ namespace opendrop {
 
 class Kaleidoscope : public Preset {
  public:
-  Kaleidoscope(std::shared_ptr<gl::GlTextureManager> texture_manager, int width,
-               int height);
+  Kaleidoscope(std::shared_ptr<gl::GlTextureManager> texture_manager);
 
-  std::string name() override { return "Kaleidoscope"; }
+  std::string name() const override { return "Kaleidoscope"; }
 
  protected:
   void OnDrawFrame(
