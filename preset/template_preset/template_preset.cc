@@ -15,6 +15,7 @@
 #include "libopendrop/primitive/polyline.h"
 #include "libopendrop/primitive/rectangle.h"
 #include "libopendrop/util/colors.h"
+#include "libopendrop/util/gl_util.h"
 #include "libopendrop/util/logging.h"
 
 namespace opendrop {
@@ -23,7 +24,9 @@ namespace {
 constexpr float kScaleFactor = 0.5f;
 }
 
-TemplatePreset::TemplatePreset(int width, int height) : Preset(width, height) {
+TemplatePreset::TemplatePreset(
+    std::shared_ptr<gl::GlTextureManager> texture_manager)
+    : Preset(texture_manager) {
   warp_program_ =
       gl::GlProgram::MakeShared(passthrough_vsh::Code(), warp_fsh::Code());
   if (warp_program_ == nullptr) {
@@ -35,8 +38,10 @@ TemplatePreset::TemplatePreset(int width, int height) : Preset(width, height) {
     abort();
   }
 
-  front_render_target_ = std::make_shared<gl::GlRenderTarget>(width, height, 0);
-  back_render_target_ = std::make_shared<gl::GlRenderTarget>(width, height, 1);
+  front_render_target_ = std::make_shared<gl::GlRenderTarget>(
+      width(), height(), this->texture_manager());
+  back_render_target_ = std::make_shared<gl::GlRenderTarget>(
+      width(), height(), this->texture_manager());
 }
 
 void TemplatePreset::OnUpdateGeometry() {
@@ -51,7 +56,7 @@ void TemplatePreset::OnUpdateGeometry() {
 
 void TemplatePreset::OnDrawFrame(
     absl::Span<const float> samples, std::shared_ptr<GlobalState> state,
-    std::shared_ptr<gl::GlRenderTarget> output_render_target) {
+    float alpha, std::shared_ptr<gl::GlRenderTarget> output_render_target) {
   float energy = state->energy();
   float power = state->power();
 
@@ -81,19 +86,22 @@ void TemplatePreset::OnDrawFrame(
 
     warp_program_->Use();
 
-    glUniform1f(glGetUniformLocation(warp_program_->program_handle(), "power"),
-                power);
-    glUniform1f(glGetUniformLocation(warp_program_->program_handle(), "energy"),
-                energy);
-    glUniform2i(glGetUniformLocation(warp_program_->program_handle(),
-                                     "last_frame_size"),
-                width(), height());
-    int texture_number = 0;
-    glActiveTexture(GL_TEXTURE0 + texture_number);
-    glBindTexture(GL_TEXTURE_2D, front_render_target_->texture_handle());
-    glUniform1i(
-        glGetUniformLocation(warp_program_->program_handle(), "last_frame"),
-        texture_number);
+    LOG(DEBUG) << "Using program";
+    int texture_size_location = glGetUniformLocation(
+        warp_program_->program_handle(), "last_frame_size");
+    LOG(DEBUG) << "Got texture size location: " << texture_size_location;
+    int power_location =
+        glGetUniformLocation(warp_program_->program_handle(), "power");
+    int energy_location =
+        glGetUniformLocation(warp_program_->program_handle(), "energy");
+    LOG(DEBUG) << "Got locations for power: " << power_location
+               << " and energy: " << energy_location;
+    glUniform1f(power_location, power);
+    glUniform1f(energy_location, energy);
+    LOG(DEBUG) << "Power: " << power << " energy: " << energy;
+    glUniform2i(texture_size_location, width(), height());
+    GlBindRenderTargetTextureToUniform(warp_program_, "last_frame",
+                                       front_render_target_);
 
     // Force all fragments to draw with a full-screen rectangle.
     rectangle.Draw();
@@ -110,15 +118,16 @@ void TemplatePreset::OnDrawFrame(
   {
     auto output_activation = output_render_target->Activate();
     composite_program_->Use();
-    int texture_number = 0;
-    glActiveTexture(GL_TEXTURE0 + texture_number);
-    glBindTexture(GL_TEXTURE_2D, back_render_target_->texture_handle());
-    glUniform1i(glGetUniformLocation(composite_program_->program_handle(),
-                                     "render_target"),
-                texture_number);
-    glUniform2i(glGetUniformLocation(composite_program_->program_handle(),
-                                     "render_target_size"),
-                width(), height());
+    LOG(DEBUG) << "Using program";
+    int texture_size_location = glGetUniformLocation(
+        composite_program_->program_handle(), "render_target_size");
+    LOG(DEBUG) << "Got texture size location: " << texture_size_location;
+    glUniform2i(texture_size_location, width(), height());
+    GlBindRenderTargetTextureToUniform(composite_program_, "render_target",
+                                       back_render_target_);
+    glUniform1f(
+        glGetUniformLocation(composite_program_->program_handle(), "alpha"),
+        alpha);
 
     glViewport(0, 0, width(), height());
     rectangle.Draw();

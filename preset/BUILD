@@ -4,6 +4,7 @@ PRESET_DEPS_LIST = [
     "//libopendrop/preset/kaleidoscope",
     "//libopendrop/preset/simple_preset",
     "//libopendrop/preset/alien_rorschach",
+    "//libopendrop/preset/template_preset",
 ]
 
 cc_library(
