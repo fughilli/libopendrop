@@ -14,7 +14,7 @@ function usage() {
   echoerr ""
   echoerr "Args:"
   echoerr "  camel_case_name:  Name of forked preset, in camel_case (matches"
-  echoerr "                    regex \`^[a-z][a-z_]*$\`)"
+  echoerr "                    regex \`^[a-z][0-9a-z_]*$\`)"
 }
 
 function errexit() {
@@ -50,19 +50,22 @@ if [[ $# != 1 ]]; then
   errexit "$0 takes exactly 1 argument"
 fi
 
-if [[ -z $(echo "${name_snake_case}" | grep -e '^[a-z][a-z_]*$') ]]; then
+if [[ -z $(echo "${name_snake_case}" | grep -e '^[a-z][0-9a-z_]*$') ]]; then
   errexit "Input name ${name_snake_case} is not written in snake_case"
 fi
 
+preset_dir="$(dirname $0)"
 name_camel_case=$(camel_case ${name_snake_case})
 name_screaming_snake_case=$(screaming_snake_case ${name_snake_case})
 
-cp -r template_preset "${name_snake_case}"
-recursive_replace "${name_snake_case}/" "TEMPLATE_PRESET" \
+cp -r "${preset_dir}/template_preset" "${preset_dir}/${name_snake_case}"
+recursive_replace "${preset_dir}/${name_snake_case}/" "TEMPLATE_PRESET" \
   "${name_screaming_snake_case}"
-recursive_replace "${name_snake_case}/" "template_preset" "${name_snake_case}"
-recursive_replace "${name_snake_case}/" "TemplatePreset" "${name_camel_case}"
-mv "${name_snake_case}/template_preset.cc" \
-  "${name_snake_case}/${name_snake_case}.cc"
-mv "${name_snake_case}/template_preset.h" \
-  "${name_snake_case}/${name_snake_case}.h"
+recursive_replace "${preset_dir}/${name_snake_case}/" "template_preset" \
+  "${name_snake_case}"
+recursive_replace "${preset_dir}/${name_snake_case}/" "TemplatePreset" \
+  "${name_camel_case}"
+mv "${preset_dir}/${name_snake_case}/template_preset.cc" \
+  "${preset_dir}/${name_snake_case}/${name_snake_case}.cc"
+mv "${preset_dir}/${name_snake_case}/template_preset.h" \
+  "${preset_dir}/${name_snake_case}/${name_snake_case}.h"
