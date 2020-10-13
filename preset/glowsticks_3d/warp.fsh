@@ -7,15 +7,6 @@ uniform ivec2 last_frame_size;
 uniform float energy;
 uniform float power;
 
-// Rotates a screen UV coordinate around the origin by `angle`.
-vec2 rotate(vec2 screen_uv, float angle) {
-  float c = cos(angle);
-  float s = sin(angle);
-
-  return vec2(c * screen_uv.x - s * screen_uv.y,
-              s * screen_uv.x + c * screen_uv.y);
-}
-
 // Converts a normalized screen coordinate to a normalized texture coordinate.
 vec2 screen_to_tex(vec2 screen_uv) { return (screen_uv + vec2(1., 1.)) * 0.5; }
 
@@ -41,15 +32,10 @@ void main() {
   // audio cause more immediately perceptible "jumps" in the zoom effect.
   texture_uv = zoom(screen_uv, sin(energy * 20) * 0.3 * power + 1.);
 
-  // Rotate the texture by a pseudo-random amount that varies by `energy`.
-  // Additionally multiply in `power` for the same reason as above.
-  texture_uv =
-      rotate(texture_uv, sin_product(100 / 7.334, 10 / 9.225, energy) * power);
-
   texture_uv = screen_to_tex(texture_uv);
 
   // Mix the fragment color with the previously sampled color. Multiply the
   // sampled result by a value less than unity such that the energy input by the
   // drawn GL primitives dissipates over time.
-  gl_FragColor = gl_Color * 0.5 + texture2D(last_frame, texture_uv) * 0.95;
+  gl_FragColor = gl_Color * 0.2 + texture2D(last_frame, texture_uv) * 0.92;
 }

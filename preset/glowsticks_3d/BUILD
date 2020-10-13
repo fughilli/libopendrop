@@ -14,6 +14,7 @@ cc_library(
         "//libopendrop:gl_interface",
         "//libopendrop:gl_render_target",
         "//libopendrop/preset",
+        "//libopendrop/primitive:polyline",
         "//libopendrop/primitive:rectangle",
         "//libopendrop/primitive:ribbon",
         "//libopendrop/util:colors",
