@@ -42,19 +42,22 @@ Glowsticks3d::Glowsticks3d(
     abort();
   }
 
+  const auto square_dimension = std::max(width(), height());
   front_render_target_ = std::make_shared<gl::GlRenderTarget>(
-      width(), height(), this->texture_manager());
+      square_dimension, square_dimension, this->texture_manager());
   back_render_target_ = std::make_shared<gl::GlRenderTarget>(
-      width(), height(), this->texture_manager());
+      square_dimension, square_dimension, this->texture_manager());
 }
 
 void Glowsticks3d::OnUpdateGeometry() {
   glViewport(0, 0, width(), height());
+
+  const auto square_dimension = std::max(width(), height());
   if (front_render_target_ != nullptr) {
-    front_render_target_->UpdateGeometry(width(), height());
+    front_render_target_->UpdateGeometry(square_dimension, square_dimension);
   }
   if (back_render_target_ != nullptr) {
-    back_render_target_->UpdateGeometry(width(), height());
+    back_render_target_->UpdateGeometry(square_dimension, square_dimension);
   }
 }
 
@@ -136,7 +139,8 @@ void Glowsticks3d::OnDrawFrame(
     glUniform1f(power_location, power);
     glUniform1f(energy_location, energy);
     LOG(DEBUG) << "Power: " << power << " energy: " << energy;
-    glUniform2i(texture_size_location, width(), height());
+    glUniform2i(texture_size_location, front_render_target_->width(),
+                front_render_target_->height());
     GlBindRenderTargetTextureToUniform(warp_program_, "last_frame",
                                        front_render_target_);
 
@@ -164,14 +168,18 @@ void Glowsticks3d::OnDrawFrame(
     int texture_size_location = glGetUniformLocation(
         composite_program_->program_handle(), "render_target_size");
     LOG(DEBUG) << "Got texture size location: " << texture_size_location;
-    glUniform2i(texture_size_location, width(), height());
+    glUniform2i(texture_size_location, back_render_target_->width(),
+                back_render_target_->height());
     GlBindRenderTargetTextureToUniform(composite_program_, "render_target",
                                        back_render_target_);
     glUniform1f(
         glGetUniformLocation(composite_program_->program_handle(), "alpha"),
         alpha);
 
-    glViewport(0, 0, width(), height());
+    const auto square_dimension = std::max(width(), height());
+    const int offset_x = -(square_dimension - width()) / 2;
+    const int offset_y = -(square_dimension - height()) / 2;
+    glViewport(offset_x, offset_y, square_dimension, square_dimension);
     rectangle.Draw();
 
     back_render_target_->swap_texture_unit(front_render_target_.get());
