@@ -54,6 +54,11 @@ case $source_type in
       sed -n "s/\s\+Name.*\(alsa_output.*monitor$\)/\1/p" | head -n 1)
     ;;
 
+  'hdmi')
+    SOURCE=$(pactl list sources |
+      sed -n "s/\s\+Name.*\(alsa_output.*hdmi\-.*monitor$\)/\1/p" | head -n 1)
+    ;;
+
   'microphone')
     SOURCE=$(pactl list sources |
       sed -n "s/\s\+Name.*\(alsa_input.*analog\-stereo$\)/\1/p" | head -n 1)
