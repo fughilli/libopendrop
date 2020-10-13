@@ -18,6 +18,7 @@ class GlobalState {
   float power() { return properties_.power; }
   float average_power() { return properties_.average_power; }
   float energy() { return properties_.energy; }
+  float normalized_energy() { return properties_.normalized_energy; }
 
  private:
   struct Properties {
@@ -37,6 +38,9 @@ class GlobalState {
 
     // Average power over time.
     float average_power;
+
+    // Normalized energy (energy accumulated as \int{power / average_power}).
+    float normalized_energy;
   };
 
   // Storage for global properties.
