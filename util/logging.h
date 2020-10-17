@@ -5,6 +5,8 @@
 #include <iostream>
 #include <sstream>
 
+#include "libopendrop/util/logging_helpers.h"
+
 #if defined(ENABLE_DEBUG_LOGGING)
 constexpr static bool kDebugLoggingEnabled = true;
 #else

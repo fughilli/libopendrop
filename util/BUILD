@@ -4,6 +4,13 @@ cc_library(
     name = "logging",
     hdrs = ["logging.h"],
     linkstatic = 1,
+    deps = [":logging_helpers"],
+)
+
+cc_library(
+    name = "logging_helpers",
+    hdrs = ["logging_helpers.h"],
+    deps = ["@com_google_absl//absl/types:span"],
 )
 
 cc_library(
