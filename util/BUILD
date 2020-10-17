@@ -33,3 +33,37 @@ cc_library(
     name = "coefficients",
     hdrs = ["coefficients.h"],
 )
+
+cc_library(
+    name = "interpolator",
+    hdrs = ["interpolator.h"],
+    deps = [":logging"],
+)
+
+cc_test(
+    name = "interpolator_test",
+    srcs = ["interpolator_test.cc"],
+    deps = [
+        ":interpolator",
+        "@com_googletest//:gtest",
+        "@com_googletest//:gtest_main",
+        "@org_llvm_libcxx//:libcxx",
+    ],
+)
+
+cc_library(
+    name = "accumulator",
+    hdrs = ["accumulator.h"],
+    deps = [":interpolator"],
+)
+
+cc_test(
+    name = "accumulator_test",
+    srcs = ["accumulator_test.cc"],
+    deps = [
+        ":accumulator",
+        "@com_googletest//:gtest",
+        "@com_googletest//:gtest_main",
+        "@org_llvm_libcxx//:libcxx",
+    ],
+)
