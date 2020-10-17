@@ -154,6 +154,7 @@ cc_library(
     hdrs = ["global_state.h"],
     linkstatic = 1,
     deps = [
+        "//libopendrop/util:accumulator",
         "@com_google_absl//absl/types:span",
     ],
 )

@@ -2,6 +2,7 @@
 #define GLOBAL_STATE_H_
 
 #include "absl/types/span.h"
+#include "libopendrop/util/accumulator.h"
 
 namespace opendrop {
 
@@ -17,12 +18,17 @@ class GlobalState {
   float dt() { return properties_.dt; }
   float power() { return properties_.power; }
   float average_power() { return properties_.average_power; }
-  float energy() { return properties_.energy; }
-  float normalized_energy() { return properties_.normalized_energy; }
+  Accumulator<float>& energy() { return properties_.energy; }
+  Accumulator<float>& normalized_energy() {
+    return properties_.normalized_energy;
+  }
 
  private:
   struct Properties {
-    Properties() : dt(0), time(0), power(0), energy(0) {}
+    Properties() : dt(0), time(0), power(0) {
+      energy.SetValue(0);
+      normalized_energy.SetValue(0);
+    }
 
     // Elapsed time, in seconds, since last frame.
     float dt;
@@ -34,13 +40,13 @@ class GlobalState {
     float power;
 
     // Integral of audio signal power over time.
-    float energy;
+    Accumulator<float> energy;
 
     // Average power over time.
     float average_power;
 
     // Normalized energy (energy accumulated as \int{power / average_power}).
-    float normalized_energy;
+    Accumulator<float> normalized_energy;
   };
 
   // Storage for global properties.
