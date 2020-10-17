@@ -28,3 +28,8 @@ cc_library(
     name = "oneshot",
     hdrs = ["oneshot.h"],
 )
+
+cc_library(
+    name = "coefficients",
+    hdrs = ["coefficients.h"],
+)
