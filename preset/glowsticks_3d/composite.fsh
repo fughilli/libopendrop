@@ -24,7 +24,7 @@ void main() {
   //
   // Combine the samples with kernel [1., -0.2, -0.2] such that edges are mildly
   // accentuated.
-  gl_FragColor = texture2D(render_target, tex_uv) * 1. +
+  gl_FragColor = gl_Color + texture2D(render_target, tex_uv) * 1. +
                  (texture2D(render_target, tex_uv + vec2(offset.x, 0.)) +
                   texture2D(render_target, tex_uv + vec2(0., offset.y))) *
                      -0.2;

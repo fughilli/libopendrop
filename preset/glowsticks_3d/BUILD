@@ -10,6 +10,7 @@ cc_library(
     deps = [
         ":composite",
         ":passthrough",
+        ":ribbon",
         ":warp",
         "//libopendrop:gl_interface",
         "//libopendrop:gl_render_target",
@@ -17,9 +18,12 @@ cc_library(
         "//libopendrop/primitive:polyline",
         "//libopendrop/primitive:rectangle",
         "//libopendrop/primitive:ribbon",
+        "//libopendrop/util:accumulator",
+        "//libopendrop/util:coefficients",
         "//libopendrop/util:colors",
         "//libopendrop/util:gl_util",
         "//libopendrop/util:logging",
+        "@com_google_absl//absl/types:span",
     ],
 )
 
@@ -31,6 +35,11 @@ shader_cc_library(
 shader_cc_library(
     name = "passthrough",
     srcs = ["passthrough.vsh"],
+)
+
+shader_cc_library(
+    name = "ribbon",
+    srcs = ["ribbon.fsh"],
 )
 
 shader_cc_library(

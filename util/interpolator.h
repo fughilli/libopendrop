@@ -101,7 +101,7 @@ class Interpolator {
  public:
   Interpolator(T begin_value, T end_value, T step)
       : begin_value_(begin_value), end_value_(end_value), step_(step) {
-    if (step_ == 0) {
+    if (std::abs(step_) < kEpsilon) {
       if (end_value >= begin_value) {
         step_ = kEpsilon;
       } else {
@@ -110,7 +110,8 @@ class Interpolator {
     }
     CHECK((step > 0) ? (end_value >= begin_value) : (end_value <= begin_value))
         << "The sign of the step must be the same as the sign of the "
-           "expression `(end_value - begin_value)`.";
+           "expression `(end_value - begin_value)`. [end_value: "
+        << end_value << ", begin_value: " << begin_value << ", step: " << step;
   }
 
   Interpolator() : Interpolator(0, 0, 1) {}

@@ -79,8 +79,8 @@ std::shared_ptr<opendrop::Preset> GetRandomPreset(Args&&... args) {
 
 template <typename... Args>
 std::shared_ptr<opendrop::Preset> GetRandomPresetFromList(Args&&... args) {
-  return GetRandomPreset<opendrop::Kaleidoscope, opendrop::SimplePreset,
-                         opendrop::AlienRorschach, opendrop::TemplatePreset,
+  return GetRandomPreset</*opendrop::Kaleidoscope, opendrop::SimplePreset,
+                         opendrop::AlienRorschach, opendrop::TemplatePreset,*/
                          opendrop::Glowsticks3d>(std::forward<Args>(args)...);
 }
 

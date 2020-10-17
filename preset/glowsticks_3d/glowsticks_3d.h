@@ -1,10 +1,17 @@
 #ifndef PRESETS_GLOWSTICKS_3D_GLOWSTICKS_3D_H_
 #define PRESETS_GLOWSTICKS_3D_GLOWSTICKS_3D_H_
 
+#include <array>
+#include <glm/vec2.hpp>
+
 #include "libopendrop/gl_interface.h"
 #include "libopendrop/gl_render_target.h"
 #include "libopendrop/gl_texture_manager.h"
 #include "libopendrop/preset/preset.h"
+#include "libopendrop/primitive/polyline.h"
+#include "libopendrop/primitive/rectangle.h"
+#include "libopendrop/primitive/ribbon.h"
+#include "libopendrop/util/accumulator.h"
 
 namespace opendrop {
 
@@ -22,10 +29,45 @@ class Glowsticks3d : public Preset {
   void OnUpdateGeometry() override;
 
  private:
+  // Number of segments on the armature that describes the motion of the ribbon.
+  static constexpr int kNumSegments = 3;
+
+  // Updates the angles of the rotating armatures that describe the motion of
+  // the ribbon from the state for the current frame.
+  void UpdateArmatureSegmentAngles(
+      std::shared_ptr<GlobalState> state,
+      std::array<Accumulator<float>, kNumSegments>* segment_angles);
+
+  // Computes a new segment of the ribbon based upon the state for the current
+  // frame and the armature segment angles. Outputs a set of debug points into
+  // `debug_segment_points` that can be used to render a visualization of the
+  // rotating armatures.
+  std::pair<glm::vec2, glm::vec2> ComputeRibbonSegment(
+      std::shared_ptr<GlobalState> state,
+      const std::array<float, kNumSegments> segment_angles,
+      std::array<glm::vec2, kNumSegments + 1>* debug_segment_points);
+
   std::shared_ptr<gl::GlRenderTarget> front_render_target_;
   std::shared_ptr<gl::GlRenderTarget> back_render_target_;
   std::shared_ptr<gl::GlProgram> warp_program_;
   std::shared_ptr<gl::GlProgram> composite_program_;
+  std::shared_ptr<gl::GlProgram> ribbon_program_;
+
+  std::array<float, 3> segment_scales_;
+  glm::vec2 base_position_;
+  std::array<Accumulator<float>, kNumSegments> segment_angle_accumulators_;
+  std::array<float, 2> color_coefficients_;
+  std::array<float, kNumSegments> direction_reversal_coefficients_;
+  std::array<float, kNumSegments> rotational_rate_coefficients_;
+
+  std::array<Interpolator<float>, kNumSegments> segment_angle_interpolators_;
+  std::array<InterpolatorIterator<float>, kNumSegments>
+      segment_angle_iterators_;
+
+  Rectangle rectangle_;
+  Ribbon ribbon_;
+  Ribbon ribbon2_;
+  Polyline debug_segments_;
 };
 
 }  // namespace opendrop
