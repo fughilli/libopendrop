@@ -278,10 +278,6 @@ extern "C" int main(int argc, char *argv[]) {
       } else {
         late_frame_counter = 0;
       }
-
-      if ((kTargetFrameTimeMs - draw_time) > kMinimumDelayMs) {
-        SDL_Delay(kTargetFrameTimeMs - draw_time);
-      }
     }
   }
   return 0;
