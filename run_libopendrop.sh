@@ -20,6 +20,7 @@ function usage() {
 }
 
 enable_debug=0
+run_binary=0
 
 while [[ ! -z "$@" ]]; do
   arg=$1
@@ -34,6 +35,10 @@ while [[ ! -z "$@" ]]; do
 
     '-d')
       enable_debug=1
+      ;;
+
+    '-b')
+      run_binary=1
       ;;
 
     *)
@@ -83,9 +88,16 @@ else
 debug_options=""
 fi
 
+options="\
+  --pulseaudio_source="${SOURCE}" \
+  --window_width=600 \
+  --window_height=600"
+
+if [[ $run_binary == 1 ]]; then
+  ../bazel-bin/libopendrop/main $options $@
+else
 bazelisk run //libopendrop:main $debug_options \
   --copt=-I/usr/include/SDL2 \
   -- \
-  --pulseaudio_source="${SOURCE}" \
-  --window_width=600 \
-  --window_height=600 $@
+  $options $@
+fi
