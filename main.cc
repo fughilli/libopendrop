@@ -37,6 +37,7 @@
 #include "absl/debugging/failure_signal_handler.h"
 #include "absl/flags/flag.h"
 #include "absl/flags/parse.h"
+#include "absl/time/clock.h"
 #include "absl/types/span.h"
 #include "led_driver/performance_timer.h"
 #include "led_driver/pulseaudio_interface.h"
@@ -77,8 +78,11 @@ using ::opendrop::OpenDropControllerInterface;
 using ::opendrop::PcmFormat;
 // Target FPS.
 constexpr int kFps = 60;
-// Target frame time, in milliseconds.
-constexpr int kTargetFrameTimeMs = 1000 / kFps;
+// Target frame time, in microseconds.
+constexpr int kTargetFrameTimeUs = 1000000 / kFps;
+// Tolerance, in micoseconds, of the frame time measurement before a frame is
+// determined to be late.
+constexpr int kTargetFrameTimeLateToleranceUs = 100000;
 // Size of the audio processor buffer, in samples.
 constexpr int kAudioBufferSize = 256;
 // Minimum number of milliseconds that should be delayed.
@@ -175,13 +179,13 @@ extern "C" int main(int argc, char *argv[]) {
 
     while (!exit_event_received) {
       // Record the start of the frame in the draw timer.
-      auto frame_start_time = SDL_GetTicks();
+      auto frame_start_time = absl::GetCurrentTimeNanos() / 1000;
       draw_timer.Start(frame_start_time);
 
       // Compute the frame time. This is the total elapsed time since the last
       // frame.
       auto frame_time = frame_timer.End(frame_start_time);
-      float prev_dt = static_cast<float>(frame_time) / 1000.0f;
+      float prev_dt = static_cast<float>(frame_time) / 1000000.0f;
       frame_timer.Start(frame_start_time);
 
       open_drop_controller->DrawFrame(prev_dt);
@@ -231,7 +235,7 @@ extern "C" int main(int argc, char *argv[]) {
       sdl_gl_interface->SwapBuffers();
 
       // Record the end of the draw operations.
-      uint32_t draw_time = draw_timer.End(SDL_GetTicks());
+      uint32_t draw_time = draw_timer.End(absl::GetCurrentTimeNanos() / 1000);
 
       static int counter = 0;
       ++counter;
@@ -241,11 +245,12 @@ extern "C" int main(int argc, char *argv[]) {
                    << "\tFPS: " << 1 / prev_dt;
         counter = 0;
       }
-      if (draw_time >= kTargetFrameTimeMs) {
+      if (draw_time >= kTargetFrameTimeUs) {
         if (late_frames_to_skip_preset <= 0) {
           continue;
         }
-        if (frame_time > (kTargetFrameTimeMs + 10)) {
+        if (frame_time >
+            (kTargetFrameTimeUs + kTargetFrameTimeLateToleranceUs)) {
           ++late_frame_counter;
           if (late_frame_counter >= late_frames_to_skip_preset) {
             LOG(ERROR) << "Had too many late frames in a row ("

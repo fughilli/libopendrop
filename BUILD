@@ -61,6 +61,7 @@ cc_binary(
         "@com_google_absl//absl/debugging:failure_signal_handler",
         "@com_google_absl//absl/flags:flag",
         "@com_google_absl//absl/flags:parse",
+        "@com_google_absl//absl/time",
         "@com_google_absl//absl/types:span",
         "@org_llvm_libcxx//:libcxx",
     ],
