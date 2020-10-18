@@ -20,8 +20,8 @@ vec2 zoom(vec2 screen_uv, float zoom) {
 // Choosing the coefficients such that the number of decimal places required to
 // represent their ratio is maximized will give a greater appearance of
 // "randomness".
-float sin_product(float coeff_a, float coeff_b, float arg) {
-  return sin(coeff_a * arg) * sin(coeff_b * arg);
+float cos_product(float coeff_a, float coeff_b, float arg) {
+  return cos(coeff_a * arg) * cos(coeff_b * arg);
 }
 
 vec4 plus_sample(sampler2D texture, ivec2 texture_size, vec2 uv,
@@ -34,6 +34,11 @@ vec4 plus_sample(sampler2D texture, ivec2 texture_size, vec2 uv,
          4.0f;
 }
 
+const float kMaxBrighten = 1.01;
+const float kBrightenSwingMagnitude = 0.3;
+const float kCosProductCoeffA = 23.456;
+const float kCosProductCoeffB = 9.123;
+
 void main() {
   vec2 texture_uv = vec2(0.0, 0.0);
 
@@ -43,18 +48,21 @@ void main() {
   // alternation being inversely proportional to the current intensity of the
   // audio. We multiply in the power such that instantaneous changes in the
   // audio cause more immediately perceptible "jumps" in the zoom effect.
-  texture_uv = zoom(screen_uv, sin(energy * 20) * 0.3 * power + 1.0);
+  texture_uv = zoom(screen_uv, cos_product(34, 15, energy) * 0.3 * power + 1.0);
 
   texture_uv = screen_to_tex(texture_uv);
 
   // Mix the fragment color with the previously sampled color. Multiply the
   // sampled result by a value less than unity such that the energy input by the
   // drawn GL primitives dissipates over time.
-  gl_FragColor = clamp(
-      gl_Color * 0.1 +
-          plus_sample(last_frame, last_frame_size, texture_uv, 1.0f) * 0.97,
-      0, 1);
+  vec4 sample = plus_sample(last_frame, last_frame_size, texture_uv, 1.0f);
+  float brighten_darken_coefficient =
+      ((kMaxBrighten - kBrightenSwingMagnitude) +
+       cos_product(20, 9, energy) * kBrightenSwingMagnitude);
+  gl_FragColor = clamp(gl_Color * (1 - length(sample.rgb)) +
+                           sample * brighten_darken_coefficient,
+                       0, 1);
   if (length(gl_FragColor) < 0.1) {
-    gl_FragColor = vec4(0, 0, 0, 1);
+    gl_FragColor = gl_FragColor * gl_FragColor;
   }
 }

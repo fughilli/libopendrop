@@ -32,9 +32,14 @@ constexpr int kRibbonSegmentCount = 100;
 
 // The maximum angle change, in radians, that can occur per frame for the
 // armature.
-constexpr float kMaxAngularStep = 0.01f;
+constexpr float kMaxAngularStep = 0.04f;
 
 constexpr float kFramerateScale = 60.0f / 60.0f;
+
+// When true, the ribbon width is scaled by the instantaneous audio power,
+// resulting in a waveform of the audio power appearing along the length of the
+// ribbon.
+constexpr bool kEnableRibbonWidthPowerScaling = false;
 
 // Rotates a vector counterclockwise by an angle in radians.
 glm::vec2 Rotate2d(glm::vec2 vector, float angle) {
@@ -81,7 +86,7 @@ Glowsticks3d::Glowsticks3d(
   color_coefficients_ = Coefficients::Random<2>(1, 20);
   direction_reversal_coefficients_ = Coefficients::Random<kNumSegments>(5, 20);
   rotational_rate_coefficients_ =
-      Coefficients::Random<kNumSegments>(0.05f, 0.15f);
+      Coefficients::Random<kNumSegments>(0.1f, 0.3f);
 }
 
 void Glowsticks3d::OnUpdateGeometry() {
@@ -123,7 +128,10 @@ std::pair<glm::vec2, glm::vec2> Glowsticks3d::ComputeRibbonSegment(
     segments[i] = UnitVectorAtAngle(segment_angles[i]) * segment_scales_[i];
   }
 
-  float ribbon_width = 0.1 + 0.034 * sin(energy * 10) + state->power() / 10;
+  float ribbon_width = 0.1 + 0.034 * sin(energy * 10);
+  if (kEnableRibbonWidthPowerScaling) {
+    ribbon_width += state->power() / 10;
+  }
 
   *debug_segment_points = {base_position_, base_position_ + segments[0],
                            base_position_ + segments[0] + segments[1],
@@ -144,12 +152,22 @@ void Glowsticks3d::OnDrawFrame(
   float normalized_energy = state->normalized_energy();
   float power = state->power();
 
+  LOG(DEBUG) << "Input values: average power=" << average_power
+             << ", energy=" << energy
+             << ", normalized_energy=" << normalized_energy
+             << ", power=" << power;
+
   std::array<glm::vec2, 4> debug_segment_points;
 
   UpdateArmatureSegmentAngles(state, &segment_angle_accumulators_);
   // Determine how many steps to divide the arc into, by finding the minumum
   // number of subdivisions that achieves a maximum angular step of
   // `kMaxAngluarStep` for the fastest-changing angle.
+  std::array<float, 3> angles_;
+  for (int i = 0; i < angles_.size(); ++i) {
+    angles_[i] = segment_angle_accumulators_[i];
+  }
+  LOG(DEBUG) << "segment_angle_accumulators_=" << absl::Span<float>(angles_);
   int num_steps = 1;
   for (Accumulator<float>& angle_accumulator : segment_angle_accumulators_) {
     float abs_step = std::abs(angle_accumulator.last_step());
@@ -157,6 +175,10 @@ void Glowsticks3d::OnDrawFrame(
       num_steps = std::max(
           num_steps, static_cast<int>(std::ceil(abs_step / kMaxAngularStep)));
     }
+  }
+
+  if (num_steps > 1) {
+    LOG(DEBUG) << "num_steps = " << num_steps;
   }
 
   // Divide the arc into `num_steps`, by interpolating all of the angles
@@ -221,14 +243,14 @@ void Glowsticks3d::OnDrawFrame(
     // Force all fragments to draw with a full-screen rectangle.
     rectangle_.Draw();
 
-    ribbon_program_->Use();
-
     // Draw the waveform.
     ribbon_.UpdateColor(
         HsvToRgb(glm::vec3(energy * color_coefficients_[0], 1, 0.5)));
     ribbon2_.UpdateColor(
         HsvToRgb(glm::vec3(energy * color_coefficients_[1], 1, 0.5)));
     ribbon_.Draw();
+    // TODO: Have the second ribbon split off of and rejoin the first ribbon at
+    // intervals.
     ribbon2_.Draw();
 
     glFlush();
@@ -248,6 +270,12 @@ void Glowsticks3d::OnDrawFrame(
     glUniform1f(
         glGetUniformLocation(composite_program_->program_handle(), "alpha"),
         alpha);
+    glUniform1f(
+        glGetUniformLocation(composite_program_->program_handle(), "power"),
+        power);
+    glUniform1f(glGetUniformLocation(composite_program_->program_handle(),
+                                     "normalized_energy"),
+                normalized_energy);
 
     const auto square_dimension = std::max(width(), height());
     const int offset_x = -(square_dimension - width()) / 2;

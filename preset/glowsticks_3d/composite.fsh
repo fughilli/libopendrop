@@ -3,6 +3,7 @@
 uniform sampler2D render_target;
 uniform ivec2 render_target_size;
 uniform float power;
+uniform float normalized_energy;
 
 varying vec2 screen_uv;
 
@@ -27,5 +28,7 @@ void main() {
   gl_FragColor = gl_Color + texture2D(render_target, tex_uv) * 1. +
                  (texture2D(render_target, tex_uv + vec2(offset.x, 0.)) +
                   texture2D(render_target, tex_uv + vec2(0., offset.y))) *
-                     -0.2;
+                     // TODO: Produce a more interesting effect for the Sobel
+                     // filter coefficient
+                     (-0.4 * sin(normalized_energy * 0.05));
 }
