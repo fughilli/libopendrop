@@ -24,6 +24,7 @@ class OpenDropController : public OpenDropControllerInterface {
   // Returns the `PresetBlender` associated with this `OpenDropController`
   // instance.
   std::shared_ptr<PresetBlender> preset_blender() { return preset_blender_; }
+  GlobalState& global_state() const { return *global_state_; }
 
  protected:
   std::shared_ptr<gl::GlTextureManager> texture_manager_;

@@ -51,6 +51,7 @@
 #include "libopendrop/preset/preset_list.h"
 #include "libopendrop/preset/simple_preset/simple_preset.h"
 #include "libopendrop/sdl_gl_interface.h"
+#include "libopendrop/util/coefficients.h"
 #include "libopendrop/util/logging.h"
 
 ABSL_FLAG(std::string, pulseaudio_server, "",
@@ -92,9 +93,12 @@ void NextPreset(OpenDropController *controller,
                 std::shared_ptr<gl::GlTextureManager> texture_manager) {
   // TODO: Refactor such that preset geometry is configured after attaching to
   // the preset blender.
+  std::array<float, 2> durations =
+      opendrop::Coefficients::Random<2>(0.2f, 3.0f);
   controller->preset_blender()->AddPreset(
       opendrop::GetRandomPresetFromList(texture_manager),
-      std::make_shared<gl::GlRenderTarget>(texture_manager), 2, 1);
+      std::make_shared<gl::GlRenderTarget>(texture_manager),
+      durations[0] + durations[1] * 2, durations[1]);
 }
 }  // namespace
 
@@ -132,11 +136,13 @@ extern "C" int main(int argc, char *argv[]) {
 
     auto texture_manager = std::make_shared<gl::GlTextureManager>();
 
-    std::shared_ptr<OpenDropControllerInterface> open_drop_controller =
+    std::shared_ptr<OpenDropController> open_drop_controller =
         std::make_shared<OpenDropController>(
             sdl_gl_interface, texture_manager, kAudioBufferSize,
             absl::GetFlag(FLAGS_window_width),
             absl::GetFlag(FLAGS_window_height));
+    std::shared_ptr<OpenDropControllerInterface>
+        open_drop_controller_interface = open_drop_controller;
 
     int channel_count = absl::GetFlag(FLAGS_channel_count);
 
@@ -189,6 +195,16 @@ extern "C" int main(int argc, char *argv[]) {
       frame_timer.Start(frame_start_time);
 
       open_drop_controller->DrawFrame(prev_dt);
+
+      static float fire_time = 0.0f;
+      if ((open_drop_controller->global_state().t() - fire_time) > 0.5f) {
+        if (std::abs(open_drop_controller->global_state().power() /
+                     open_drop_controller->global_state().average_power()) >
+            3.0f) {
+          fire_time = open_drop_controller->global_state().t();
+          NextPreset(open_drop_controller.get(), texture_manager);
+        }
+      }
 
       SDL_Event event;
       while (SDL_PollEvent(&event)) {
