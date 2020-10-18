@@ -4,7 +4,10 @@ cc_library(
     name = "logging",
     hdrs = ["logging.h"],
     linkstatic = 1,
-    deps = [":logging_helpers"],
+    deps = [
+        ":logging_helpers",
+        "@com_google_absl//absl/time",
+    ],
 )
 
 cc_library(

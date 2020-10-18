@@ -5,6 +5,8 @@
 #include <iostream>
 #include <sstream>
 
+#include "absl/time/clock.h"
+#include "absl/time/time.h"
 #include "libopendrop/util/logging_helpers.h"
 
 #if defined(ENABLE_DEBUG_LOGGING)
@@ -69,6 +71,7 @@ class _Logger {
   }
 
   void WriteHeader(std::ostream& ostream) {
+    ostream << "[" << (absl::GetCurrentTimeNanos() / 1000) << "]";
     switch (level_) {
       case DEBUG:
         ostream << "[DEBUG]";
