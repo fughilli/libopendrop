@@ -8,6 +8,8 @@ namespace opendrop {
 
 class GlobalState {
  public:
+  GlobalState() : initialized_(false) {}
+
   // Updates the global state. `samples` is a const view of the current buffer
   // of audio samples, and `dt` is the elapsed time, in seconds, since the last
   // time `Update` was invoked.
@@ -25,7 +27,7 @@ class GlobalState {
 
  private:
   struct Properties {
-    Properties() : dt(0), time(0), power(0) {
+    Properties() : dt(0), time(0), power(0), average_power(0) {
       energy.SetValue(0);
       normalized_energy.SetValue(0);
     }
@@ -48,6 +50,8 @@ class GlobalState {
     // Normalized energy (energy accumulated as \int{power / average_power}).
     Accumulator<float> normalized_energy;
   };
+
+  bool initialized_;
 
   // Storage for global properties.
   Properties properties_;
