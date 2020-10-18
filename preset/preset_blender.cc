@@ -105,8 +105,7 @@ void PresetBlender::DrawFrame(
       continue;
     }
 
-    activation.preset()->DrawFrame(samples, state,
-                                   activation.GetMixingCoefficient(),
+    activation.preset()->DrawFrame(samples, state, 1.0f,
                                    activation.render_target());
   }
 
@@ -120,14 +119,20 @@ void PresetBlender::DrawFrame(
     glBlendFunc(GL_SRC_ALPHA, GL_DST_ALPHA);
     glEnable(GL_BLEND);
 
-    blit_program_->Use();
     for (auto activation : preset_activations_) {
+      // If the mixing coefficient is 0, skip blitting the preset output.
       if (activation.GetMixingCoefficient() == 0) {
         continue;
       }
 
+      blit_program_->Use();
+      // Bind the source texture and alpha value.
       GlBindRenderTargetTextureToUniform(blit_program_, "source_texture",
                                          activation.render_target());
+      glUniform1f(
+          glGetUniformLocation(blit_program_->program_handle(), "alpha"),
+          activation.GetMixingCoefficient());
+
       static Rectangle rectangle;
       rectangle.Draw();
     }
