@@ -152,10 +152,10 @@ void Glowsticks3d::OnDrawFrame(
   // `kMaxAngluarStep` for the fastest-changing angle.
   int num_steps = 1;
   for (Accumulator<float>& angle_accumulator : segment_angle_accumulators_) {
-    if (angle_accumulator.last_step() > kMaxAngularStep) {
+    float abs_step = std::abs(angle_accumulator.last_step());
+    if (abs_step > kMaxAngularStep) {
       num_steps = std::max(
-          num_steps, static_cast<int>(std::ceil(angle_accumulator.last_step() /
-                                                kMaxAngularStep)));
+          num_steps, static_cast<int>(std::ceil(abs_step / kMaxAngularStep)));
     }
   }
 
