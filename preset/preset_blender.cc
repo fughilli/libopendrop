@@ -135,8 +135,7 @@ void PresetBlender::DrawFrame(
           glGetUniformLocation(blit_program_->program_handle(), "alpha"),
           activation.GetMixingCoefficient());
 
-      static Rectangle rectangle;
-      rectangle.Draw();
+      rectangle_.Draw();
     }
 
     glDisable(GL_BLEND);

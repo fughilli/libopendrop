@@ -7,13 +7,10 @@
 #include <GL/glext.h>
 
 #include <algorithm>
-#include <vector>
 
 #include "libopendrop/preset/alien_rorschach/composite.fsh.h"
 #include "libopendrop/preset/alien_rorschach/passthrough.vsh.h"
 #include "libopendrop/preset/alien_rorschach/warp.fsh.h"
-#include "libopendrop/primitive/polyline.h"
-#include "libopendrop/primitive/rectangle.h"
 #include "libopendrop/util/colors.h"
 #include "libopendrop/util/gl_util.h"
 #include "libopendrop/util/logging.h"
@@ -77,12 +74,8 @@ void AlienRorschach::OnDrawFrame(
   float normalized_power =
       (average_power > 0.0f) ? power / average_power : 0.0f;
 
-  static auto buffer_size = samples.size() / 2;
-  static std::vector<glm::vec2> vertices;
-  vertices.resize(buffer_size);
-
-  static Rectangle rectangle;
-  static Polyline polyline;
+  auto buffer_size = samples.size() / 2;
+  vertices_.resize(buffer_size);
 
   {
     auto back_activation = back_render_target_->Activate();
@@ -101,7 +94,7 @@ void AlienRorschach::OnDrawFrame(
     GlBindRenderTargetTextureToUniform(warp_program_, "last_frame",
                                        front_render_target_);
 
-    rectangle.Draw();
+    rectangle_.Draw();
 
     for (int j = 0; j < 4; j++) {
       for (int i = 0; i < buffer_size; ++i) {
@@ -121,14 +114,14 @@ void AlienRorschach::OnDrawFrame(
         x_pos += cos(energy * 10 + (j / 4.0 * M_PI * 2)) / 2;
         y_pos += sin(energy * 10 + (j / 4.0 * M_PI * 2)) / 2;
 
-        vertices[i] = glm::vec2(x_pos, y_pos);
+        vertices_[i] = glm::vec2(x_pos, y_pos);
       }
 
-      polyline.UpdateVertices(vertices);
-      polyline.UpdateWidth(normalized_power * 5);
-      polyline.UpdateColor(
+      polyline_.UpdateVertices(vertices_);
+      polyline_.UpdateWidth(normalized_power * 5);
+      polyline_.UpdateColor(
           HsvToRgb(glm::vec3(energy * 1 + (j / 4.0f), 1, 0.5)));
-      polyline.Draw();
+      polyline_.Draw();
     }
 
     glFlush();
@@ -153,7 +146,7 @@ void AlienRorschach::OnDrawFrame(
         alpha);
 
     glViewport(0, 0, width(), height());
-    rectangle.Draw();
+    rectangle_.Draw();
 
     back_render_target_->swap_texture_unit(front_render_target_.get());
     glFlush();

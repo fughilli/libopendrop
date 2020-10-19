@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "libopendrop/preset/preset.h"
+#include "libopendrop/primitive/rectangle.h"
 #include "libopendrop/util/logging.h"
 #include "libopendrop/util/oneshot.h"
 
@@ -70,6 +71,8 @@ class PresetBlender {
   int width_, height_;
   std::shared_ptr<gl::GlProgram> blit_program_;
   std::list<PresetActivation> preset_activations_;
+
+  Rectangle rectangle_;
 };
 }  // namespace opendrop
 

@@ -7,13 +7,10 @@
 #include <GL/glext.h>
 
 #include <algorithm>
-#include <vector>
 
 #include "libopendrop/preset/template_preset/composite.fsh.h"
 #include "libopendrop/preset/template_preset/passthrough.vsh.h"
 #include "libopendrop/preset/template_preset/warp.fsh.h"
-#include "libopendrop/primitive/polyline.h"
-#include "libopendrop/primitive/rectangle.h"
 #include "libopendrop/util/colors.h"
 #include "libopendrop/util/gl_util.h"
 #include "libopendrop/util/logging.h"
@@ -74,12 +71,8 @@ void TemplatePreset::OnDrawFrame(
   float energy = state->energy();
   float power = state->power();
 
-  static auto buffer_size = samples.size() / 2;
-  static std::vector<glm::vec2> vertices;
-  vertices.resize(buffer_size);
-
-  static Rectangle rectangle;
-  static Polyline polyline;
+  auto buffer_size = samples.size() / 2;
+  vertices_.resize(buffer_size);
 
   float cos_energy = cos(energy * 10 + power * 10);
   float sin_energy = sin(energy * 10 + power * 10);
@@ -92,7 +85,7 @@ void TemplatePreset::OnDrawFrame(
     float x_pos = x_scaled * cos_energy - y_scaled * sin_energy;
     float y_pos = x_scaled * sin_energy + y_scaled * cos_energy;
 
-    vertices[i] = glm::vec2(x_pos, y_pos);
+    vertices_[i] = glm::vec2(x_pos, y_pos);
   }
 
   {
@@ -118,13 +111,13 @@ void TemplatePreset::OnDrawFrame(
                                        front_render_target_);
 
     // Force all fragments to draw with a full-screen rectangle.
-    rectangle.Draw();
+    rectangle_.Draw();
 
     // Draw the waveform.
-    polyline.UpdateVertices(vertices);
-    polyline.UpdateWidth(2 + power * 10);
-    polyline.UpdateColor(HsvToRgb(glm::vec3(energy, 1, 0.5)));
-    polyline.Draw();
+    polyline_.UpdateVertices(vertices_);
+    polyline_.UpdateWidth(2 + power * 10);
+    polyline_.UpdateColor(HsvToRgb(glm::vec3(energy, 1, 0.5)));
+    polyline_.Draw();
 
     glFlush();
   }
@@ -144,7 +137,7 @@ void TemplatePreset::OnDrawFrame(
         alpha);
 
     glViewport(0, 0, width(), height());
-    rectangle.Draw();
+    rectangle_.Draw();
 
     back_render_target_->swap_texture_unit(front_render_target_.get());
     glFlush();
