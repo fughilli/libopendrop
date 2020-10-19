@@ -77,3 +77,23 @@ cc_test(
         "@org_llvm_libcxx//:libcxx",
     ],
 )
+
+cc_library(
+    name = "status_macros",
+    hdrs = ["status_macros.h"],
+    deps = [
+        "@com_google_absl//absl/status:statusor",
+    ],
+)
+
+cc_test(
+    name = "status_macros_test",
+    srcs = ["status_macros_test.cc"],
+    deps = [
+        ":status_macros",
+        "@com_google_absl//absl/status:statusor",
+        "@com_googletest//:gtest",
+        "@com_googletest//:gtest_main",
+        "@org_llvm_libcxx//:libcxx",
+    ],
+)
