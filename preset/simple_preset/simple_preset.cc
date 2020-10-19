@@ -17,6 +17,7 @@
 #include "libopendrop/util/colors.h"
 #include "libopendrop/util/gl_util.h"
 #include "libopendrop/util/logging.h"
+#include "libopendrop/util/status_macros.h"
 
 namespace opendrop {
 
@@ -25,23 +26,36 @@ constexpr float kScaleFactor = 0.3f;
 }
 
 SimplePreset::SimplePreset(
+    std::shared_ptr<gl::GlProgram> warp_program,
+    std::shared_ptr<gl::GlProgram> composite_program,
+    std::shared_ptr<gl::GlRenderTarget> front_render_target,
+    std::shared_ptr<gl::GlRenderTarget> back_render_target,
     std::shared_ptr<gl::GlTextureManager> texture_manager)
-    : Preset(texture_manager) {
-  warp_program_ =
-      gl::GlProgram::MakeShared(passthrough_vsh::Code(), warp_fsh::Code());
-  if (warp_program_ == nullptr) {
-    abort();
-  }
-  composite_program_ =
-      gl::GlProgram::MakeShared(passthrough_vsh::Code(), composite_fsh::Code());
-  if (composite_program_ == nullptr) {
-    abort();
-  }
+    : Preset(texture_manager),
+      warp_program_(warp_program),
+      composite_program_(composite_program),
+      front_render_target_(front_render_target),
+      back_render_target_(back_render_target) {}
 
-  front_render_target_ = std::make_shared<gl::GlRenderTarget>(
-      width(), height(), this->texture_manager());
-  back_render_target_ = std::make_shared<gl::GlRenderTarget>(
-      width(), height(), this->texture_manager());
+absl::StatusOr<std::shared_ptr<Preset>> SimplePreset::MakeShared(
+    std::shared_ptr<gl::GlTextureManager> texture_manager) {
+  std::shared_ptr<gl::GlProgram> warp_program, composite_program;
+  ASSIGN_OR_RETURN(
+      warp_program,
+      gl::GlProgram::MakeShared(passthrough_vsh::Code(), warp_fsh::Code()));
+  ASSIGN_OR_RETURN(composite_program,
+                   gl::GlProgram::MakeShared(passthrough_vsh::Code(),
+                                             composite_fsh::Code()));
+
+  std::shared_ptr<gl::GlRenderTarget> front_render_target, back_render_target;
+  ASSIGN_OR_RETURN(front_render_target,
+                   gl::GlRenderTarget::MakeShared(0, 0, texture_manager));
+  ASSIGN_OR_RETURN(back_render_target,
+                   gl::GlRenderTarget::MakeShared(0, 0, texture_manager));
+
+  return std::shared_ptr<SimplePreset>(
+      new SimplePreset(warp_program, composite_program, front_render_target,
+                       back_render_target, texture_manager));
 }
 
 void SimplePreset::OnUpdateGeometry() {

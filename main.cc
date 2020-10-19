@@ -92,9 +92,20 @@ void NextPreset(OpenDropController *controller,
   // the preset blender.
   std::array<float, 2> durations =
       opendrop::Coefficients::Random<2>(0.2f, 3.0f);
+  auto status_or_render_target =
+      gl::GlRenderTarget::MakeShared(0, 0, texture_manager);
+  if (!status_or_render_target.ok()) {
+    LOG(INFO) << "Failed to create render target for preset: "
+              << status_or_render_target.status();
+    return;
+  }
+  auto status_or_preset = opendrop::GetRandomPresetFromList(texture_manager);
+  if (!status_or_preset.ok()) {
+    LOG(INFO) << "Failed to create preset: " << status_or_preset.status();
+    return;
+  }
   controller->preset_blender()->AddPreset(
-      opendrop::GetRandomPresetFromList(texture_manager),
-      std::make_shared<gl::GlRenderTarget>(texture_manager),
+      *status_or_preset, *status_or_render_target,
       durations[0] + durations[1] * 2, durations[1]);
 }
 }  // namespace

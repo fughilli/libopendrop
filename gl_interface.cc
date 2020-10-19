@@ -6,6 +6,7 @@
 
 #include <iostream>
 
+#include "absl/strings/str_cat.h"
 #include "libopendrop/util/logging.h"
 
 namespace gl {
@@ -78,7 +79,7 @@ bool GlProgram::Link(std::string* error_text) const {
 
 void GlProgram::Use() const { glUseProgram(program_handle_); }
 
-std::shared_ptr<gl::GlProgram> GlProgram::MakeShared(
+absl::StatusOr<std::shared_ptr<gl::GlProgram>> GlProgram::MakeShared(
     std::string vertex_code, std::string fragment_code) {
   LOG(DEBUG) << "[Compiling program]\nVERTEX SHADER CODE:\n"
              << "========================================" << vertex_code
@@ -90,20 +91,20 @@ std::shared_ptr<gl::GlProgram> GlProgram::MakeShared(
   gl::GlShader vertex_shader(gl::GlShaderType::kVertex, vertex_code);
   std::string error_string = "";
   if (!vertex_shader.Compile(&error_string)) {
-    LOG(ERROR) << "Failed to compile vertex shader: " << error_string;
-    return nullptr;
+    return absl::InvalidArgumentError(
+        absl::StrCat("Failed to compile vertex shader: ", error_string));
   }
   gl::GlShader fragment_shader(gl::GlShaderType::kFragment, fragment_code);
   if (!fragment_shader.Compile(&error_string)) {
-    LOG(ERROR) << "Failed to compile fragment shader: " << error_string;
-    return nullptr;
+    return absl::InvalidArgumentError(
+        absl::StrCat("Failed to compile fragment shader: ", error_string));
   }
 
   if (!gl_program->Attach(vertex_shader)
            .Attach(fragment_shader)
            .Link(&error_string)) {
-    LOG(ERROR) << "Failed to link program: " << error_string;
-    return nullptr;
+    return absl::UnknownError(
+        absl::StrCat("Failed to link program: ", error_string));
   }
 
   return gl_program;

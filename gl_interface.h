@@ -4,6 +4,8 @@
 #include <memory>
 #include <string>
 
+#include "absl/status/statusor.h"
+
 namespace gl {
 
 enum class GlShaderType : int {
@@ -36,8 +38,8 @@ class GlProgram {
 
   unsigned int program_handle() const { return program_handle_; }
 
-  static std::shared_ptr<GlProgram> MakeShared(std::string vertex_code,
-                                               std::string fragment_code);
+  static absl::StatusOr<std::shared_ptr<GlProgram>> MakeShared(
+      std::string vertex_code, std::string fragment_code);
 
  private:
   unsigned int program_handle_;

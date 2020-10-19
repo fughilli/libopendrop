@@ -4,6 +4,7 @@
 #include <memory>
 #include <mutex>
 
+#include "absl/status/statusor.h"
 #include "absl/types/span.h"
 #include "libopendrop/gl_interface.h"
 #include "libopendrop/gl_render_target.h"
@@ -14,9 +15,10 @@ namespace opendrop {
 // Base class interface for a preset. This class is thread-safe.
 class Preset {
  public:
-  // Constructs a preset which renders to a raster of the given dimensions.
-  Preset(std::shared_ptr<gl::GlTextureManager> texture_manager)
-      : texture_manager_(texture_manager), width_(0), height_(0) {}
+  static absl::StatusOr<std::shared_ptr<Preset>> MakeShared(
+      std::shared_ptr<gl::GlTextureManager> texture_manager) {
+    return absl::InternalError("Inheritors must implement MakeShared");
+  }
   virtual ~Preset() {}
 
   // Draws a single frame of this preset. `samples` is a buffer of interleaved
@@ -35,6 +37,10 @@ class Preset {
   virtual std::string name() const = 0;
 
  protected:
+  // Constructs a preset which renders to a raster of the given dimensions.
+  Preset(std::shared_ptr<gl::GlTextureManager> texture_manager)
+      : texture_manager_(texture_manager), width_(0), height_(0) {}
+
   // Getters for dimensions.
   int width() const { return width_; }
   int height() const { return height_; }

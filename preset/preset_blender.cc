@@ -82,8 +82,10 @@ float PresetActivation::GetMixingCoefficient() const {
 
 PresetBlender::PresetBlender(int width, int height)
     : width_(width), height_(height) {
-  blit_program_ = gl::GlProgram::MakeShared(blit_vsh::Code(), blit_fsh::Code());
-  CHECK_NULL(blit_program_) << "Failed to create blit program";
+  absl::StatusOr<std::shared_ptr<gl::GlProgram>> status_or_blit_program =
+      gl::GlProgram::MakeShared(blit_vsh::Code(), blit_fsh::Code());
+  CHECK(status_or_blit_program.ok()) << "Failed to create blit program";
+  blit_program_ = *status_or_blit_program;
 }
 
 // Draws a single frame of blended preset output.

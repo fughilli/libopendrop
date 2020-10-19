@@ -7,6 +7,7 @@
 #include <iostream>
 
 #include "libopendrop/util/logging.h"
+#include "libopendrop/util/status_macros.h"
 
 namespace gl {
 
@@ -45,10 +46,9 @@ GlRenderTargetActivation::~GlRenderTargetActivation() {
 }
 
 GlRenderTarget::GlRenderTarget(
-    int width, int height,
-    std::shared_ptr<gl::GlTextureManager> texture_manager)
-    : texture_manager_(texture_manager) {
-  texture_unit_ = texture_manager_->Allocate();
+    int width, int height, int texture_unit,
+    std::shared_ptr<GlTextureManager> texture_manager)
+    : texture_unit_(texture_unit), texture_manager_(texture_manager) {
   // Create a new renderbuffer.
   glGenFramebuffers(1, &renderbuffer_handle_);
   LOG(DEBUG) << "Generated renderbuffer: " << renderbuffer_handle_;
@@ -62,9 +62,13 @@ GlRenderTarget::GlRenderTarget(
   UpdateGeometry(width, height);
 }
 
-GlRenderTarget::GlRenderTarget(
-    std::shared_ptr<gl::GlTextureManager> texture_manager)
-    : GlRenderTarget(0, 0, texture_manager) {}
+absl::StatusOr<std::shared_ptr<GlRenderTarget>> GlRenderTarget::MakeShared(
+    int width, int height, std::shared_ptr<GlTextureManager> texture_manager) {
+  int texture_unit;
+  ASSIGN_OR_RETURN(texture_unit, texture_manager->Allocate());
+  return std::shared_ptr<GlRenderTarget>(
+      new GlRenderTarget(width, height, texture_unit, texture_manager));
+}
 
 GlRenderTarget::~GlRenderTarget() {
   LOG(DEBUG) << "Disposing render target";

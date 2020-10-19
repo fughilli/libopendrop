@@ -27,6 +27,8 @@ cc_library(
     linkstatic = 1,
     deps = [
         ":preset",
+        "@com_google_absl//absl/status:statusor",
+        "//libopendrop/util:status_macros",
     ] + PRESET_DEPS_LIST,
 )
 

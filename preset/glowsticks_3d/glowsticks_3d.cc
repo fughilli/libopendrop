@@ -18,6 +18,7 @@
 #include "libopendrop/util/colors.h"
 #include "libopendrop/util/gl_util.h"
 #include "libopendrop/util/logging.h"
+#include "libopendrop/util/status_macros.h"
 
 namespace opendrop {
 
@@ -42,13 +43,13 @@ constexpr float kFramerateScale = 60.0f / 60.0f;
 constexpr bool kEnableRibbonWidthPowerScaling = false;
 
 // Rotates a vector counterclockwise by an angle in radians.
-glm::vec2 Rotate2d(glm::vec2 vector, float angle) {
-  float cos_angle = cos(angle);
-  float sin_angle = cos(angle);
-
-  return glm::vec2(vector.x * cos_angle - vector.y * sin_angle,
-                   vector.x * sin_angle + vector.y * cos_angle);
-}
+// glm::vec2 Rotate2d(glm::vec2 vector, float angle) {
+//   float cos_angle = cos(angle);
+//   float sin_angle = cos(angle);
+// 
+//   return glm::vec2(vector.x * cos_angle - vector.y * sin_angle,
+//                    vector.x * sin_angle + vector.y * cos_angle);
+// }
 
 // Returns a unit vector rotated counter-clockwise from the +X unit vector by an
 // angle in radians.
@@ -58,26 +59,20 @@ glm::vec2 UnitVectorAtAngle(float angle) {
 }  // namespace
 
 Glowsticks3d::Glowsticks3d(
+    std::shared_ptr<gl::GlProgram> warp_program,
+    std::shared_ptr<gl::GlProgram> ribbon_program,
+    std::shared_ptr<gl::GlProgram> composite_program,
+    std::shared_ptr<gl::GlRenderTarget> front_render_target,
+    std::shared_ptr<gl::GlRenderTarget> back_render_target,
     std::shared_ptr<gl::GlTextureManager> texture_manager)
     : Preset(texture_manager),
+      warp_program_(warp_program),
+      ribbon_program_(ribbon_program),
+      composite_program_(composite_program),
+      front_render_target_(front_render_target),
+      back_render_target_(back_render_target),
       ribbon_(glm::vec3(), kRibbonSegmentCount),
       ribbon2_(glm::vec3(), kRibbonSegmentCount) {
-  warp_program_ =
-      gl::GlProgram::MakeShared(passthrough_vsh::Code(), warp_fsh::Code());
-  CHECK_NULL(warp_program_) << "Warp program failed to compile.";
-  ribbon_program_ =
-      gl::GlProgram::MakeShared(passthrough_vsh::Code(), ribbon_fsh::Code());
-  CHECK_NULL(ribbon_program_) << "Warp program failed to compile.";
-  composite_program_ =
-      gl::GlProgram::MakeShared(passthrough_vsh::Code(), composite_fsh::Code());
-  CHECK_NULL(composite_program_) << "Warp program failed to compile.";
-
-  const auto square_dimension = std::max(width(), height());
-  front_render_target_ = std::make_shared<gl::GlRenderTarget>(
-      square_dimension, square_dimension, this->texture_manager());
-  back_render_target_ = std::make_shared<gl::GlRenderTarget>(
-      square_dimension, square_dimension, this->texture_manager());
-
   segment_scales_ = Coefficients::Random<3>(0.1, 0.3);
   segment_scales_[2] = 1.0f;
 
@@ -87,6 +82,29 @@ Glowsticks3d::Glowsticks3d(
   direction_reversal_coefficients_ = Coefficients::Random<kNumSegments>(5, 20);
   rotational_rate_coefficients_ =
       Coefficients::Random<kNumSegments>(0.1f, 0.3f);
+}
+
+absl::StatusOr<std::shared_ptr<Preset>> Glowsticks3d::MakeShared(
+    std::shared_ptr<gl::GlTextureManager> texture_manager) {
+  std::shared_ptr<gl::GlProgram> warp_program, ribbon_program,
+      composite_program;
+  ASSIGN_OR_RETURN(
+      warp_program,
+      gl::GlProgram::MakeShared(passthrough_vsh::Code(), warp_fsh::Code()));
+  ASSIGN_OR_RETURN(
+      ribbon_program,
+      gl::GlProgram::MakeShared(passthrough_vsh::Code(), ribbon_fsh::Code()));
+  ASSIGN_OR_RETURN(composite_program,
+                   gl::GlProgram::MakeShared(passthrough_vsh::Code(),
+                                             composite_fsh::Code()));
+  std::shared_ptr<gl::GlRenderTarget> front_render_target, back_render_target;
+  ASSIGN_OR_RETURN(front_render_target,
+                   gl::GlRenderTarget::MakeShared(0, 0, texture_manager));
+  ASSIGN_OR_RETURN(back_render_target,
+                   gl::GlRenderTarget::MakeShared(0, 0, texture_manager));
+  return std::shared_ptr<Glowsticks3d>(new Glowsticks3d(
+      warp_program, ribbon_program, composite_program, front_render_target,
+      back_render_target, texture_manager));
 }
 
 void Glowsticks3d::OnUpdateGeometry() {

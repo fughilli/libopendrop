@@ -4,13 +4,17 @@
 #include <memory>
 #include <random>
 
+#include "absl/status/statusor.h"
+#include "libopendrop/preset/preset.h"
+#include "libopendrop/util/logging.h"
+#include "libopendrop/util/status_macros.h"
+
+// Preset includes
 #include "libopendrop/preset/alien_rorschach/alien_rorschach.h"
 #include "libopendrop/preset/glowsticks_3d/glowsticks_3d.h"
 #include "libopendrop/preset/kaleidoscope/kaleidoscope.h"
-#include "libopendrop/preset/preset.h"
 #include "libopendrop/preset/simple_preset/simple_preset.h"
 #include "libopendrop/preset/template_preset/template_preset.h"
-#include "libopendrop/util/logging.h"
 
 namespace opendrop {
 
@@ -22,20 +26,23 @@ template <typename... Args>
 struct GetRandomPresetHelperStruct {
   // Base case.
   template <typename PresetA>
-  static std::shared_ptr<opendrop::Preset> GetRandomPresetHelper(
-      int index, Args&&... args) {
-    CHECK(index == 0) << "Index greater than number of presets";
+  static absl::StatusOr<std::shared_ptr<opendrop::Preset>>
+  GetRandomPresetHelper(int index, Args&&... args) {
+    if (index != 0) {
+      return absl::FailedPreconditionError(
+          "Index greater than number of presets");
+    }
 
-    return std::make_shared<PresetA>(std::forward<Args>(args)...);
+    return PresetA::MakeShared(std::forward<Args>(args)...);
   }
 
   // Recursively unpack the parameter pack until index is 0, and instatiate that
   // class.
   template <typename PresetA, typename PresetB, typename... Presets>
-  static std::shared_ptr<opendrop::Preset> GetRandomPresetHelper(
-      int index, Args&&... args) {
+  static absl::StatusOr<std::shared_ptr<opendrop::Preset>>
+  GetRandomPresetHelper(int index, Args&&... args) {
     if (index == 0) {
-      return std::make_shared<PresetA, Args...>(std::forward<Args>(args)...);
+      return PresetA::MakeShared(std::forward<Args>(args)...);
     }
 
     return GetRandomPresetHelper<PresetB, Presets...>(
@@ -48,7 +55,8 @@ struct GetRandomPresetHelperStruct {
 // subclass is chosen from the template parameter pack `Presets` at random. The
 // instance is constructed by forwarding `args`.
 template <typename... Presets, typename... Args>
-std::shared_ptr<opendrop::Preset> GetRandomPreset(Args&&... args) {
+absl::StatusOr<std::shared_ptr<opendrop::Preset>> GetRandomPreset(
+    Args&&... args) {
   // Division modulus for the RNG
   static const int kModulus = sizeof...(Presets);
 
@@ -66,10 +74,11 @@ std::shared_ptr<opendrop::Preset> GetRandomPreset(Args&&... args) {
   }
   last_selection = random_index;
 
-  auto return_preset = preset_list::GetRandomPresetHelperStruct<
-      Args...>::template GetRandomPresetHelper<Presets...>(random_index,
-                                                           std::forward<Args>(
-                                                               args)...);
+  std::shared_ptr<Preset> return_preset;
+  ASSIGN_OR_RETURN(return_preset,
+                   preset_list::GetRandomPresetHelperStruct<Args...>::
+                       template GetRandomPresetHelper<Presets...>(
+                           random_index, std::forward<Args>(args)...));
 
   LOG(INFO) << "Returning preset with index " << random_index << " and name "
             << return_preset->name();
@@ -78,9 +87,10 @@ std::shared_ptr<opendrop::Preset> GetRandomPreset(Args&&... args) {
 }
 
 template <typename... Args>
-std::shared_ptr<opendrop::Preset> GetRandomPresetFromList(Args&&... args) {
-  return GetRandomPreset</*opendrop::Kaleidoscope, opendrop::SimplePreset,
-                         opendrop::AlienRorschach, opendrop::TemplatePreset,*/
+absl::StatusOr<std::shared_ptr<opendrop::Preset>> GetRandomPresetFromList(
+    Args&&... args) {
+  return GetRandomPreset<opendrop::Kaleidoscope, opendrop::SimplePreset,
+                         opendrop::AlienRorschach, opendrop::TemplatePreset,
                          opendrop::Glowsticks3d>(std::forward<Args>(args)...);
 }
 

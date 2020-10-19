@@ -4,6 +4,7 @@
 #include <memory>
 #include <mutex>
 
+#include "absl/status/statusor.h"
 #include "libopendrop/gl_interface.h"
 #include "libopendrop/gl_texture_manager.h"
 
@@ -22,9 +23,8 @@ class GlRenderTargetActivation {
 
 class GlRenderTarget : public std::enable_shared_from_this<GlRenderTarget> {
  public:
-  GlRenderTarget(int width, int height,
-                 std::shared_ptr<gl::GlTextureManager> texture_manager);
-  GlRenderTarget(std::shared_ptr<gl::GlTextureManager> texture_manager);
+  static absl::StatusOr<std::shared_ptr<GlRenderTarget>> MakeShared(
+      int width, int height, std::shared_ptr<GlTextureManager> texture_manager);
   virtual ~GlRenderTarget();
 
   virtual std::shared_ptr<GlRenderTargetActivation> Activate();
@@ -47,6 +47,9 @@ class GlRenderTarget : public std::enable_shared_from_this<GlRenderTarget> {
   bool swap_texture_unit(GlRenderTarget* other);
 
  private:
+  GlRenderTarget(int width, int height, int texture_unit,
+                 std::shared_ptr<GlTextureManager> texture_manager);
+
   std::mutex render_target_mu_;
   int width_, height_;
   int texture_unit_;
@@ -54,7 +57,7 @@ class GlRenderTarget : public std::enable_shared_from_this<GlRenderTarget> {
   unsigned int renderbuffer_handle_;
   unsigned int texture_handle_;
 
-  std::shared_ptr<gl::GlTextureManager> texture_manager_;
+  std::shared_ptr<GlTextureManager> texture_manager_;
 };
 
 }  // namespace gl

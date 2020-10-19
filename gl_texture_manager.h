@@ -5,13 +5,15 @@
 #include <queue>
 #include <vector>
 
+#include "absl/status/statusor.h"
+
 namespace gl {
 
 class GlTextureManager {
  public:
   GlTextureManager();
 
-  int Allocate();
+  absl::StatusOr<int> Allocate();
   void Deallocate(int texture_unit);
 
  private:

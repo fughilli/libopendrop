@@ -77,7 +77,11 @@ cc_library(
     srcs = ["gl_interface.cc"],
     hdrs = ["gl_interface.h"],
     linkstatic = 1,
-    deps = ["//libopendrop/util:logging"],
+    deps = [
+        "//libopendrop/util:logging",
+        "@com_google_absl//absl/status:statusor",
+        "@com_google_absl//absl/strings",
+    ],
 )
 
 cc_library(
@@ -89,6 +93,8 @@ cc_library(
         ":gl_interface",
         ":gl_texture_manager",
         "//libopendrop/util:logging",
+        "//libopendrop/util:status_macros",
+        "@com_google_absl//absl/status:statusor",
     ],
 )
 
@@ -97,7 +103,10 @@ cc_library(
     srcs = ["gl_texture_manager.cc"],
     hdrs = ["gl_texture_manager.h"],
     linkstatic = 1,
-    deps = ["//libopendrop/util:logging"],
+    deps = [
+        "//libopendrop/util:logging",
+        "@com_google_absl//absl/status:statusor",
+    ],
 )
 
 cc_library(

@@ -18,8 +18,10 @@ GlTextureManager::GlTextureManager() : total_texture_units_(0) {
   }
 }
 
-int GlTextureManager::Allocate() {
-  CHECK(!free_texture_units_.empty()) << "No free texture units available.";
+absl::StatusOr<int> GlTextureManager::Allocate() {
+  if (free_texture_units_.empty()) {
+    return absl::FailedPreconditionError("No free texture units available.");
+  }
 
   int texture_unit = free_texture_units_.front();
   free_texture_units_.pop();

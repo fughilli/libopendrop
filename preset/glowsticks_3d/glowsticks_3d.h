@@ -4,6 +4,7 @@
 #include <array>
 #include <glm/vec2.hpp>
 
+#include "absl/status/statusor.h"
 #include "libopendrop/gl_interface.h"
 #include "libopendrop/gl_render_target.h"
 #include "libopendrop/gl_texture_manager.h"
@@ -17,11 +18,19 @@ namespace opendrop {
 
 class Glowsticks3d : public Preset {
  public:
-  Glowsticks3d(std::shared_ptr<gl::GlTextureManager> texture_manager);
+  static absl::StatusOr<std::shared_ptr<Preset>> MakeShared(
+      std::shared_ptr<gl::GlTextureManager> texture_manager);
 
   std::string name() const override { return "Glowsticks3d"; }
 
  protected:
+  Glowsticks3d(std::shared_ptr<gl::GlProgram> warp_program,
+               std::shared_ptr<gl::GlProgram> ribbon_program,
+               std::shared_ptr<gl::GlProgram> composite_program,
+               std::shared_ptr<gl::GlRenderTarget> front_render_target,
+               std::shared_ptr<gl::GlRenderTarget> back_render_target,
+               std::shared_ptr<gl::GlTextureManager> texture_manager);
+
   void OnDrawFrame(
       absl::Span<const float> samples, std::shared_ptr<GlobalState> state,
       float alpha,
@@ -47,11 +56,11 @@ class Glowsticks3d : public Preset {
       const std::array<float, kNumSegments> segment_angles,
       std::array<glm::vec2, kNumSegments + 1>* debug_segment_points);
 
+  std::shared_ptr<gl::GlProgram> warp_program_;
+  std::shared_ptr<gl::GlProgram> ribbon_program_;
+  std::shared_ptr<gl::GlProgram> composite_program_;
   std::shared_ptr<gl::GlRenderTarget> front_render_target_;
   std::shared_ptr<gl::GlRenderTarget> back_render_target_;
-  std::shared_ptr<gl::GlProgram> warp_program_;
-  std::shared_ptr<gl::GlProgram> composite_program_;
-  std::shared_ptr<gl::GlProgram> ribbon_program_;
 
   std::array<float, 3> segment_scales_;
   glm::vec2 base_position_;

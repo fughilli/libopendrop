@@ -40,12 +40,16 @@ OpenDropController::OpenDropController(
   normalizer_ =
       std::make_shared<Normalizer>(kNormalizerAlpha, kNormalizerInstantUpscale);
 
-  output_render_target_ =
-      std::make_shared<gl::GlRenderTarget>(width, height, texture_manager_);
-  CHECK_NULL(output_render_target_) << "Failed to create output render target";
+  auto status_or_render_target =
+      gl::GlRenderTarget::MakeShared(width, height, texture_manager_);
+  CHECK(status_or_render_target.ok())
+      << "Failed to create output render target";
+  output_render_target_ = *status_or_render_target;
 
-  blit_program_ = gl::GlProgram::MakeShared(blit_vsh::Code(), blit_fsh::Code());
-  CHECK_NULL(blit_program_) << "Failed to create blit program";
+  absl::StatusOr<std::shared_ptr<gl::GlProgram>> status_or_blit_program =
+      gl::GlProgram::MakeShared(blit_vsh::Code(), blit_fsh::Code());
+  CHECK(status_or_blit_program.ok()) << "Failed to create blit program";
+  blit_program_ = *status_or_blit_program;
 
   preset_blender_ = std::make_shared<PresetBlender>(width, height);
   CHECK_NULL(preset_blender_) << "Failed to create preset blender";
