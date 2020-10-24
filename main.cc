@@ -84,7 +84,7 @@ constexpr int kTargetFrameTimeLateToleranceUs = 100000;
 // Size of the audio processor buffer, in samples.
 constexpr int kAudioBufferSize = 256;
 // Minimum number of milliseconds that should be delayed.
-constexpr int kMinimumDelayMs = 2;
+constexpr int kMinimumDelayUs = 2000;
 
 void NextPreset(OpenDropController *controller,
                 std::shared_ptr<gl::GlTextureManager> texture_manager) {
@@ -285,6 +285,13 @@ extern "C" int main(int argc, char *argv[]) {
         continue;
       } else {
         late_frame_counter = 0;
+      }
+
+      if ((kTargetFrameTimeUs - draw_time) > kMinimumDelayUs) {
+        auto delay_time_ms = (kTargetFrameTimeUs - draw_time) / 1000;
+        if (delay_time_ms > 0) {
+          SDL_Delay(delay_time_ms);
+        }
       }
     }
   }
