@@ -5,6 +5,7 @@
 #include <iostream>
 #include <sstream>
 
+#include "absl/strings/str_format.h"
 #include "absl/time/clock.h"
 #include "absl/time/time.h"
 #include "libopendrop/util/logging_helpers.h"
@@ -71,7 +72,13 @@ class _Logger {
   }
 
   void WriteHeader(std::ostream& ostream) {
-    ostream << "[" << (absl::GetCurrentTimeNanos() / 1000) << "]";
+    auto time_since_epoch = absl::Now() - absl::UnixEpoch();
+
+    ostream << "["
+            << absl::StrFormat(
+                   "%d.%06d", absl::ToInt64Seconds(time_since_epoch),
+                   absl::ToInt64Microseconds(time_since_epoch) % 1000000ul)
+            << "]";
     switch (level_) {
       case DEBUG:
         ostream << "[DEBUG]";
