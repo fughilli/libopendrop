@@ -17,6 +17,9 @@ function usage() {
   echoerr "    \twill be selected. Source type should be one of [system, "
   echoerr "    \tbluetooth]."
   echoerr "-d  \tEnable debug logging."
+  echoerr "-b  \tRun from the binary output of bazel instead of building "
+  echoerr "    \tlibopendrop again."
+  echoerr "-p  \tPosition on the screen. Must be of the form \`<x>,<y>\`."
 }
 
 enable_debug=0
@@ -39,6 +42,11 @@ while [[ ! -z "$@" ]]; do
 
     '-b')
       run_binary=1
+      ;;
+
+    '-p')
+      position=$1
+      shift
       ;;
 
     *)
@@ -83,9 +91,9 @@ case $source_type in
 esac
 
 if [[ $enable_debug == 1 ]]; then
-debug_options="-c dbg --copt=-ggdb --copt=-DENABLE_DEBUG_LOGGING"
+  debug_options="-c dbg --copt=-ggdb --copt=-DENABLE_DEBUG_LOGGING"
 else
-debug_options=""
+  debug_options=""
 fi
 
 options="\
@@ -93,11 +101,26 @@ options="\
   --window_width=600 \
   --window_height=600"
 
+if [[ ! -z $position ]]; then
+  match=$(echo $position | sed -n 's/^\(\-\?[0-9]\+,\-\?[0-9]\+\)$/\1/p')
+  position_x=$(echo $position | sed -n 's/^\(\-\?[0-9]\+\),\-\?[0-9]\+$/\1/p')
+  position_y=$(echo $position | sed -n 's/^\-\?[0-9]\+,\(\-\?[0-9]\+\)$/\1/p')
+  if [[ -z $match ]]; then
+    echoerr "Position does not match required format: $position"
+    usage
+    exit 1
+  fi
+
+  options="$options \
+    --window_x=$position_x \
+    --window_y=$position_y"
+fi
+
 if [[ $run_binary == 1 ]]; then
   ../bazel-bin/libopendrop/main $options $@
 else
-bazelisk run //libopendrop:main $debug_options \
-  --copt=-I/usr/include/SDL2 \
-  -- \
-  $options $@
+  bazelisk run //libopendrop:main $debug_options \
+    --copt=-I/usr/include/SDL2 \
+    -- \
+    $options $@
 fi
