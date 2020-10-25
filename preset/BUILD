@@ -6,6 +6,7 @@ PRESET_DEPS_LIST = [
     "//libopendrop/preset/alien_rorschach",
     "//libopendrop/preset/template_preset",
     "//libopendrop/preset/glowsticks_3d",
+    "//libopendrop/preset/rotary_transporter",
 ]
 
 cc_library(

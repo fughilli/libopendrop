@@ -13,6 +13,7 @@
 #include "libopendrop/preset/alien_rorschach/alien_rorschach.h"
 #include "libopendrop/preset/glowsticks_3d/glowsticks_3d.h"
 #include "libopendrop/preset/kaleidoscope/kaleidoscope.h"
+#include "libopendrop/preset/rotary_transporter/rotary_transporter.h"
 #include "libopendrop/preset/simple_preset/simple_preset.h"
 #include "libopendrop/preset/template_preset/template_preset.h"
 
@@ -91,7 +92,8 @@ absl::StatusOr<std::shared_ptr<opendrop::Preset>> GetRandomPresetFromList(
     Args&&... args) {
   return GetRandomPreset<opendrop::Kaleidoscope, opendrop::SimplePreset,
                          opendrop::AlienRorschach, opendrop::TemplatePreset,
-                         opendrop::Glowsticks3d>(std::forward<Args>(args)...);
+                         opendrop::Glowsticks3d, opendrop::RotaryTransporter>(
+      std::forward<Args>(args)...);
 }
 
 }  // namespace opendrop
