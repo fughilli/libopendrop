@@ -3,6 +3,7 @@
 
 #include <array>
 #include <glm/vec2.hpp>
+#include <glm/vec3.hpp>
 
 #include "absl/status/statusor.h"
 #include "libopendrop/gl_interface.h"
@@ -74,8 +75,8 @@ class Glowsticks3d : public Preset {
       segment_angle_iterators_;
 
   Rectangle rectangle_;
-  Ribbon<glm::vec2> ribbon_;
-  Ribbon<glm::vec2> ribbon2_;
+  Ribbon<glm::vec3> ribbon_;
+  Ribbon<glm::vec3> ribbon2_;
   Polyline debug_segments_;
 };
 

@@ -222,13 +222,18 @@ void Glowsticks3d::OnDrawFrame(
 
     LOG(DEBUG) << "Interpolation step " << i << ": "
                << absl::Span<float>(segment_angles);
-    auto segment =
+    auto segment_2d =
         ComputeRibbonSegment(state, segment_angles, &debug_segment_points);
+    std::pair<glm::vec3, glm::vec3> segment;
+    segment.first = glm::vec3(segment_2d.first, 0.1);
+    segment.second = glm::vec3(segment_2d.second, 0.1);
     ribbon_.AppendSegment(segment);
 
     // Mirror around X for the second ribbon.
     segment.first.x *= -1;
     segment.second.x *= -1;
+    segment.first.z = -0.1;
+    segment.second.z = -0.1;
     ribbon2_.AppendSegment(segment);
   }
 
