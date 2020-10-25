@@ -27,7 +27,6 @@ run_binary=0
 
 while [[ ! -z "$@" ]]; do
   arg=$1
-  echoerr "Parsing arg: $arg"
   shift
 
   case $arg in
@@ -81,6 +80,11 @@ case $source_type in
     echoerr "Source type not provided!"
     usage
     exit 1
+    ;;
+
+  '?')
+    echo "Supported source types: bluetooth system hdmi microphone"
+    exit 0
     ;;
 
   *)

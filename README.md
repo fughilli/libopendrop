@@ -55,12 +55,27 @@ If all goes well, there should now be a binary in the `bazel-bin` directory:
 ls bazel-bin/libopendrop/main
 ```
 
+## Executing
+
 You can run it directly, or using `bazelisk`:
 
 ```
 export SOURCE=$(pactl list sources | grep Name | grep monitor | head -n 1 | awk '{ print $2 }')
 bazelisk run //libopendrop:main -c opt --copt=-I/usr/include/SDL2 -- --pulseaudio_source=$SOURCE
 
+```
+
+Or, even better, use the runner program:
+
+```
+./run_libopendrop.sh -s system
+```
+
+The `-s` flag selects which pulseaudio source to use for input to the
+visualizer. Available options can be listed by passing `-s ?`:
+
+```
+./run_libopendrop.sh -s ?
 ```
 
 ### Cross-Compilation
