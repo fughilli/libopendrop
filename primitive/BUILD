@@ -29,5 +29,6 @@ cc_library(
     deps = [
         ":primitive",
         "//libopendrop/util:logging",
+        "@com_google_absl//absl/types:span",
     ],
 )

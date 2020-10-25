@@ -6,6 +6,7 @@
 #include <glm/vec3.hpp>
 #include <vector>
 
+#include "absl/types/span.h"
 #include "libopendrop/primitive/primitive.h"
 
 namespace opendrop {
@@ -48,10 +49,17 @@ class Ribbon : Primitive {
   void UpdateColor(glm::vec3 color);
 
  private:
+  void RenderTriangleStrip(absl::Span<glm::vec2> vertices);
+
   glm::vec3 color_;
   int num_segments_;
   std::vector<glm::vec2> vertices_;
   std::vector<uint16_t> indices_;
+
+  // The location where the next segment will be added.
+  intptr_t head_pointer_;
+  // Whether or not the buffer has been filled with segments yet.
+  bool filled_;
 };
 
 }  // namespace opendrop
