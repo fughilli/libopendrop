@@ -11,6 +11,7 @@
 
 namespace opendrop {
 
+template <typename T>
 class Ribbon : Primitive {
  public:
   Ribbon(glm::vec3 color, int num_segments);
@@ -43,17 +44,17 @@ class Ribbon : Primitive {
   //  ^          ^       ^          ^
   //  |          |       |          |
   // second     second  first      first
-  void AppendSegment(std::pair<glm::vec2, glm::vec2> segment);
+  void AppendSegment(std::pair<T, T> segment);
 
   // Updates the color of the ribbon.
   void UpdateColor(glm::vec3 color);
 
  private:
-  void RenderTriangleStrip(absl::Span<glm::vec2> vertices);
+  void RenderTriangleStrip(absl::Span<T> vertices);
 
   glm::vec3 color_;
   int num_segments_;
-  std::vector<glm::vec2> vertices_;
+  std::vector<T> vertices_;
   std::vector<uint16_t> indices_;
 
   // The location where the next segment will be added.
@@ -63,5 +64,7 @@ class Ribbon : Primitive {
 };
 
 }  // namespace opendrop
+
+#include "libopendrop/primitive/ribbon.cc"
 
 #endif  // PRIMITIVES_RIBBON_H_

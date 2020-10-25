@@ -10,9 +10,24 @@ namespace opendrop {
 
 namespace {
 constexpr int kSegmentVertexCount = 2;
+
+template <typename T>
+constexpr int GetVectorFieldWidth() {
+  return 0;
 }
 
-Ribbon::Ribbon(glm::vec3 color, int num_segments)
+template <>
+constexpr int GetVectorFieldWidth<glm::vec2>() {
+  return 2;
+}
+template <>
+constexpr int GetVectorFieldWidth<glm::vec3>() {
+  return 3;
+}
+}  // namespace
+
+template <typename T>
+Ribbon<T>::Ribbon(glm::vec3 color, int num_segments)
     : color_(color),
       num_segments_(num_segments),
       head_pointer_(kSegmentVertexCount),
@@ -27,7 +42,8 @@ Ribbon::Ribbon(glm::vec3 color, int num_segments)
   }
 }
 
-void Ribbon::RenderTriangleStrip(absl::Span<glm::vec2> vertices) {
+template <typename T>
+void Ribbon<T>::RenderTriangleStrip(absl::Span<T> vertices) {
   if (vertices.size() <= kSegmentVertexCount) {
     return;
   }
@@ -35,25 +51,27 @@ void Ribbon::RenderTriangleStrip(absl::Span<glm::vec2> vertices) {
   glEnableClientState(GL_VERTEX_ARRAY);
   glDisable(GL_DEPTH_TEST);
   glColor4f(color_.x, color_.y, color_.z, 1);
-  glVertexPointer(2, GL_FLOAT, 0, vertices.data());
+  glVertexPointer(GetVectorFieldWidth<T>(), GL_FLOAT, 0, vertices.data());
   CHECK(vertices.size() <= indices_.size()) << "More vertices than indices.";
   glDrawElements(GL_TRIANGLE_STRIP, vertices.size(), GL_UNSIGNED_SHORT,
                  indices_.data());
   glDisableClientState(GL_VERTEX_ARRAY);
 }
 
-void Ribbon::Draw() {
+template <typename T>
+void Ribbon<T>::Draw() {
   if (filled_) {
-    RenderTriangleStrip(absl::Span<glm::vec2>(vertices_.data(), head_pointer_));
-    RenderTriangleStrip(absl::Span<glm::vec2>(
-        vertices_.data() + head_pointer_, vertices_.size() - head_pointer_));
+    RenderTriangleStrip(absl::Span<T>(vertices_.data(), head_pointer_));
+    RenderTriangleStrip(absl::Span<T>(vertices_.data() + head_pointer_,
+                                      vertices_.size() - head_pointer_));
   } else {
-    RenderTriangleStrip(absl::Span<glm::vec2>(
-        &vertices_[kSegmentVertexCount], head_pointer_ - kSegmentVertexCount));
+    RenderTriangleStrip(absl::Span<T>(&vertices_[kSegmentVertexCount],
+                                      head_pointer_ - kSegmentVertexCount));
   }
 }
 
-void Ribbon::AppendSegment(std::pair<glm::vec2, glm::vec2> segment) {
+template <typename T>
+void Ribbon<T>::AppendSegment(std::pair<T, T> segment) {
   vertices_[head_pointer_++] = segment.first;
   vertices_[head_pointer_++] = segment.second;
 
@@ -65,6 +83,9 @@ void Ribbon::AppendSegment(std::pair<glm::vec2, glm::vec2> segment) {
   }
 }
 
-void Ribbon::UpdateColor(glm::vec3 color) { color_ = color; }
+template <typename T>
+void Ribbon<T>::UpdateColor(glm::vec3 color) {
+  color_ = color;
+}
 
 }  // namespace opendrop

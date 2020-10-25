@@ -74,8 +74,8 @@ class Glowsticks3d : public Preset {
       segment_angle_iterators_;
 
   Rectangle rectangle_;
-  Ribbon ribbon_;
-  Ribbon ribbon2_;
+  Ribbon<glm::vec2> ribbon_;
+  Ribbon<glm::vec2> ribbon2_;
   Polyline debug_segments_;
 };
 
