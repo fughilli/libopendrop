@@ -107,9 +107,12 @@ void RotaryTransporter::OnDrawFrame(
     glUniform1f(energy_location, energy);
     LOG(DEBUG) << "Power: " << power << " energy: " << energy;
     glUniform2i(texture_size_location, width(), height());
-    GlBindRenderTargetTextureToUniform(warp_program_, "last_frame",
-                                       front_render_target_,
-                                       gl::GlTextureBindingOptions());
+    GlBindRenderTargetTextureToUniform(
+        warp_program_, "last_frame", front_render_target_,
+        gl::GlTextureBindingOptions(
+            {.sampling_mode = gl::GlTextureSamplingMode::kClampToBorder,
+             .border_color =
+                 glm::vec4(HsvToRgb(glm::vec3(energy * 10, 1, 1)), 1)}));
 
     // Force all fragments to draw with a full-screen rectangle.
     rectangle_.Draw();

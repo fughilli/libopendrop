@@ -257,9 +257,11 @@ void Glowsticks3d::OnDrawFrame(
     LOG(DEBUG) << "Power: " << power << " energy: " << energy;
     glUniform2i(texture_size_location, front_render_target_->width(),
                 front_render_target_->height());
-    GlBindRenderTargetTextureToUniform(warp_program_, "last_frame",
-                                       front_render_target_,
-                                       gl::GlTextureBindingOptions());
+    GlBindRenderTargetTextureToUniform(
+        warp_program_, "last_frame", front_render_target_,
+        gl::GlTextureBindingOptions(
+            {.sampling_mode = gl::GlTextureSamplingMode::kClampToBorder,
+             .border_color = glm::vec4(0, 0, 0, 1)}));
     glUniform1f(glGetUniformLocation(warp_program_->program_handle(),
                                      "framerate_scale"),
                 kFramerateScale);
