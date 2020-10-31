@@ -97,7 +97,8 @@ void Kaleidoscope::OnDrawFrame(
     LOG(DEBUG) << "Power: " << power << " energy: " << energy;
     glUniform2i(texture_size_location, width(), height());
     GlBindRenderTargetTextureToUniform(warp_program_, "last_frame",
-                                       front_render_target_);
+                                       front_render_target_,
+                                       gl::GlTextureBindingOptions());
 
     rectangle_.Draw();
 
@@ -136,7 +137,8 @@ void Kaleidoscope::OnDrawFrame(
     composite_program_->Use();
     LOG(DEBUG) << "Using program";
     GlBindRenderTargetTextureToUniform(composite_program_, "render_target",
-                                       back_render_target_);
+                                       back_render_target_,
+                                       gl::GlTextureBindingOptions());
     int texture_size_location = glGetUniformLocation(
         composite_program_->program_handle(), "render_target_size");
     LOG(DEBUG) << "Got texture size location: " << texture_size_location;

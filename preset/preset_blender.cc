@@ -130,7 +130,8 @@ void PresetBlender::DrawFrame(
       blit_program_->Use();
       // Bind the source texture and alpha value.
       GlBindRenderTargetTextureToUniform(blit_program_, "source_texture",
-                                         activation.render_target());
+                                         activation.render_target(),
+                                         gl::GlTextureBindingOptions());
       glUniform1f(
           glGetUniformLocation(blit_program_->program_handle(), "alpha"),
           activation.GetMixingCoefficient());

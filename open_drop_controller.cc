@@ -86,7 +86,8 @@ void OpenDropController::DrawFrame(float dt) {
     {
       blit_program_->Use();
       gl::GlBindRenderTargetTextureToUniform(blit_program_, "source_texture",
-                                             output_render_target_);
+                                             output_render_target_,
+                                             gl::GlTextureBindingOptions());
       glUniform1f(
           glGetUniformLocation(blit_program_->program_handle(), "alpha"), 1.0f);
 

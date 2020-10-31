@@ -108,7 +108,8 @@ void RotaryTransporter::OnDrawFrame(
     LOG(DEBUG) << "Power: " << power << " energy: " << energy;
     glUniform2i(texture_size_location, width(), height());
     GlBindRenderTargetTextureToUniform(warp_program_, "last_frame",
-                                       front_render_target_);
+                                       front_render_target_,
+                                       gl::GlTextureBindingOptions());
 
     // Force all fragments to draw with a full-screen rectangle.
     rectangle_.Draw();
@@ -142,7 +143,8 @@ void RotaryTransporter::OnDrawFrame(
     LOG(DEBUG) << "Got texture size location: " << texture_size_location;
     glUniform2i(texture_size_location, width(), height());
     GlBindRenderTargetTextureToUniform(composite_program_, "render_target",
-                                       back_render_target_);
+                                       back_render_target_,
+                                       gl::GlTextureBindingOptions());
     glUniform1f(
         glGetUniformLocation(composite_program_->program_handle(), "alpha"),
         alpha);

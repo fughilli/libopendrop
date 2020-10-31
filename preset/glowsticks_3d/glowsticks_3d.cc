@@ -46,7 +46,7 @@ constexpr bool kEnableRibbonWidthPowerScaling = false;
 // glm::vec2 Rotate2d(glm::vec2 vector, float angle) {
 //   float cos_angle = cos(angle);
 //   float sin_angle = cos(angle);
-// 
+//
 //   return glm::vec2(vector.x * cos_angle - vector.y * sin_angle,
 //                    vector.x * sin_angle + vector.y * cos_angle);
 // }
@@ -258,7 +258,8 @@ void Glowsticks3d::OnDrawFrame(
     glUniform2i(texture_size_location, front_render_target_->width(),
                 front_render_target_->height());
     GlBindRenderTargetTextureToUniform(warp_program_, "last_frame",
-                                       front_render_target_);
+                                       front_render_target_,
+                                       gl::GlTextureBindingOptions());
     glUniform1f(glGetUniformLocation(warp_program_->program_handle(),
                                      "framerate_scale"),
                 kFramerateScale);
@@ -289,7 +290,8 @@ void Glowsticks3d::OnDrawFrame(
     glUniform2i(texture_size_location, back_render_target_->width(),
                 back_render_target_->height());
     GlBindRenderTargetTextureToUniform(composite_program_, "render_target",
-                                       back_render_target_);
+                                       back_render_target_,
+                                       gl::GlTextureBindingOptions());
     glUniform1f(
         glGetUniformLocation(composite_program_->program_handle(), "alpha"),
         alpha);
