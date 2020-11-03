@@ -150,6 +150,13 @@ def GenerateIirBandTaps(center_frequency: float, bandwidth: float,
     return feedforward_taps, feedback_taps
 
 
+def GenerateIirFilterDeclaration(feedforward_taps: List[float],
+                                 feedback_taps: List[float]) -> Text:
+    return "IirFilter filter_{{{{{}}}, {{{}}}}};".format(
+        ','.join(['%.6ff' % f for f in feedforward_taps]),
+        ','.join(['%.6ff' % f for f in feedback_taps]))
+
+
 if __name__ == '__main__':
     bode_plotter = BodePlotter(44100, (10, 20000), 200)
     filter_frequency_hz = 1600
@@ -169,6 +176,8 @@ if __name__ == '__main__':
         filter_frequency_hz / bode_plotter.sampling_rate,
         bandwidth_hz / bode_plotter.sampling_rate, FILTER_TYPE_BANDSTOP)
 
+    print(GenerateIirFilterDeclaration(feedforward_taps, feedback_taps))
+
     filter = IirFilter(feedforward_taps, feedback_taps)
 
     pyplot.plot(*bode_plotter.Plot(filter))
@@ -176,6 +185,8 @@ if __name__ == '__main__':
     feedforward_taps, feedback_taps = GenerateIirBandTaps(
         filter_frequency_hz / bode_plotter.sampling_rate,
         bandwidth_hz / bode_plotter.sampling_rate, FILTER_TYPE_BANDPASS)
+
+    print(GenerateIirFilterDeclaration(feedforward_taps, feedback_taps))
 
     filter = IirFilter(feedforward_taps, feedback_taps)
 

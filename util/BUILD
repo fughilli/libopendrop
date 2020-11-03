@@ -98,3 +98,12 @@ cc_test(
         "@org_llvm_libcxx//:libcxx",
     ],
 )
+
+cc_library(
+    name = "filter",
+    hdrs = ["filter.h"],
+    deps = [
+        ":logging",
+        "@com_google_absl//absl/types:span",
+    ],
+)
