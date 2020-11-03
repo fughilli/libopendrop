@@ -2,6 +2,7 @@
 #define UTIL_FIR_FILTER_H_
 
 #include <algorithm>
+#include <memory>
 #include <vector>
 
 #include "absl/types/span.h"
@@ -13,36 +14,14 @@ class Filter {
  public:
   virtual float ProcessSample(float sample) = 0;
 
-  float ComputePower(absl::Span<const float> samples) {
-    float power = 0.0f;
-    for (auto sample : samples) {
-      float output_sample = ProcessSample(sample);
-      power += output_sample * output_sample;
-    }
-    return power / samples.size();
-  }
+  float ComputePower(absl::Span<const float> samples);
 };
 
 // Finite impulse response time-domain convolutional filter.
 class FirFilter : public Filter {
  public:
   // Constructs a finite impulse response filter with the provided taps.
-  FirFilter(std::initializer_list<float> taps) : taps_(taps) {
-    input_history_.resize(taps.size(), 0);
-  }
-
-  virtual float ProcessSample(float sample) override {
-    std::copy_backward(input_history_.begin(), std::prev(input_history_.end()),
-                       input_history_.end());
-    input_history_[0] = sample;
-
-    float output = 0.0f;
-    for (int i = 0; i < input_history_.size(); ++i) {
-      output += input_history_[i] * taps_[i];
-    }
-
-    return output;
-  }
+  FirFilter(std::initializer_list<float> taps);
 
   // Processes a single sample by this filter, returning the corresponding
   // output sample.
@@ -63,32 +42,7 @@ class IirFilter : public Filter {
   // `x_taps` are the coefficients for the input signal; `y_taps` are the
   // feedback coefficients for the output signal.
   IirFilter(std::initializer_list<float> x_taps,
-            std::initializer_list<float> y_taps)
-      : x_taps_(x_taps), y_taps_(y_taps) {
-    input_history_.resize(x_taps.size(), 0);
-    output_history_.resize(y_taps.size(), 0);
-  }
-
-  virtual float ProcessSample(float sample) override {
-    std::copy_backward(input_history_.begin(), std::prev(input_history_.end()),
-                       input_history_.end());
-    input_history_[0] = sample;
-
-    float output = 0.0f;
-    for (int i = 0; i < input_history_.size(); ++i) {
-      output += input_history_[i] * x_taps_[i];
-    }
-
-    for (int i = 0; i < output_history_.size(); ++i) {
-      output += output_history_[i] * y_taps_[i];
-    }
-
-    std::copy_backward(output_history_.begin(),
-                       std::prev(output_history_.end()), output_history_.end());
-    output_history_[0] = output;
-
-    return output;
-  }
+            std::initializer_list<float> y_taps);
 
   // Processes a single sample by this filter, returning the corresponding
   // output sample.
@@ -106,6 +60,18 @@ class IirFilter : public Filter {
   std::vector<float> y_taps_;
   std::vector<float> output_history_;
 };
+
+enum IirBandFilterType {
+  // Bandpass filter.
+  kBandpass = 0,
+  // Bandstop filter.
+  kBandstop
+};
+// Initializes and returns an infinite impulse response filter implementing a
+// 2-pole bandpass or bandstop filter
+std::shared_ptr<IirFilter> IirBandFilter(float center_frequency,
+                                         float bandwidth,
+                                         IirBandFilterType type);
 
 }  // namespace opendrop
 

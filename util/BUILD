@@ -101,9 +101,21 @@ cc_test(
 
 cc_library(
     name = "filter",
+    srcs = ["filter.cc"],
     hdrs = ["filter.h"],
     deps = [
         ":logging",
         "@com_google_absl//absl/types:span",
+    ],
+)
+
+cc_test(
+    name = "filter_test",
+    srcs = ["filter_test.cc"],
+    deps = [
+        ":filter",
+        "@com_googletest//:gtest",
+        "@com_googletest//:gtest_main",
+        "@org_llvm_libcxx//:libcxx",
     ],
 )
