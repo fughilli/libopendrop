@@ -24,6 +24,18 @@ cc_library(
     linkstatic = 1,
 )
 
+cc_test(
+    name = "colors_test",
+    srcs = ["colors_test.cc"],
+    deps = [
+        ":colors",
+        ":logging",
+        "@com_googletest//:gtest",
+        "@com_googletest//:gtest_main",
+        "@org_llvm_libcxx//:libcxx",
+    ],
+)
+
 cc_library(
     name = "gl_util",
     srcs = ["gl_util.cc"],
