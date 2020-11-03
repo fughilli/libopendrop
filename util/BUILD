@@ -5,6 +5,7 @@ cc_library(
     hdrs = ["logging.h"],
     linkstatic = 1,
     deps = [
+        ":logging_glm_helpers",
         ":logging_helpers",
         "@com_google_absl//absl/strings:str_format",
         "@com_google_absl//absl/time",
@@ -15,6 +16,12 @@ cc_library(
     name = "logging_helpers",
     hdrs = ["logging_helpers.h"],
     deps = ["@com_google_absl//absl/types:span"],
+)
+
+cc_library(
+    name = "logging_glm_helpers",
+    srcs = ["logging_glm_helpers.cc"],
+    hdrs = ["logging_glm_helpers.h"],
 )
 
 cc_library(
