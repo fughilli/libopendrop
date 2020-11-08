@@ -51,4 +51,19 @@ cc_library(
 py_binary(
     name = "wrap_shader",
     srcs = ["wrap_shader.py"],
+    python_version = "PY3",
+)
+
+py_binary(
+    name = "wrap_model",
+    srcs = ["wrap_model.py"],
+    python_version = "PY3",
+)
+
+py_test(
+    name = "wrap_model_test",
+    srcs = ["wrap_model_test.py"],
+    deps = [
+        ":wrap_model",
+    ],
 )
