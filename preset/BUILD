@@ -1,12 +1,13 @@
 package(default_visibility = ["//libopendrop:__subpackages__"])
 
 PRESET_DEPS_LIST = [
-    "//libopendrop/preset/kaleidoscope",
-    "//libopendrop/preset/simple_preset",
     "//libopendrop/preset/alien_rorschach",
-    "//libopendrop/preset/template_preset",
+    "//libopendrop/preset/cube_boom",
     "//libopendrop/preset/glowsticks_3d",
+    "//libopendrop/preset/kaleidoscope",
     "//libopendrop/preset/rotary_transporter",
+    "//libopendrop/preset/simple_preset",
+    "//libopendrop/preset/template_preset",
 ]
 
 cc_library(
