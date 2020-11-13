@@ -179,8 +179,8 @@ def ParseObjectVertexText(object_text: Text) -> List[Vertex]:
 
 def ParseObjectUvText(object_text: Text) -> List[Uv]:
     VERTEX_RE = re.compile(r"^vt\s+{}\s+{}$".format(
-        MakeCapturingFloatRegex('u', False),
-        MakeCapturingFloatRegex('v', False)))
+        MakeCapturingFloatRegex('u', True),
+        MakeCapturingFloatRegex('v', True)))
 
     return_vertex_list = []
 

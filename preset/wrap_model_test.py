@@ -96,8 +96,8 @@ class TestWrapModel(unittest.TestCase):
         ),
         (
             'multiple_uvs',
-            'vt 1.0 2.0\nvt 2 3.14',  # Input
-            [(1.0, 2.0), (2, 3.14)]  # Expected
+            'vt 1.0 2.0\nvt 2 -3.14',  # Input
+            [(1.0, 2.0), (2, -3.14)]  # Expected
         ),
         (
             'garbage_but_empty',
