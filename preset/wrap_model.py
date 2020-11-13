@@ -197,7 +197,7 @@ def ParseObjectUvText(object_text: Text) -> List[Uv]:
 
 
 def ParseObjectFaceText(object_text: Text) -> List[Face]:
-    INDEX_RE_STRING = (r"^{}/{}?/{}?$".format(
+    INDEX_RE_STRING = (r"^{}/{}?(/{}?)?$".format(
         MakeCapturingIntegerRegex('v', False),
         MakeCapturingIntegerRegex('t', False),
         MakeCapturingIntegerRegex('n', False)))

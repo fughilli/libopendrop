@@ -122,6 +122,11 @@ class TestWrapModel(unittest.TestCase):
             [[(1, 2), (4, 5), (7, 8), (10, 11)]]  # Expected
         ),
         (
+            'single_face_omit_normal_and_slash',
+            'f 1/2 4/5 7/8 10/11',  # Input
+            [[(1, 2), (4, 5), (7, 8), (10, 11)]]  # Expected
+        ),
+        (
             'multiple_faces',
             'f 1/2/ 3/4/ 5/6/\nf 7/8/ 9/1/ 2/3/',  # Input
             [[(1, 2), (3, 4), (5, 6)], [(7, 8), (9, 1), (2, 3)]]  # Expected
