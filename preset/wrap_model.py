@@ -26,17 +26,17 @@ constexpr int __kVertexCount_{hash_string} = {vertex_count};
 constexpr int __kTriangleCount_{hash_string} = {triangle_count};
 extern const std::array<glm::vec3, __kVertexCount_{hash_string}> __kVertices_{hash_string};
 extern const std::array<glm::vec2, __kVertexCount_{hash_string}> __kUvs_{hash_string};
-extern const std::array<glm::ivec3, __kTriangleCount_{hash_string}> __kTriangles_{hash_string};
+extern const std::array<glm::uvec3, __kTriangleCount_{hash_string}> __kTriangles_{hash_string};
 
-static inline const& std::array<glm::vec3, __kVertexCount_{hash_string}> Vertices() {{
+static inline const std::array<glm::vec3, __kVertexCount_{hash_string}>& Vertices() {{
   return __kVertices_{hash_string};
 }}
 
-static inline const& std::array<glm::vec2, __kVertexCount_{hash_string}> Uvs() {{
+static inline const std::array<glm::vec2, __kVertexCount_{hash_string}>& Uvs() {{
   return __kUvs_{hash_string};
 }}
 
-static inline const& std::array<glm::ivec3, __kTriangleCount_{hash_string}> Triangles() {{
+static inline const std::array<glm::uvec3, __kTriangleCount_{hash_string}>& Triangles() {{
   return __kTriangles_{hash_string};
 }}
 
@@ -53,7 +53,7 @@ const std::array<glm::vec3, __kVertexCount_{hash_string}> __kVertices_{hash_stri
 {vertices_initializer};
 const std::array<glm::vec2, __kVertexCount_{hash_string}> __kUvs_{hash_string} =
 {uvs_initializer};
-const std::array<glm::ivec3, __kTriangleCount_{hash_string}> __kTriangles_{hash_string} =
+const std::array<glm::uvec3, __kTriangleCount_{hash_string}> __kTriangles_{hash_string} =
 {triangles_initializer};
 
 }}
