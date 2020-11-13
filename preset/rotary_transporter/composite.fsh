@@ -27,5 +27,5 @@ void main() {
   gl_FragColor = texture2D(render_target, tex_uv) * 1. +
                  (texture2D(render_target, tex_uv + vec2(offset.x, 0.)) +
                   texture2D(render_target, tex_uv + vec2(0., offset.y))) *
-                     -0.2;
+                     -0.3;
 }

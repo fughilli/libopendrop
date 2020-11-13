@@ -11,6 +11,7 @@
 #include "libopendrop/preset/preset.h"
 #include "libopendrop/primitive/polyline.h"
 #include "libopendrop/primitive/rectangle.h"
+#include "libopendrop/util/filter.h"
 
 namespace opendrop {
 
@@ -43,6 +44,15 @@ class RotaryTransporter : public Preset {
   std::vector<glm::vec2> vertices_;
   Rectangle rectangle_;
   Polyline polyline_;
+
+  float zoom_angle_ = 0.0f;
+  std::shared_ptr<IirFilter> vocal_filter_;
+  std::shared_ptr<IirFilter> left_vocal_filter_;
+  std::shared_ptr<IirFilter> right_vocal_filter_;
+  std::shared_ptr<IirFilter> bass_filter_;
+
+  float bass_power_ = 0.0f;
+  float bass_energy_ = 0.0f;
 };
 
 }  // namespace opendrop

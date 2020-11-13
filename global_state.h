@@ -26,6 +26,9 @@ class GlobalState {
     return properties_.normalized_energy;
   }
 
+  absl::Span<const float> left_channel() { return left_channel_; }
+  absl::Span<const float> right_channel() { return right_channel_; }
+
  private:
   // Decay factor for updating the average power. Average power is computed by a
   // first-order low-pass filter of the current signal power.
@@ -69,6 +72,9 @@ class GlobalState {
 
   // Storage for global properties.
   Properties properties_;
+
+  std::vector<float> left_channel_;
+  std::vector<float> right_channel_;
 };
 
 }  // namespace opendrop

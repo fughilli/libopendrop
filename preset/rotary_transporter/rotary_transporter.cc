@@ -19,8 +19,24 @@
 namespace opendrop {
 
 namespace {
+
+constexpr float kFramerateScale = 60.0f / 60.0f;
 constexpr float kScaleFactor = 0.5f;
+
+// Rotates a vector counterclockwise by an angle in radians.
+glm::vec2 Rotate2d(glm::vec2 vector, float angle) {
+  float cos_angle = cos(angle);
+  float sin_angle = sin(angle);
+
+  return glm::vec2(vector.x * cos_angle - vector.y * sin_angle,
+                   vector.x * sin_angle + vector.y * cos_angle);
 }
+
+glm::vec2 UnitVectorAtAngle(float angle) {
+  return glm::vec2(cos(angle), sin(angle));
+}
+
+}  // namespace
 
 RotaryTransporter::RotaryTransporter(
     std::shared_ptr<gl::GlProgram> warp_program,
@@ -32,7 +48,22 @@ RotaryTransporter::RotaryTransporter(
       warp_program_(warp_program),
       composite_program_(composite_program),
       front_render_target_(front_render_target),
-      back_render_target_(back_render_target) {}
+      back_render_target_(back_render_target) {
+  constexpr float kSamplingRate = 44100.0f;
+  constexpr float kCenterFrequency = 300.0f;
+  constexpr float kBandwidth = 50.0f;
+  bass_filter_ = IirBandFilter(50.0f / kSamplingRate, 40.0f / kSamplingRate,
+                               IirBandFilterType::kBandpass);
+  vocal_filter_ =
+      IirBandFilter(kCenterFrequency / kSamplingRate,
+                    kBandwidth / kSamplingRate, IirBandFilterType::kBandpass);
+  left_vocal_filter_ =
+      IirBandFilter(kCenterFrequency / kSamplingRate,
+                    kBandwidth / kSamplingRate, IirBandFilterType::kBandpass);
+  right_vocal_filter_ =
+      IirBandFilter(kCenterFrequency / kSamplingRate,
+                    kBandwidth / kSamplingRate, IirBandFilterType::kBandpass);
+}
 
 absl::StatusOr<std::shared_ptr<Preset>> RotaryTransporter::MakeShared(
     std::shared_ptr<gl::GlTextureManager> texture_manager) {
@@ -70,22 +101,25 @@ void RotaryTransporter::OnDrawFrame(
     float alpha, std::shared_ptr<gl::GlRenderTarget> output_render_target) {
   float energy = state->energy();
   float power = state->power();
+  float average_power = state->average_power();
+
+  bass_power_ = bass_filter_->ComputePower(state->left_channel());
+  bass_energy_ += bass_power_ * state->dt();
 
   auto buffer_size = samples.size() / 2;
   vertices_.resize(buffer_size);
 
-  float cos_energy = cos(energy * 10 + power * 10);
-  float sin_energy = sin(energy * 10 + power * 10);
-  float total_scale_factor = kScaleFactor * (0.7 + 0.3 * cos_energy);
+  float total_scale_factor =
+      kScaleFactor *
+      (0.7 + 0.3 * cos((energy * 10 + power * 10) * kFramerateScale));
 
   for (int i = 0; i < buffer_size; ++i) {
-    float x_scaled = samples[i * 2] * total_scale_factor;
-    float y_scaled = samples[i * 2 + 1] * total_scale_factor;
+    float x_scaled =
+        left_vocal_filter_->ProcessSample(samples[i * 2]) * total_scale_factor;
+    float y_scaled = right_vocal_filter_->ProcessSample(samples[i * 2 + 1]) *
+                     total_scale_factor;
 
-    float x_pos = x_scaled * cos_energy - y_scaled * sin_energy;
-    float y_pos = x_scaled * sin_energy + y_scaled * cos_energy;
-
-    vertices_[i] = glm::vec2(x_pos, y_pos);
+    vertices_[i] = glm::vec2(x_scaled, y_scaled);
   }
 
   {
@@ -93,44 +127,61 @@ void RotaryTransporter::OnDrawFrame(
 
     warp_program_->Use();
 
-    LOG(DEBUG) << "Using program";
-    int texture_size_location = glGetUniformLocation(
-        warp_program_->program_handle(), "last_frame_size");
-    LOG(DEBUG) << "Got texture size location: " << texture_size_location;
-    int power_location =
-        glGetUniformLocation(warp_program_->program_handle(), "power");
-    int energy_location =
-        glGetUniformLocation(warp_program_->program_handle(), "energy");
-    LOG(DEBUG) << "Got locations for power: " << power_location
-               << " and energy: " << energy_location;
-    glUniform1f(power_location, power);
-    glUniform1f(energy_location, energy);
-    LOG(DEBUG) << "Power: " << power << " energy: " << energy;
-    glUniform2i(texture_size_location, width(), height());
+    float zoom_speed = 1.f + average_power * kFramerateScale;
+
+    glUniform1f(glGetUniformLocation(warp_program_->program_handle(), "power"),
+                bass_power_);
+    glUniform1f(glGetUniformLocation(warp_program_->program_handle(), "energy"),
+                bass_energy_);
+    glUniform1f(
+        glGetUniformLocation(warp_program_->program_handle(), "zoom_angle"),
+        zoom_angle_);
+    glUniform1f(
+        glGetUniformLocation(warp_program_->program_handle(), "zoom_speed"),
+        zoom_speed);
+    glUniform1f(glGetUniformLocation(warp_program_->program_handle(),
+                                     "framerate_scale"),
+                kFramerateScale);
+    glUniform2i(glGetUniformLocation(warp_program_->program_handle(),
+                                     "last_frame_size"),
+                width(), height());
     GlBindRenderTargetTextureToUniform(
         warp_program_, "last_frame", front_render_target_,
         gl::GlTextureBindingOptions(
             {.sampling_mode = gl::GlTextureSamplingMode::kClampToBorder,
-             .border_color =
-                 glm::vec4(HsvToRgb(glm::vec3(energy * 10, 1, 1)), 1)}));
+             .border_color = glm::vec4(
+                 HsvToRgb(glm::vec3(bass_energy_ * 10 * kFramerateScale, 1,
+                                    bass_power_ * 10)),
+                 1)}));
 
     // Force all fragments to draw with a full-screen rectangle.
     rectangle_.Draw();
 
     // Draw the waveform.
-    constexpr int kSymmetry = 3;
-    for (int i = 0; i < kSymmetry; ++i) {
+    constexpr int kMaxSymmetry = 30;
+    constexpr int kMinSymmetry = 3;
+    zoom_angle_ += sin(bass_energy_ * 30 * kFramerateScale) * bass_power_ *
+                   kFramerateScale;
+    int petals =
+        static_cast<int>(kMinSymmetry + (kMaxSymmetry - kMinSymmetry) *
+                                            ((sin(energy * 10) + 1) / 2));
+    float tube_scale =
+        0.25f + vocal_filter_->ComputePower(state->left_channel()) * 20;
+    for (int i = 0; i < petals; ++i) {
       std::vector<glm::vec2> vertices_rotary(vertices_.size(), glm::vec2(0, 0));
+      float angular_displacement = i * (M_PI * 2.0f / petals);
+      glm::vec2 displacement_vector = UnitVectorAtAngle(
+          angular_displacement + energy * -40 * kFramerateScale);
       for (int j = 0; j < vertices_rotary.size(); ++j) {
         vertices_rotary[j] =
-            vertices_[j] +
-            glm::vec2(cos(i * (M_PI * 2 / kSymmetry) + energy * 40),
-                      sin(i * (M_PI * 2 / kSymmetry) + energy * 40)) *
-                0.3f;
+            Rotate2d(vertices_[j],
+                     angular_displacement - energy * 60 * kFramerateScale) +
+            displacement_vector * tube_scale;
       }
       polyline_.UpdateVertices(vertices_rotary);
-      polyline_.UpdateWidth(2 + power * 10);
-      polyline_.UpdateColor(HsvToRgb(glm::vec3(energy + 0.0888 * i, 1, 0.5)));
+      polyline_.UpdateWidth(1 + power * 10);
+      polyline_.UpdateColor(HsvToRgb(glm::vec3(
+          energy * kFramerateScale + i / static_cast<float>(petals), 1, 1)));
       polyline_.Draw();
     }
 
@@ -140,11 +191,9 @@ void RotaryTransporter::OnDrawFrame(
   {
     auto output_activation = output_render_target->Activate();
     composite_program_->Use();
-    LOG(DEBUG) << "Using program";
-    int texture_size_location = glGetUniformLocation(
-        composite_program_->program_handle(), "render_target_size");
-    LOG(DEBUG) << "Got texture size location: " << texture_size_location;
-    glUniform2i(texture_size_location, width(), height());
+    glUniform2i(glGetUniformLocation(composite_program_->program_handle(),
+                                     "render_target_size"),
+                width(), height());
     GlBindRenderTargetTextureToUniform(composite_program_, "render_target",
                                        back_render_target_,
                                        gl::GlTextureBindingOptions());
