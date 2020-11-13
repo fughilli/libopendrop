@@ -5,9 +5,6 @@
 namespace opendrop {
 
 namespace {
-// Decay factor for updating the average power. Average power is computed by a
-// first-order low-pass filter of the current signal power.
-float kPowerUpdateAlpha = 0.99f;
 
 // Very small floating point value.
 float kEpsilon = 1e-12f;
@@ -33,8 +30,17 @@ void GlobalState::Update(absl::Span<const float> samples, float dt) {
 
   properties_.energy += properties_.power * dt;
 
-  properties_.average_power = properties_.average_power * kPowerUpdateAlpha +
-                              properties_.power * (1.0f - kPowerUpdateAlpha);
+  if (average_power_initialization_filter_samples_ < 100) {
+    ++average_power_initialization_filter_samples_;
+    float out_sample =
+        average_power_initialization_filter_.ProcessSample(properties_.power);
+    if (average_power_initialization_filter_samples_ == 100) {
+      properties_.average_power = out_sample;
+    }
+  } else {
+    properties_.average_power =
+        average_power_filter_.ProcessSample(properties_.power);
+  }
 
   // Wait for average power to increase beyond epsilon before starting to
   // compute the normalized energy.
