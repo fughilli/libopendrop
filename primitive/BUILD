@@ -39,5 +39,8 @@ cc_library(
     name = "model",
     srcs = ["model.cc"],
     hdrs = ["model.h"],
-    deps = [":primitive"],
+    deps = [
+        ":primitive",
+        "@com_google_absl//absl/types:span",
+    ],
 )

@@ -245,9 +245,10 @@ def CollapseIndices(vertex_list: List[Vertex], uv_list: List[Uv],
     collapsed_uv_list = [None] * len(collapsed_mapping)
 
     for (vertex_index, uv_index), collapsed_index in collapsed_mapping.items():
-        collapsed_vertex_list[collapsed_index - 1] = vertex_list[vertex_index -
-                                                                 1]
-        collapsed_uv_list[collapsed_index - 1] = uv_list[uv_index - 1]
+        vertex = vertex_list[vertex_index - 1]
+        collapsed_vertex_list[collapsed_index - 1] = vertex
+        uv = uv_list[uv_index - 1]
+        collapsed_uv_list[collapsed_index - 1] = uv
 
     collapsed_face_list = []
     for face in face_list:
@@ -269,6 +270,21 @@ def LoadCollapsedModel(object_text: Text) -> CollapsedModelData:
     return CollapseIndices(vertex_list, uv_list, triangulated_face_list)
 
 
+def MakeIndicesZeroIndexed(
+        face_list: List[CollapsedFace]) -> List[CollapsedFace]:
+    zero_indexed_face_list = []
+
+    for face in face_list:
+        zero_indexed_face = []
+
+        for index in face:
+            zero_indexed_face.append(index - 1)
+
+        zero_indexed_face_list.append(zero_indexed_face)
+
+    return zero_indexed_face_list
+
+
 def main(argv):
     if FLAGS.object_filename == None:
         raise ValueError("--object_filename must be specified")
@@ -284,17 +300,26 @@ def main(argv):
     hash_string = MakeHashString(object_filename, object_text)
     outputs = FLAGS.outputs
 
+    collapsed_vertices, collapsed_uvs, collapsed_faces = LoadCollapsedModel(
+        object_text)
+
+    # Make the indices zero-indexed for loading into the GPU.
+    collapsed_faces = MakeIndicesZeroIndexed(collapsed_faces)
+
+    # Hack to make the inner initializers single-braced.
+    collapsed_faces = [tuple(x) for x in collapsed_faces]
+
     vertices_initializer, uvs_initializer, triangles_initializer = (
         FormatInitializer(model_list)
-        for model_list in LoadCollapsedModel(object_text))
+        for model_list in (collapsed_vertices, collapsed_uvs, collapsed_faces))
 
     header_filename = GetHeaderFilename(outputs)
     with open(header_filename, 'w') as header_file:
         header_file.write(
             GenerateHeader(guard_symbol=guard_symbol,
                            namespace=namespace,
-                           vertex_count=len(vertices_initializer),
-                           triangle_count=len(triangles_initializer),
+                           vertex_count=len(collapsed_vertices),
+                           triangle_count=len(collapsed_faces),
                            hash_string=hash_string))
 
     source_filename = GetSourceFilename(outputs)
