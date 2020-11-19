@@ -101,7 +101,8 @@ absl::StatusOr<std::shared_ptr<Preset>> Glowsticks3d::MakeShared(
   ASSIGN_OR_RETURN(front_render_target,
                    gl::GlRenderTarget::MakeShared(0, 0, texture_manager));
   ASSIGN_OR_RETURN(back_render_target,
-                   gl::GlRenderTarget::MakeShared(0, 0, texture_manager));
+                   gl::GlRenderTarget::MakeShared(0, 0, texture_manager,
+                                                  {.enable_depth = true}));
   return std::shared_ptr<Glowsticks3d>(new Glowsticks3d(
       warp_program, ribbon_program, composite_program, front_render_target,
       back_render_target, texture_manager));
@@ -299,10 +300,13 @@ void Glowsticks3d::OnDrawFrame(
         HsvToRgb(glm::vec3(energy * color_coefficients_[0], 1, 0.5)));
     ribbon2_.UpdateColor(
         HsvToRgb(glm::vec3(energy * color_coefficients_[1], 1, 0.5)));
+
+    glEnable(GL_DEPTH_TEST);
     ribbon_.Draw();
     // TODO: Have the second ribbon split off of and rejoin the first ribbon at
     // intervals.
     ribbon2_.Draw();
+    glEnable(GL_DEPTH_TEST);
 
     glFlush();
   }
