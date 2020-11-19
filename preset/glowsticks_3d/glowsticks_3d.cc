@@ -18,6 +18,7 @@
 #include "libopendrop/util/colors.h"
 #include "libopendrop/util/gl_util.h"
 #include "libopendrop/util/logging.h"
+#include "libopendrop/util/math.h"
 #include "libopendrop/util/status_macros.h"
 
 namespace opendrop {
@@ -129,7 +130,7 @@ void Glowsticks3d::UpdateArmatureSegmentAngles(
 
   for (int i = 0; i < segment_angles->size(); ++i) {
     (*segment_angles)[i] +=
-        rotational_rate_coefficients_[i] * (power / average_power) *
+        rotational_rate_coefficients_[i] * SafeDivide(power, average_power) *
         sin(energy * direction_reversal_coefficients_[i]) * kFramerateScale;
   }
 }

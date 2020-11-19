@@ -138,3 +138,19 @@ cc_test(
         "@org_llvm_libcxx//:libcxx",
     ],
 )
+
+cc_library(
+    name = "math",
+    hdrs = ["math.h"],
+)
+
+cc_test(
+    name = "math_test",
+    srcs = ["math_test.cc"],
+    deps = [
+        ":math",
+        "@com_googletest//:gtest",
+        "@com_googletest//:gtest_main",
+        "@org_llvm_libcxx//:libcxx",
+    ],
+)

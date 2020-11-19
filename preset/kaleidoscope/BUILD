@@ -19,6 +19,7 @@ cc_library(
         "//libopendrop/util:colors",
         "//libopendrop/util:gl_util",
         "//libopendrop/util:logging",
+        "//libopendrop/util:math",
         "//libopendrop/util:status_macros",
         "@com_google_absl//absl/status:statusor",
     ],
