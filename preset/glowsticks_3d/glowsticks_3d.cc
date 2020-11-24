@@ -18,6 +18,7 @@
 #include "libopendrop/util/colors.h"
 #include "libopendrop/util/gl_util.h"
 #include "libopendrop/util/logging.h"
+#include "libopendrop/util/math.h"
 #include "libopendrop/util/status_macros.h"
 
 namespace opendrop {
@@ -42,14 +43,12 @@ constexpr float kFramerateScale = 60.0f / 60.0f;
 // ribbon.
 constexpr bool kEnableRibbonWidthPowerScaling = false;
 
-// Rotates a vector counterclockwise by an angle in radians.
-// glm::vec2 Rotate2d(glm::vec2 vector, float angle) {
-//   float cos_angle = cos(angle);
-//   float sin_angle = cos(angle);
-//
-//   return glm::vec2(vector.x * cos_angle - vector.y * sin_angle,
-//                    vector.x * sin_angle + vector.y * cos_angle);
-// }
+// How close the ribbon segment has to be to the horizontal centerline of the
+// screen for a flip about that line to occur.
+constexpr float kFlipTolerance = 0.01f;
+
+// How much time must elapse between flips.
+constexpr float kFlipMinimumInterval = 0.2f;
 
 // Returns a unit vector rotated counter-clockwise from the +X unit vector by an
 // angle in radians.
@@ -72,7 +71,9 @@ Glowsticks3d::Glowsticks3d(
       front_render_target_(front_render_target),
       back_render_target_(back_render_target),
       ribbon_(glm::vec3(), kRibbonSegmentCount),
-      ribbon2_(glm::vec3(), kRibbonSegmentCount) {
+      ribbon2_(glm::vec3(), kRibbonSegmentCount),
+      flip_y_(false),
+      flip_oneshot_(kFlipMinimumInterval) {
   segment_scales_ = Coefficients::Random<3>(0.1, 0.3);
   segment_scales_[2] = 1.0f;
 
@@ -101,7 +102,8 @@ absl::StatusOr<std::shared_ptr<Preset>> Glowsticks3d::MakeShared(
   ASSIGN_OR_RETURN(front_render_target,
                    gl::GlRenderTarget::MakeShared(0, 0, texture_manager));
   ASSIGN_OR_RETURN(back_render_target,
-                   gl::GlRenderTarget::MakeShared(0, 0, texture_manager));
+                   gl::GlRenderTarget::MakeShared(0, 0, texture_manager,
+                                                  {.enable_depth = true}));
   return std::shared_ptr<Glowsticks3d>(new Glowsticks3d(
       warp_program, ribbon_program, composite_program, front_render_target,
       back_render_target, texture_manager));
@@ -128,7 +130,7 @@ void Glowsticks3d::UpdateArmatureSegmentAngles(
 
   for (int i = 0; i < segment_angles->size(); ++i) {
     (*segment_angles)[i] +=
-        rotational_rate_coefficients_[i] * (power / average_power) *
+        rotational_rate_coefficients_[i] * SafeDivide(power, average_power) *
         sin(energy * direction_reversal_coefficients_[i]) * kFramerateScale;
   }
 }
@@ -213,6 +215,8 @@ void Glowsticks3d::OnDrawFrame(
     segment_angle_iterators_[i] = segment_angle_interpolators_[i].begin();
   }
 
+  flip_oneshot_.Update(state->dt());
+
   for (int i = 0; i < num_steps; ++i) {
     std::array<float, kNumSegments> segment_angles;
     // For each step, advance all of the iterators one fraction.
@@ -232,8 +236,31 @@ void Glowsticks3d::OnDrawFrame(
     // Mirror around X for the second ribbon.
     segment.first.x *= -1;
     segment.second.x *= -1;
+
+    // If the ribbon is sufficiently close to the horizontal centerline (defined
+    // by `y = 0`), and the oneshot timer has elapsed, perform a flip.
+    if ((std::abs(segment.first.y) < kFlipTolerance) &&
+        (std::abs(segment.second.y) < kFlipTolerance) &&
+        flip_oneshot_.IsDue()) {
+      flip_y_ = !flip_y_;
+      flip_oneshot_.Reset();
+    }
+
+    // If the second ribbon has been flipped, do so.
+    if (flip_y_) {
+      segment.first.y *= -1;
+      segment.second.y *= -1;
+    }
+
+    // Draw the second ribbon slightly further from the camera.
     segment.first.z = -0.1;
     segment.second.z = -0.1;
+
+    // Flip the direction of the segments so that triangle wrap order is
+    // preserved.
+    auto temp = segment.first;
+    segment.first = segment.second;
+    segment.second = temp;
     ribbon2_.AppendSegment(segment);
   }
 
@@ -274,10 +301,13 @@ void Glowsticks3d::OnDrawFrame(
         HsvToRgb(glm::vec3(energy * color_coefficients_[0], 1, 0.5)));
     ribbon2_.UpdateColor(
         HsvToRgb(glm::vec3(energy * color_coefficients_[1], 1, 0.5)));
+
+    glEnable(GL_DEPTH_TEST);
     ribbon_.Draw();
     // TODO: Have the second ribbon split off of and rejoin the first ribbon at
     // intervals.
     ribbon2_.Draw();
+    glEnable(GL_DEPTH_TEST);
 
     glFlush();
   }

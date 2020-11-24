@@ -14,6 +14,7 @@
 #include "libopendrop/primitive/rectangle.h"
 #include "libopendrop/primitive/ribbon.h"
 #include "libopendrop/util/accumulator.h"
+#include "libopendrop/util/oneshot.h"
 
 namespace opendrop {
 
@@ -78,6 +79,8 @@ class Glowsticks3d : public Preset {
   Ribbon<glm::vec3> ribbon_;
   Ribbon<glm::vec3> ribbon2_;
   Polyline debug_segments_;
+  bool flip_y_;
+  OneshotIncremental<float> flip_oneshot_;
 };
 
 }  // namespace opendrop

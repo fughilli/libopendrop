@@ -3,6 +3,7 @@
 
 #include "absl/types/span.h"
 #include "libopendrop/util/accumulator.h"
+#include "libopendrop/util/filter.h"
 
 namespace opendrop {
 
@@ -25,7 +26,19 @@ class GlobalState {
     return properties_.normalized_energy;
   }
 
+  absl::Span<const float> left_channel() { return left_channel_; }
+  absl::Span<const float> right_channel() { return right_channel_; }
+
  private:
+  // Decay factor for updating the average power. Average power is computed by a
+  // first-order low-pass filter of the current signal power.
+  float kPowerUpdateAlpha = 0.99f;
+
+  // Decay factor for initializing the average power. This should be
+  // significantly less than 1, such that the average power quickly converges to
+  // the order of magnitude of the power at initialization.
+  float kPowerInitializationUpdateAlpha = 0.8f;
+
   struct Properties {
     Properties() : dt(0), time(0), power(0), average_power(0) {
       energy.SetValue(0);
@@ -52,9 +65,16 @@ class GlobalState {
   };
 
   bool initialized_;
+  IirFilter average_power_initialization_filter_{
+      {1 - kPowerInitializationUpdateAlpha}, {kPowerInitializationUpdateAlpha}};
+  IirFilter average_power_filter_{{1 - kPowerUpdateAlpha}, {kPowerUpdateAlpha}};
+  int average_power_initialization_filter_samples_ = 0;
 
   // Storage for global properties.
   Properties properties_;
+
+  std::vector<float> left_channel_;
+  std::vector<float> right_channel_;
 };
 
 }  // namespace opendrop

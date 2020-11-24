@@ -89,5 +89,44 @@ INSTANTIATE_TEST_SUITE_P(
                       TestValues{{1, 2}, {1, 2, 100}},
                       TestValues{{5, 4, 3, 2}, {5, 2, -1}}));
 
+struct TestValuesWithStepCount {
+  std::vector<float> expected_values;
+  std::tuple<float, float, int> interpolator_params;
+};
+
+class InterpolatorParameterizedTestWithStepCount
+    : public ::testing::TestWithParam<TestValuesWithStepCount> {};
+TEST_P(InterpolatorParameterizedTestWithStepCount,
+       InterpolatorWithStepCountProducesCorrectValues) {
+  TestValuesWithStepCount values = GetParam();
+
+  auto params = values.interpolator_params;
+  auto interpolator = Interpolator<float>::WithStepCount(
+      std::get<0>(params), std::get<1>(params), std::get<2>(params));
+
+  int index = 0;
+  for (auto value : interpolator) {
+    EXPECT_NEAR(value, values.expected_values[index++], 1e-6);
+  }
+
+  EXPECT_EQ(index, values.expected_values.size());
+}
+
+INSTANTIATE_TEST_SUITE_P(
+    CorrectValuesSequence, InterpolatorParameterizedTestWithStepCount,
+    ::testing::Values(TestValuesWithStepCount{{0.1, 0.2, 0.3}, {0.1, 0.3, 2}},
+                      TestValuesWithStepCount{{1, 2}, {1, 2, 1}},
+                      TestValuesWithStepCount{{5, 4, 3, 2}, {5, 2, 3}},
+                      TestValuesWithStepCount{{2}, {2, 2, 0}}));
+
+TEST(InterpolatorTest, WithStepCountZeroFailsWhenDistanceNonzero) {
+  EXPECT_DEATH(
+      {
+        auto interpolator =
+            Interpolator<float>::WithStepCount(5.0f, 10.0f, 0.0f);
+      },
+      "0 steps");
+}
+
 }  // namespace
 }  // namespace opendrop

@@ -14,6 +14,7 @@
 #include "libopendrop/util/colors.h"
 #include "libopendrop/util/gl_util.h"
 #include "libopendrop/util/logging.h"
+#include "libopendrop/util/math.h"
 #include "libopendrop/util/status_macros.h"
 
 namespace opendrop {
@@ -71,8 +72,7 @@ void Kaleidoscope::OnDrawFrame(
   float energy = state->energy();
   float power = state->power();
   float average_power = state->average_power();
-  float normalized_power =
-      (average_power > 0.0f) ? power / average_power : 0.0f;
+  float normalized_power = SafeDivide(power, average_power);
 
   auto buffer_size = samples.size() / 2;
   vertices_.resize(buffer_size);

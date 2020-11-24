@@ -118,8 +118,17 @@ class Interpolator {
 
   static Interpolator<T> WithStepCount(T begin_value, T end_value,
                                        int step_count) {
-    return Interpolator(begin_value, end_value,
-                        (end_value - begin_value) / step_count);
+    T total_distance = (end_value - begin_value);
+    T step = 0;
+    if (begin_value == end_value) {
+      step = 0;
+    } else {
+      CHECK(step_count > 0) << "Cannot initialize an Interpolator with 0 steps "
+                               "if begin_value != end_value";
+      step = total_distance / step_count;
+    }
+
+    return Interpolator(begin_value, end_value, step);
   }
 
   T begin_value() const { return begin_value_; }

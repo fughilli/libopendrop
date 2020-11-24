@@ -1,12 +1,13 @@
 package(default_visibility = ["//libopendrop:__subpackages__"])
 
 PRESET_DEPS_LIST = [
-    "//libopendrop/preset/kaleidoscope",
-    "//libopendrop/preset/simple_preset",
     "//libopendrop/preset/alien_rorschach",
-    "//libopendrop/preset/template_preset",
+    "//libopendrop/preset/cube_boom",
     "//libopendrop/preset/glowsticks_3d",
+    "//libopendrop/preset/kaleidoscope",
     "//libopendrop/preset/rotary_transporter",
+    "//libopendrop/preset/simple_preset",
+    "//libopendrop/preset/template_preset",
 ]
 
 cc_library(
@@ -51,4 +52,19 @@ cc_library(
 py_binary(
     name = "wrap_shader",
     srcs = ["wrap_shader.py"],
+    python_version = "PY3",
+)
+
+py_binary(
+    name = "wrap_model",
+    srcs = ["wrap_model.py"],
+    python_version = "PY3",
+)
+
+py_test(
+    name = "wrap_model_test",
+    srcs = ["wrap_model_test.py"],
+    deps = [
+        ":wrap_model",
+    ],
 )

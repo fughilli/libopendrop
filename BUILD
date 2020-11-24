@@ -162,6 +162,7 @@ cc_library(
     linkstatic = 1,
     deps = [
         "//libopendrop/util:accumulator",
+        "//libopendrop/util:filter",
         "@com_google_absl//absl/types:span",
     ],
 )

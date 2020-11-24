@@ -5,9 +5,6 @@
 namespace opendrop {
 
 namespace {
-// Decay factor for updating the average power. Average power is computed by a
-// first-order low-pass filter of the current signal power.
-float kPowerUpdateAlpha = 0.99f;
 
 // Very small floating point value.
 float kEpsilon = 1e-12f;
@@ -15,6 +12,10 @@ float kEpsilon = 1e-12f;
 }  // namespace
 
 void GlobalState::Update(absl::Span<const float> samples, float dt) {
+  if ((samples.size() / 2) != left_channel_.size()) {
+    left_channel_.resize(samples.size() / 2, 0);
+    right_channel_.resize(samples.size() / 2, 0);
+  }
   // TODO: Test that these values trend the same way across framerates.
   // TODO: Implement using Eigen.
   properties_.dt = dt;
@@ -24,17 +25,31 @@ void GlobalState::Update(absl::Span<const float> samples, float dt) {
   // Note that this buffer is interleaved samples. Computing the power assuming
   // this is a mono buffer has the same outcome as averaging the power of the
   // left and right channels independently.
-  for (auto sample : samples) {
-    properties_.power += std::pow(sample, 2);
+  for (int i = 0; i < samples.size(); ++i) {
+    if (i % 2 == 0) {
+      left_channel_[i / 2] = samples[i];
+    } else {
+      right_channel_[i / 2] = samples[i];
+    }
+    properties_.power += std::pow(samples[i], 2);
   }
   if (samples.size() != 0) {
-    properties_.power /= samples.size();
+    properties_.power = properties_.power / samples.size();
   }
 
   properties_.energy += properties_.power * dt;
 
-  properties_.average_power = properties_.average_power * kPowerUpdateAlpha +
-                              properties_.power * (1.0f - kPowerUpdateAlpha);
+  if (average_power_initialization_filter_samples_ < 100) {
+    ++average_power_initialization_filter_samples_;
+    float out_sample =
+        average_power_initialization_filter_.ProcessSample(properties_.power);
+    if (average_power_initialization_filter_samples_ == 100) {
+      properties_.average_power = out_sample;
+    }
+  } else {
+    properties_.average_power =
+        average_power_filter_.ProcessSample(properties_.power);
+  }
 
   // Wait for average power to increase beyond epsilon before starting to
   // compute the normalized energy.

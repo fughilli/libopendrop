@@ -1,33 +1,30 @@
-load("//libopendrop/preset:preset_defs.bzl", "shader_cc_library")
+load("//libopendrop/preset:preset_defs.bzl", "model_cc_library", "shader_cc_library")
 
 package(default_visibility = ["//libopendrop:__subpackages__"])
 
 cc_library(
-    name = "glowsticks_3d",
-    srcs = ["glowsticks_3d.cc"],
-    hdrs = ["glowsticks_3d.h"],
+    name = "cube_boom",
+    srcs = ["cube_boom.cc"],
+    hdrs = ["cube_boom.h"],
     linkstatic = 1,
     deps = [
         ":composite",
+        ":cube",
+        ":model",
+        ":monkey",
+        ":shrek",
         ":passthrough",
-        ":ribbon",
         ":warp",
         "//libopendrop:gl_interface",
         "//libopendrop:gl_render_target",
         "//libopendrop/preset",
+        "//libopendrop/primitive:model",
         "//libopendrop/primitive:polyline",
         "//libopendrop/primitive:rectangle",
-        "//libopendrop/primitive:ribbon",
-        "//libopendrop/util:accumulator",
-        "//libopendrop/util:coefficients",
         "//libopendrop/util:colors",
         "//libopendrop/util:gl_util",
         "//libopendrop/util:logging",
-        "//libopendrop/util:math",
-        "//libopendrop/util:oneshot",
         "//libopendrop/util:status_macros",
-        "@com_google_absl//absl/status:statusor",
-        "@com_google_absl//absl/types:span",
     ],
 )
 
@@ -42,11 +39,26 @@ shader_cc_library(
 )
 
 shader_cc_library(
-    name = "ribbon",
-    srcs = ["ribbon.fsh"],
+    name = "model",
+    srcs = ["model.fsh"],
 )
 
 shader_cc_library(
     name = "warp",
     srcs = ["warp.fsh"],
+)
+
+model_cc_library(
+    name = "cube",
+    srcs = ["cube.obj"],
+)
+
+model_cc_library(
+    name = "monkey",
+    srcs = ["monkey.obj"],
+)
+
+model_cc_library(
+    name = "shrek",
+    srcs = ["shrek.obj"],
 )
