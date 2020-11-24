@@ -1,4 +1,3 @@
-import hashlib
 import re
 import os
 from typing import Text, Any, List, Tuple
@@ -6,10 +5,9 @@ from typing import Text, Any, List, Tuple
 from absl import app
 from absl import flags
 
+from libopendrop.preset import wrap_lib
+
 flags.DEFINE_string("object_filename", None, "Input OBJ-format model file")
-flags.DEFINE_string(
-    "outputs", None,
-    "Output header and source filenames, separated by a space")
 
 FLAGS = flags.FLAGS
 
@@ -75,29 +73,6 @@ CollapsedFace = List[int]
 
 ModelData = Tuple[List[Vertex], List[Uv], List[Face]]
 CollapsedModelData = Tuple[List[Vertex], List[Uv], List[CollapsedFace]]
-
-
-def MakeHashString(object_filename: Text, object_text: Text):
-    return hashlib.sha1(
-        (object_filename + object_text).encode('utf-8')).hexdigest()
-
-
-def MakeGuardSymbol(object_filename: Text) -> Text:
-    return '{}_H_'.format(
-        object_filename.translate(str.maketrans('.-/', '___')).upper())
-
-
-def MakeNamespace(object_filename: Text) -> Text:
-    return os.path.basename(object_filename).translate(
-        str.maketrans('.-', '__')).lower()
-
-
-def GetHeaderFilename(outputs: Text) -> Text:
-    return outputs.split(' ')[0]
-
-
-def GetSourceFilename(outputs: Text) -> Text:
-    return outputs.split(' ')[1]
 
 
 def GenerateHeader(guard_symbol: Text, namespace: Text, vertex_count: int,
@@ -179,8 +154,8 @@ def ParseObjectVertexText(object_text: Text) -> List[Vertex]:
 
 def ParseObjectUvText(object_text: Text) -> List[Uv]:
     VERTEX_RE = re.compile(r"^vt\s+{}\s+{}$".format(
-        MakeCapturingFloatRegex('u', True),
-        MakeCapturingFloatRegex('v', True)))
+        MakeCapturingFloatRegex('u', True), MakeCapturingFloatRegex('v',
+                                                                    True)))
 
     return_vertex_list = []
 
@@ -295,9 +270,9 @@ def main(argv):
     object_filename = FLAGS.object_filename
 
     object_text = open(object_filename, 'r').read()
-    guard_symbol = MakeGuardSymbol(object_filename)
-    namespace = MakeNamespace(object_filename)
-    hash_string = MakeHashString(object_filename, object_text)
+    guard_symbol = wrap_lib.MakeGuardSymbol(object_filename)
+    namespace = wrap_lib.MakeNamespace(object_filename)
+    hash_string = wrap_lib.MakeHashString(object_filename, object_text)
     outputs = FLAGS.outputs
 
     collapsed_vertices, collapsed_uvs, collapsed_faces = LoadCollapsedModel(
@@ -313,7 +288,7 @@ def main(argv):
         FormatInitializer(model_list)
         for model_list in (collapsed_vertices, collapsed_uvs, collapsed_faces))
 
-    header_filename = GetHeaderFilename(outputs)
+    header_filename = wrap_lib.GetHeaderFilename(outputs)
     with open(header_filename, 'w') as header_file:
         header_file.write(
             GenerateHeader(guard_symbol=guard_symbol,
@@ -322,7 +297,7 @@ def main(argv):
                            triangle_count=len(collapsed_faces),
                            hash_string=hash_string))
 
-    source_filename = GetSourceFilename(outputs)
+    source_filename = wrap_lib.GetSourceFilename(outputs)
     with open(source_filename, 'w') as source_file:
         source_file.write(
             GenerateSource(header_filename=header_filename,
