@@ -50,6 +50,19 @@ cc_library(
 )
 
 py_library(
+    name = "shader_preprocessor",
+    srcs = ["shader_preprocessor.py"],
+)
+
+py_test(
+    name = "shader_preprocessor_test",
+    srcs = ["shader_preprocessor_test.py"],
+    deps = [
+        ":shader_preprocessor",
+    ],
+)
+
+py_library(
     name = "wrap_lib",
     srcs = ["wrap_lib.py"],
 )

@@ -1,4 +1,4 @@
-def shader_cc_library(name, srcs):
+def shader_cc_library(name, srcs, deps):
     if len(srcs) != 1:
         fail("srcs must have a single element")
 
@@ -9,6 +9,10 @@ def shader_cc_library(name, srcs):
     source_file = shader_source + ".cc"
 
     native.genrule(
+        name = (name + "_preprocess_gen"),
+        srcs = [shader_source],
+
+    native.genrule(
         name = (name + "_gen"),
         srcs = [shader_source],
         outs = [header_file, source_file],
@@ -16,6 +20,7 @@ def shader_cc_library(name, srcs):
                 "\"$(OUTS)\"") % (wrap_shader_tool,)),
         tools = [wrap_shader_tool],
     )
+
 
     native.cc_library(
         name = name,
