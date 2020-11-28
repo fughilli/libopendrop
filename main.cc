@@ -191,6 +191,8 @@ extern "C" int main(int argc, char *argv[]) {
     int late_frames_to_skip_preset =
         absl::GetFlag(FLAGS_late_frames_to_skip_preset);
 
+    SDL_ShowCursor(SDL_DISABLE);
+
     while (!exit_event_received) {
       // Record the start of the frame in the draw timer.
       auto frame_start_time = absl::GetCurrentTimeNanos() / 1000;
