@@ -49,24 +49,20 @@ CubeBoom::CubeBoom(std::shared_ptr<gl::GlProgram> warp_program,
 
 absl::StatusOr<std::shared_ptr<Preset>> CubeBoom::MakeShared(
     std::shared_ptr<gl::GlTextureManager> texture_manager) {
-  std::shared_ptr<gl::GlProgram> warp_program, composite_program, model_program;
   ASSIGN_OR_RETURN(
-      warp_program,
+      auto warp_program,
       gl::GlProgram::MakeShared(passthrough_vsh::Code(), warp_fsh::Code()));
-  ASSIGN_OR_RETURN(composite_program,
+  ASSIGN_OR_RETURN(auto composite_program,
                    gl::GlProgram::MakeShared(passthrough_vsh::Code(),
                                              composite_fsh::Code()));
   ASSIGN_OR_RETURN(
-      model_program,
+      auto model_program,
       gl::GlProgram::MakeShared(passthrough_vsh::Code(), model_fsh::Code()));
-
-  std::shared_ptr<gl::GlRenderTarget> front_render_target, back_render_target,
-      depth_output_target;
-  ASSIGN_OR_RETURN(front_render_target,
+  ASSIGN_OR_RETURN(auto front_render_target,
                    gl::GlRenderTarget::MakeShared(0, 0, texture_manager));
-  ASSIGN_OR_RETURN(back_render_target,
+  ASSIGN_OR_RETURN(auto back_render_target,
                    gl::GlRenderTarget::MakeShared(0, 0, texture_manager));
-  ASSIGN_OR_RETURN(depth_output_target,
+  ASSIGN_OR_RETURN(auto depth_output_target,
                    gl::GlRenderTarget::MakeShared(0, 0, texture_manager,
                                                   {.enable_depth = true}));
 

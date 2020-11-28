@@ -76,8 +76,7 @@ absl::StatusOr<std::shared_ptr<opendrop::Preset>> GetRandomPreset(
   }
   last_selection = random_index;
 
-  std::shared_ptr<Preset> return_preset;
-  ASSIGN_OR_RETURN(return_preset,
+  ASSIGN_OR_RETURN(auto return_preset,
                    preset_list::GetRandomPresetHelperStruct<Args...>::
                        template GetRandomPresetHelper<Presets...>(
                            random_index, std::forward<Args>(args)...));

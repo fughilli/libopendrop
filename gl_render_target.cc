@@ -103,8 +103,7 @@ GlRenderTarget::GlRenderTarget(
 absl::StatusOr<std::shared_ptr<GlRenderTarget>> GlRenderTarget::MakeShared(
     int width, int height, std::shared_ptr<GlTextureManager> texture_manager,
     Options options) {
-  int texture_unit;
-  ASSIGN_OR_RETURN(texture_unit, texture_manager->Allocate());
+  ASSIGN_OR_RETURN(auto texture_unit, texture_manager->Allocate());
   return std::shared_ptr<GlRenderTarget>(new GlRenderTarget(
       width, height, texture_unit, texture_manager, options));
 }

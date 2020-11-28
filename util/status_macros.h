@@ -16,7 +16,7 @@ namespace absl {
 #define ASSIGN_OR_RETURN_IMPL(temp, lhs, rhs) \
   auto temp = (rhs);                          \
   RETURN_IF_ERROR(temp.status());             \
-  lhs = std::move(rhs).value()
+  lhs = std::move(temp).value()
 
 #define ASSIGN_OR_RETURN_CONCAT(line, lhs, rhs) \
   ASSIGN_OR_RETURN_IMPL(__CONCAT(_status_or_, line), lhs, (rhs))
