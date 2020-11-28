@@ -46,11 +46,9 @@ void main() {
   float mod_b = sin(energy_scaled * 0.0782 * PI) +
                 sin(10 * energy_scaled / 7.932) * power / 10;
 
-  vec2 attractor = vec2(0., 0.);
-  // vec2(cos(energy_scaled * 10) / 10 + cos(energy_scaled * 20) / 4,
-  //     sin(energy_scaled * 10) / 10 + cos(energy_scaled * 30) / 4);
-  float angle = atan(screen_uv.y + attractor.y, screen_uv.x + attractor.x) +
-                sin(energy_scaled * 3.12) * sin(energy_scaled * 7.521) * 0.3;
+  float angle =
+      atan(screen_uv.y, screen_uv.x) +
+      sin(energy_scaled * 3.12 / 10) * sin(energy_scaled * 7.521 / 10) * 0.3;
 
   float mod_angle = mod(angle, PI / num_divisions);
   if (mod_angle > PI / (num_divisions * 2)) {
@@ -59,9 +57,8 @@ void main() {
 
   vec2 sampling_screen_uv =
       rotate(vec2(length(screen_uv), 0),
-             mod_angle +
-                 sin(energy_scaled * 7.1) * sin(energy_scaled * 2.391) * 0.3) +
-      attractor;
+             mod_angle + sin(energy_scaled * 7.1 / 10) *
+                             sin(energy_scaled * 2.391 / 10) * 0.3);
   vec2 texture_uv = vec2(0.0, 0.0);
 
   if (kEnableWarp) {
@@ -71,8 +68,7 @@ void main() {
     texture_uv =
         rotate(zoom(sampling_screen_uv, mod_a / 20 * power / 100 + 1.0),
                sin(100 * energy_scaled / 7.334) *
-                   sin(10 * energy_scaled / 9.225) * mod_b * power / 100) +
-        attractor;
+                   sin(10 * energy_scaled / 9.225) * mod_b * power / 100);
     // Compute a sampling displacement which is equivalent to the unit vector
     // along x scaled by a small value which is sinusoidally oscillating across
     // the y axis, all rotated by an angle which is a linear function of the
@@ -87,13 +83,7 @@ void main() {
     texture_uv = zoom(screen_uv, mod_a / 20 * power / 100 + 1.);
   }
 
-  if (kScreenToTex) {
-    texture_uv = screen_to_tex(texture_uv);
-  }
-
-  if (kClamp) {
-    texture_uv = clamp(texture_uv, (kScreenToTex ? 0. : -1.), 1.);
-  }
+  texture_uv = screen_to_tex(texture_uv);
 
   float blur_distance = max(0.0, 1 - power * 1);
 
@@ -114,10 +104,10 @@ void main() {
   // have a "brightening" effect, and the other pinwheels have
   // a "darkening" effect.
   float brighten_darken_weight =
-      (sin(((screen_uv.y + energy_scaled) * screen_uv.x) * 0.2 +
-           energy_scaled) /
-           10 +
-       0.99);
+      (sin((screen_uv.y + energy_scaled + screen_uv.x) * 0.02 +
+           energy_scaled / 5) *
+           0.021 +
+       0.98);
 
   gl_FragColor = out_color * brighten_darken_weight;
 }
