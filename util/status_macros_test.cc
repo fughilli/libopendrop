@@ -18,6 +18,19 @@ TEST(StatusMacrosTest, ReturnIfErrorReturnsOnError) {
       return_if_error_function(absl::FailedPreconditionError("")).ok());
 }
 
+TEST(StatusMacrosTest, CanProvideDeclarationInRhsOfAssignOrReturn) {
+  auto return_if_error_function =
+      [](absl::StatusOr<int> status) -> absl::Status {
+    ASSIGN_OR_RETURN(auto foo, status);
+    static_assert(std::is_same<decltype(foo), int>::value, "");
+    return absl::OkStatus();
+  };
+
+  ASSERT_TRUE(return_if_error_function(1).ok());
+  ASSERT_FALSE(
+      return_if_error_function(absl::FailedPreconditionError("")).ok());
+}
+
 struct TestCase {
   int initial_value;
   absl::StatusOr<int> status;

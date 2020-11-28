@@ -13,23 +13,15 @@ namespace absl {
     }                                      \
   } while (0)
 
-template <typename T>
-::absl::Status AssignOrReturnStatus(T& value_to_assign,
-                                    ::absl::StatusOr<T> status_or_value) {
-  if (!status_or_value.ok()) {
-    return status_or_value.status();
-  }
-  value_to_assign = *status_or_value;
-  return ::absl::OkStatus();
-}
+#define ASSIGN_OR_RETURN_IMPL(temp, lhs, rhs) \
+  auto temp = (rhs);                          \
+  RETURN_IF_ERROR(temp.status());             \
+  lhs = std::move(rhs).value()
 
-#define ASSIGN_OR_RETURN(lhs, rhs)                                      \
-  do {                                                                  \
-    ::absl::Status status = ::absl::AssignOrReturnStatus((lhs), (rhs)); \
-    if (!status.ok()) {                                                 \
-      return status;                                                    \
-    }                                                                   \
-  } while (0)
+#define ASSIGN_OR_RETURN_CONCAT(line, lhs, rhs) \
+  ASSIGN_OR_RETURN_IMPL(__CONCAT(_status_or_, line), lhs, (rhs))
+
+#define ASSIGN_OR_RETURN(lhs, rhs) ASSIGN_OR_RETURN_CONCAT(__LINE__, lhs, (rhs))
 
 }  // namespace absl
 
