@@ -112,28 +112,13 @@ void CubeBoom::OnDrawFrame(
 
     warp_program_->Use();
 
-    LOG(DEBUG) << "Using program";
-    int texture_size_location = glGetUniformLocation(
-        warp_program_->program_handle(), "last_frame_size");
-    LOG(DEBUG) << "Got texture size location: " << texture_size_location;
-    int power_location =
-        glGetUniformLocation(warp_program_->program_handle(), "power");
-    int energy_location =
-        glGetUniformLocation(warp_program_->program_handle(), "energy");
-    LOG(DEBUG) << "Got locations for power: " << power_location
-               << " and energy: " << energy_location;
-    glUniform1f(power_location, power);
-    glUniform1f(energy_location, energy);
-    LOG(DEBUG) << "Power: " << power << " energy: " << energy;
-    glUniform2i(texture_size_location, width(), height());
+    GlBindUniform(warp_program_, "last_frame_size",
+                  glm::ivec2(width(), height()));
+    GlBindUniform(warp_program_, "power", power);
+    GlBindUniform(warp_program_, "energy", energy);
     GlBindRenderTargetTextureToUniform(warp_program_, "last_frame",
                                        front_render_target_,
                                        gl::GlTextureBindingOptions());
-
-    glm::mat4 model_transform(1.0f);
-    glUniformMatrix4fv(glGetUniformLocation(warp_program_->program_handle(),
-                                            "model_transform"),
-                       1, GL_FALSE, &model_transform[0][0]);
 
     // Force all fragments to draw with a full-screen rectangle.
     rectangle_.Draw();
@@ -143,25 +128,18 @@ void CubeBoom::OnDrawFrame(
     polyline_.UpdateWidth(2 + power * 10);
     polyline_.UpdateColor(HsvToRgb(glm::vec3(energy, 1, 0.5)));
     polyline_.Draw();
-
-    glFlush();
   }
 
   {
     auto output_activation = depth_output_target_->Activate();
     model_program_->Use();
-    LOG(DEBUG) << "Using program";
-    int texture_size_location = glGetUniformLocation(
-        model_program_->program_handle(), "render_target_size");
-    LOG(DEBUG) << "Got texture size location: " << texture_size_location;
-    glUniform2i(texture_size_location, width(), height());
+
+    GlBindUniform(model_program_, "render_target_size",
+                  glm::ivec2(width(), height()));
+    GlBindUniform(model_program_, "alpha", alpha);
     GlBindRenderTargetTextureToUniform(model_program_, "render_target",
                                        back_render_target_,
                                        gl::GlTextureBindingOptions());
-    glUniform1f(glGetUniformLocation(model_program_->program_handle(), "alpha"),
-                alpha);
-
-    glViewport(0, 0, width(), height());
 
     float cube_scale = std::clamp(0.2 + power / 2, 0.0, 0.5);
 
@@ -175,9 +153,9 @@ void CubeBoom::OnDrawFrame(
         glm::rotate(glm::mat4(1.0f), energy * 10, glm::vec3(0.0f, 0.0f, 1.0f)) *
         glm::rotate(glm::mat4(1.0f), energy * 7, glm::vec3(0.0f, 1.0f, 0.0f)) *
         glm::rotate(glm::mat4(1.0f), energy * 15, glm::vec3(1.0f, 0.0f, 0.0f));
-    glUniformMatrix4fv(glGetUniformLocation(model_program_->program_handle(),
-                                            "model_transform"),
-                       1, GL_FALSE, &model_transform[0][0]);
+    GlBindUniform(model_program_, "model_transform", model_transform);
+
+    glViewport(0, 0, width(), height());
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glEnable(GL_DEPTH_TEST);
     // Enable one of these at a time.
@@ -187,33 +165,22 @@ void CubeBoom::OnDrawFrame(
     glDisable(GL_DEPTH_TEST);
 
     back_render_target_->swap_texture_unit(front_render_target_.get());
-    glFlush();
   }
 
   {
     auto output_activation = output_render_target->Activate();
     composite_program_->Use();
-    LOG(DEBUG) << "Using program";
-    int texture_size_location = glGetUniformLocation(
-        composite_program_->program_handle(), "render_target_size");
-    LOG(DEBUG) << "Got texture size location: " << texture_size_location;
-    glUniform2i(texture_size_location, width(), height());
+
+    GlBindUniform(composite_program_, "render_target_size",
+                  glm::ivec2(width(), height()));
+    GlBindUniform(composite_program_, "alpha", alpha);
+    GlBindUniform(composite_program_, "model_transform", glm::mat4(1.0f));
     GlBindRenderTargetTextureToUniform(composite_program_, "render_target",
                                        depth_output_target_,
                                        gl::GlTextureBindingOptions());
-    glUniform1f(
-        glGetUniformLocation(composite_program_->program_handle(), "alpha"),
-        alpha);
 
     glViewport(0, 0, width(), height());
-
-    glm::mat4 model_transform(1.0f);
-    glUniformMatrix4fv(
-        glGetUniformLocation(composite_program_->program_handle(),
-                             "model_transform"),
-        1, GL_FALSE, &model_transform[0][0]);
     rectangle_.Draw();
-    glFlush();
   }
 }
 

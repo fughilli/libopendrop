@@ -37,8 +37,8 @@ Kaleidoscope::Kaleidoscope(
 
 absl::StatusOr<std::shared_ptr<Preset>> Kaleidoscope::MakeShared(
     std::shared_ptr<gl::GlTextureManager> texture_manager) {
-  ASSIGN_OR_RETURN(auto
-      warp_program,
+  ASSIGN_OR_RETURN(
+      auto warp_program,
       gl::GlProgram::MakeShared(passthrough_vsh::Code(), warp_fsh::Code()));
   ASSIGN_OR_RETURN(auto composite_program,
                    gl::GlProgram::MakeShared(passthrough_vsh::Code(),
@@ -79,20 +79,10 @@ void Kaleidoscope::OnDrawFrame(
 
     warp_program_->Use();
 
-    LOG(DEBUG) << "Using program";
-    int texture_size_location = glGetUniformLocation(
-        warp_program_->program_handle(), "last_frame_size");
-    LOG(DEBUG) << "Got texture size location: " << texture_size_location;
-    int power_location =
-        glGetUniformLocation(warp_program_->program_handle(), "power");
-    int energy_location =
-        glGetUniformLocation(warp_program_->program_handle(), "energy");
-    LOG(DEBUG) << "Got locations for power: " << power_location
-               << " and energy: " << energy_location;
-    glUniform1f(power_location, power);
-    glUniform1f(energy_location, energy);
-    LOG(DEBUG) << "Power: " << power << " energy: " << energy;
-    glUniform2i(texture_size_location, width(), height());
+    GlBindUniform(warp_program_, "last_frame_size",
+                  glm::ivec2(width(), height()));
+    GlBindUniform(warp_program_, "power", power);
+    GlBindUniform(warp_program_, "energy", energy);
     GlBindRenderTargetTextureToUniform(warp_program_, "last_frame",
                                        front_render_target_,
                                        gl::GlTextureBindingOptions());
@@ -125,39 +115,25 @@ void Kaleidoscope::OnDrawFrame(
       polyline_.UpdateColor(HsvToRgb(glm::vec3(energy, 1, 0.5)));
       polyline_.Draw();
     }
-
-    glFlush();
   }
 
   {
     auto output_activation = output_render_target->Activate();
     composite_program_->Use();
-    LOG(DEBUG) << "Using program";
+
+    GlBindUniform(composite_program_, "render_target_size",
+                  glm::ivec2(width(), height()));
+    GlBindUniform(composite_program_, "power", power);
+    GlBindUniform(composite_program_, "energy", energy);
+    GlBindUniform(composite_program_, "alpha", alpha);
     GlBindRenderTargetTextureToUniform(composite_program_, "render_target",
                                        back_render_target_,
                                        gl::GlTextureBindingOptions());
-    int texture_size_location = glGetUniformLocation(
-        composite_program_->program_handle(), "render_target_size");
-    LOG(DEBUG) << "Got texture size location: " << texture_size_location;
-    glUniform2i(texture_size_location, width(), height());
-    int power_location =
-        glGetUniformLocation(composite_program_->program_handle(), "power");
-    int energy_location =
-        glGetUniformLocation(composite_program_->program_handle(), "energy");
-    LOG(DEBUG) << "Got locations for power: " << power_location
-               << " and energy: " << energy_location;
-    glUniform1f(power_location, power);
-    glUniform1f(energy_location, energy);
-    LOG(DEBUG) << "Power: " << power << " energy: " << energy;
-    glUniform1f(
-        glGetUniformLocation(composite_program_->program_handle(), "alpha"),
-        alpha);
 
     glViewport(0, 0, width(), height());
     rectangle_.Draw();
 
     back_render_target_->swap_texture_unit(front_render_target_.get());
-    glFlush();
   }
 }
 

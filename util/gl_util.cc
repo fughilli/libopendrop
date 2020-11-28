@@ -61,4 +61,33 @@ void GlBindRenderTargetTextureToUniform(
                                    texture_uniform_name.c_str()),
               render_target->texture_unit());
 }
+
+void GlBindUniform(std::shared_ptr<GlProgram> program, std::string uniform_name,
+                   float value) {
+  glUniform1f(
+      glGetUniformLocation(program->program_handle(), uniform_name.c_str()),
+      value);
+}
+
+void GlBindUniform(std::shared_ptr<GlProgram> program, std::string uniform_name,
+                   glm::mat4 value) {
+  glUniformMatrix4fv(
+      glGetUniformLocation(program->program_handle(), uniform_name.c_str()), 1,
+      GL_FALSE, &value[0][0]);
+}
+
+void GlBindUniform(std::shared_ptr<GlProgram> program, std::string uniform_name,
+                   glm::ivec2 value) {
+  glUniform2iv(
+      glGetUniformLocation(program->program_handle(), uniform_name.c_str()), 1,
+      &value.x);
+}
+
+void GlBindUniform(std::shared_ptr<GlProgram> program, std::string uniform_name,
+                   int value) {
+  glUniform1i(
+      glGetUniformLocation(program->program_handle(), uniform_name.c_str()),
+      value);
+}
+
 }  // namespace gl

@@ -169,11 +169,6 @@ void Glowsticks3d::OnDrawFrame(
   float normalized_energy = state->normalized_energy();
   float power = state->power();
 
-  LOG(DEBUG) << "Input values: average power=" << average_power
-             << ", energy=" << energy
-             << ", normalized_energy=" << normalized_energy
-             << ", power=" << power;
-
   std::array<glm::vec2, 4> debug_segment_points;
 
   UpdateArmatureSegmentAngles(state, &segment_angle_accumulators_);
@@ -184,7 +179,6 @@ void Glowsticks3d::OnDrawFrame(
   for (int i = 0; i < angles_.size(); ++i) {
     angles_[i] = segment_angle_accumulators_[i];
   }
-  LOG(DEBUG) << "segment_angle_accumulators_=" << absl::Span<float>(angles_);
   int num_steps = 1;
   for (Accumulator<float>& angle_accumulator : segment_angle_accumulators_) {
     float abs_step = std::abs(angle_accumulator.last_step());
@@ -192,10 +186,6 @@ void Glowsticks3d::OnDrawFrame(
       num_steps = std::max(
           num_steps, static_cast<int>(std::ceil(abs_step / kMaxAngularStep)));
     }
-  }
-
-  if (num_steps > 1) {
-    LOG(DEBUG) << "num_steps = " << num_steps;
   }
 
   // Divide the arc into `num_steps`, by interpolating all of the angles
@@ -206,8 +196,6 @@ void Glowsticks3d::OnDrawFrame(
     auto interpolator =
         segment_angle_accumulators_[i].InterpolateLastStepWithStepCount(
             num_steps);
-    LOG(DEBUG) << "Interpolating from " << interpolator.begin_value() << " to "
-               << interpolator.end_value() << " in " << num_steps << " steps";
     segment_angle_interpolators_[i] = interpolator;
     segment_angle_iterators_[i] = segment_angle_interpolators_[i].begin();
   }
@@ -221,8 +209,6 @@ void Glowsticks3d::OnDrawFrame(
       segment_angles[j] = *(segment_angle_iterators_[j]++);
     }
 
-    LOG(DEBUG) << "Interpolation step " << i << ": "
-               << absl::Span<float>(segment_angles);
     auto segment_2d =
         ComputeRibbonSegment(state, segment_angles, &debug_segment_points);
     std::pair<glm::vec3, glm::vec3> segment;
@@ -266,29 +252,16 @@ void Glowsticks3d::OnDrawFrame(
 
     warp_program_->Use();
 
-    LOG(DEBUG) << "Using program";
-    int texture_size_location = glGetUniformLocation(
-        warp_program_->program_handle(), "last_frame_size");
-    LOG(DEBUG) << "Got texture size location: " << texture_size_location;
-    int power_location =
-        glGetUniformLocation(warp_program_->program_handle(), "power");
-    int energy_location =
-        glGetUniformLocation(warp_program_->program_handle(), "energy");
-    LOG(DEBUG) << "Got locations for power: " << power_location
-               << " and energy: " << energy_location;
-    glUniform1f(power_location, power);
-    glUniform1f(energy_location, energy);
-    LOG(DEBUG) << "Power: " << power << " energy: " << energy;
-    glUniform2i(texture_size_location, front_render_target_->width(),
-                front_render_target_->height());
+    GlBindUniform(warp_program_, "last_frame_size",
+                  glm::ivec2(width(), height()));
+    GlBindUniform(warp_program_, "power", power);
+    GlBindUniform(warp_program_, "energy", energy);
+    GlBindUniform(warp_program_, "framerate_scale", kFramerateScale);
     GlBindRenderTargetTextureToUniform(
         warp_program_, "last_frame", front_render_target_,
         gl::GlTextureBindingOptions(
             {.sampling_mode = gl::GlTextureSamplingMode::kClampToBorder,
              .border_color = glm::vec4(0, 0, 0, 1)}));
-    glUniform1f(glGetUniformLocation(warp_program_->program_handle(),
-                                     "framerate_scale"),
-                kFramerateScale);
 
     // Force all fragments to draw with a full-screen rectangle.
     rectangle_.Draw();
@@ -305,31 +278,20 @@ void Glowsticks3d::OnDrawFrame(
     // intervals.
     ribbon2_.Draw();
     glEnable(GL_DEPTH_TEST);
-
-    glFlush();
   }
 
   {
     auto output_activation = output_render_target->Activate();
     composite_program_->Use();
-    LOG(DEBUG) << "Using program";
-    int texture_size_location = glGetUniformLocation(
-        composite_program_->program_handle(), "render_target_size");
-    LOG(DEBUG) << "Got texture size location: " << texture_size_location;
-    glUniform2i(texture_size_location, back_render_target_->width(),
-                back_render_target_->height());
+
+    GlBindUniform(composite_program_, "render_target_size",
+                  glm::ivec2(width(), height()));
+    GlBindUniform(composite_program_, "power", power);
+    GlBindUniform(composite_program_, "normalized_energy", normalized_energy);
+    GlBindUniform(composite_program_, "alpha", alpha);
     GlBindRenderTargetTextureToUniform(composite_program_, "render_target",
                                        back_render_target_,
                                        gl::GlTextureBindingOptions());
-    glUniform1f(
-        glGetUniformLocation(composite_program_->program_handle(), "alpha"),
-        alpha);
-    glUniform1f(
-        glGetUniformLocation(composite_program_->program_handle(), "power"),
-        power);
-    glUniform1f(glGetUniformLocation(composite_program_->program_handle(),
-                                     "normalized_energy"),
-                normalized_energy);
 
     const auto square_dimension = std::max(width(), height());
     const int offset_x = -(square_dimension - width()) / 2;
@@ -345,7 +307,6 @@ void Glowsticks3d::OnDrawFrame(
     }
 
     back_render_target_->swap_texture_unit(front_render_target_.get());
-    glFlush();
   }
 }
 

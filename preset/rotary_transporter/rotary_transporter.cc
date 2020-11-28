@@ -126,22 +126,13 @@ void RotaryTransporter::OnDrawFrame(
 
     float zoom_speed = 1.f + average_power * kFramerateScale;
 
-    glUniform1f(glGetUniformLocation(warp_program_->program_handle(), "power"),
-                bass_power_);
-    glUniform1f(glGetUniformLocation(warp_program_->program_handle(), "energy"),
-                bass_energy_);
-    glUniform1f(
-        glGetUniformLocation(warp_program_->program_handle(), "zoom_angle"),
-        zoom_angle_);
-    glUniform1f(
-        glGetUniformLocation(warp_program_->program_handle(), "zoom_speed"),
-        zoom_speed);
-    glUniform1f(glGetUniformLocation(warp_program_->program_handle(),
-                                     "framerate_scale"),
-                kFramerateScale);
-    glUniform2i(glGetUniformLocation(warp_program_->program_handle(),
-                                     "last_frame_size"),
-                width(), height());
+    GlBindUniform(warp_program_, "power", bass_power_);
+    GlBindUniform(warp_program_, "energy", bass_energy_);
+    GlBindUniform(warp_program_, "zoom_angle", zoom_angle_);
+    GlBindUniform(warp_program_, "zoom_speed", zoom_speed);
+    GlBindUniform(warp_program_, "framerate_scale", kFramerateScale);
+    GlBindUniform(warp_program_, "last_frame_size",
+                  glm::ivec2(width(), height()));
     GlBindRenderTargetTextureToUniform(
         warp_program_, "last_frame", front_render_target_,
         gl::GlTextureBindingOptions(
@@ -174,6 +165,7 @@ void RotaryTransporter::OnDrawFrame(
             Rotate2d(vertices_[j],
                      angular_displacement - energy * 60 * kFramerateScale) +
             displacement_vector * tube_scale;
+        vertices_rotary[j].x *= aspect_ratio();
       }
       polyline_.UpdateVertices(vertices_rotary);
       polyline_.UpdateWidth(1 + power * 10);
@@ -181,28 +173,22 @@ void RotaryTransporter::OnDrawFrame(
           energy * kFramerateScale + i / static_cast<float>(petals), 1, 1)));
       polyline_.Draw();
     }
-
-    glFlush();
   }
 
   {
     auto output_activation = output_render_target->Activate();
     composite_program_->Use();
-    glUniform2i(glGetUniformLocation(composite_program_->program_handle(),
-                                     "render_target_size"),
-                width(), height());
+    GlBindUniform(composite_program_, "render_target_size",
+                  glm::ivec2(width(), height()));
+    GlBindUniform(composite_program_, "alpha", alpha);
     GlBindRenderTargetTextureToUniform(composite_program_, "render_target",
                                        back_render_target_,
                                        gl::GlTextureBindingOptions());
-    glUniform1f(
-        glGetUniformLocation(composite_program_->program_handle(), "alpha"),
-        alpha);
 
     glViewport(0, 0, width(), height());
     rectangle_.Draw();
 
     back_render_target_->swap_texture_unit(front_render_target_.get());
-    glFlush();
   }
 }
 

@@ -1,6 +1,8 @@
 #ifndef LIBOPENDROP_UTIL_GL_UTIL_H_
 #define LIBOPENDROP_UTIL_GL_UTIL_H_
 
+#include <glm/mat4x4.hpp>
+#include <glm/vec2.hpp>
 #include <glm/vec4.hpp>
 #include <memory>
 
@@ -46,6 +48,16 @@ void GlBindRenderTargetTextureToUniform(
     std::shared_ptr<GlProgram> program, std::string texture_uniform_name,
     std::shared_ptr<GlRenderTarget> render_target,
     GlTextureBindingOptions binding_options);
+
+// Binds a value by name in a gl::GlProgram.
+void GlBindUniform(std::shared_ptr<GlProgram> program, std::string uniform_name,
+                   float value);
+void GlBindUniform(std::shared_ptr<GlProgram> program, std::string uniform_name,
+                   glm::ivec2 value);
+void GlBindUniform(std::shared_ptr<GlProgram> program, std::string uniform_name,
+                   glm::mat4 value);
+void GlBindUniform(std::shared_ptr<GlProgram> program, std::string uniform_name,
+                   int value);
 
 }  // namespace gl
 

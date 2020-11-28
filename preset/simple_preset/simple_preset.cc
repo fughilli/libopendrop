@@ -88,62 +88,43 @@ void SimplePreset::OnDrawFrame(
     y_pos += sin(sin(2 * energy) * 5 * energy / 1.25 + power / 100) / 2;
     y_pos += sin(sin(2 * energy) * 5 * energy / 5.23 + 0.5) / 5;
 
-    vertices_[i] = glm::vec2(x_pos, y_pos);
+    vertices_[i] = glm::vec2(x_pos * aspect_ratio(), y_pos);
   }
 
   {
     auto back_activation = back_render_target_->Activate();
 
     warp_program_->Use();
-
-    LOG(DEBUG) << "Using program";
-    int texture_size_location = glGetUniformLocation(
-        warp_program_->program_handle(), "last_frame_size");
-    LOG(DEBUG) << "Got texture size location: " << texture_size_location;
-    int power_location =
-        glGetUniformLocation(warp_program_->program_handle(), "power");
-    int energy_location =
-        glGetUniformLocation(warp_program_->program_handle(), "energy");
-    LOG(DEBUG) << "Got locations for power: " << power_location
-               << " and energy: " << energy_location;
-    glUniform1f(power_location, power);
-    glUniform1f(energy_location, energy);
-    LOG(DEBUG) << "Power: " << power << " energy: " << energy;
-    glUniform2i(texture_size_location, width(), height());
+    GlBindUniform(warp_program_, "last_frame_size",
+                  glm::ivec2(width(), height()));
+    GlBindUniform(warp_program_, "power", power);
+    GlBindUniform(warp_program_, "energy", energy);
     GlBindRenderTargetTextureToUniform(warp_program_, "last_frame",
                                        front_render_target_,
                                        gl::GlTextureBindingOptions());
 
     rectangle_.Draw();
-
     polyline_.UpdateVertices(vertices_);
     polyline_.UpdateWidth(log(normalized_power) * 50);
     polyline_.UpdateColor(HsvToRgb(glm::vec3(energy, 1, 0.5)));
     polyline_.Draw();
-
-    glFlush();
   }
 
   {
     auto output_activation = output_render_target->Activate();
+
     composite_program_->Use();
-    LOG(DEBUG) << "Using program";
-    int texture_size_location = glGetUniformLocation(
-        composite_program_->program_handle(), "render_target_size");
-    LOG(DEBUG) << "Got texture size location: " << texture_size_location;
-    glUniform2i(texture_size_location, width(), height());
+    GlBindUniform(composite_program_, "render_target_size",
+                  glm::ivec2(width(), height()));
+    GlBindUniform(composite_program_, "alpha", alpha);
     GlBindRenderTargetTextureToUniform(composite_program_, "render_target",
                                        back_render_target_,
                                        gl::GlTextureBindingOptions());
-    glUniform1f(
-        glGetUniformLocation(composite_program_->program_handle(), "alpha"),
-        alpha);
 
     glViewport(0, 0, width(), height());
     rectangle_.Draw();
 
     back_render_target_->swap_texture_unit(front_render_target_.get());
-    glFlush();
   }
 }
 

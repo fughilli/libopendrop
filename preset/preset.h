@@ -44,6 +44,7 @@ class Preset {
   // Getters for dimensions.
   int width() const { return width_; }
   int height() const { return height_; }
+  float aspect_ratio() const { return static_cast<float>(height_) / width_; }
 
   // Callbacks for subclass implementations.
   // Invoked by `DrawFrame` with lock held.

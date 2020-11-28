@@ -79,15 +79,10 @@ void AlienRorschach::OnDrawFrame(
 
     warp_program_->Use();
 
-    int texture_size_location = glGetUniformLocation(
-        warp_program_->program_handle(), "last_frame_size");
-    int power_location =
-        glGetUniformLocation(warp_program_->program_handle(), "power");
-    int energy_location =
-        glGetUniformLocation(warp_program_->program_handle(), "energy");
-    glUniform1f(power_location, power);
-    glUniform1f(energy_location, energy);
-    glUniform2i(texture_size_location, width(), height());
+    GlBindUniform(warp_program_, "power", power);
+    GlBindUniform(warp_program_, "energy", energy);
+    GlBindUniform(warp_program_, "last_frame_size",
+                  glm::ivec2(width(), height()));
     GlBindRenderTargetTextureToUniform(warp_program_, "last_frame",
                                        front_render_target_,
                                        gl::GlTextureBindingOptions());
@@ -121,34 +116,25 @@ void AlienRorschach::OnDrawFrame(
           HsvToRgb(glm::vec3(energy * 1 + (j / 4.0f), 1, 0.5)));
       polyline_.Draw();
     }
-
-    glFlush();
   }
 
   {
     auto output_activation = output_render_target->Activate();
     composite_program_->Use();
+
+    GlBindUniform(composite_program_, "power", power);
+    GlBindUniform(composite_program_, "energy", energy);
+    GlBindUniform(composite_program_, "render_target_size",
+                  glm::ivec2(width(), height()));
+    GlBindUniform(composite_program_, "alpha", alpha);
     GlBindRenderTargetTextureToUniform(composite_program_, "render_target",
                                        back_render_target_,
                                        gl::GlTextureBindingOptions());
-    int texture_size_location = glGetUniformLocation(
-        composite_program_->program_handle(), "render_target_size");
-    glUniform2i(texture_size_location, width(), height());
-    int power_location =
-        glGetUniformLocation(composite_program_->program_handle(), "power");
-    int energy_location =
-        glGetUniformLocation(composite_program_->program_handle(), "energy");
-    glUniform1f(power_location, power);
-    glUniform1f(energy_location, energy);
-    glUniform1f(
-        glGetUniformLocation(composite_program_->program_handle(), "alpha"),
-        alpha);
 
     glViewport(0, 0, width(), height());
     rectangle_.Draw();
 
     back_render_target_->swap_texture_unit(front_render_target_.get());
-    glFlush();
   }
 }
 
