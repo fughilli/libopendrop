@@ -14,6 +14,7 @@
 #include "libopendrop/util/colors.h"
 #include "libopendrop/util/gl_util.h"
 #include "libopendrop/util/logging.h"
+#include "libopendrop/util/math.h"
 #include "libopendrop/util/status_macros.h"
 
 namespace opendrop {
@@ -124,7 +125,11 @@ void RotaryTransporter::OnDrawFrame(
 
     warp_program_->Use();
 
-    float zoom_speed = 1.f + average_power * kFramerateScale;
+    float zoom_speed =
+        1.f +
+        LogLinear<float>(average_power,
+                  (1 + sin(energy * 1.13 + 0.1) * sin(energy * 1.17)) / 2) *
+            kFramerateScale / 100;
 
     GlBindUniform(warp_program_, "power", bass_power_);
     GlBindUniform(warp_program_, "energy", bass_energy_);
@@ -148,8 +153,8 @@ void RotaryTransporter::OnDrawFrame(
     // Draw the waveform.
     constexpr int kMaxSymmetry = 30;
     constexpr int kMinSymmetry = 3;
-    zoom_angle_ += sin(bass_energy_ * 30 * kFramerateScale) * bass_power_ *
-                   kFramerateScale;
+    zoom_angle_ += sin(std::log(bass_energy_) * 3 * kFramerateScale) *
+                   bass_power_ * kFramerateScale;
     int petals =
         static_cast<int>(kMinSymmetry + (kMaxSymmetry - kMinSymmetry) *
                                             ((sin(energy * 10) + 1) / 2));

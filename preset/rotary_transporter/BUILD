@@ -20,6 +20,7 @@ cc_library(
         "//libopendrop/util:filter",
         "//libopendrop/util:gl_util",
         "//libopendrop/util:logging",
+        "//libopendrop/util:math",
         "//libopendrop/util:status_macros",
     ],
 )
