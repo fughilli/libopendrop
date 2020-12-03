@@ -142,6 +142,7 @@ cc_test(
 cc_library(
     name = "math",
     hdrs = ["math.h"],
+    deps = [":logging"],
 )
 
 cc_test(
