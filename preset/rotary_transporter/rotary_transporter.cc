@@ -1,3 +1,4 @@
+#define GLM_SWIZZLE
 #include "libopendrop/preset/rotary_transporter/rotary_transporter.h"
 
 #define _USE_MATH_DEFINES
@@ -7,6 +8,10 @@
 #include <GL/glext.h>
 
 #include <algorithm>
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtx/vector_angle.hpp>
+#include <glm/mat4x4.hpp>
 
 #include "libopendrop/preset/rotary_transporter/composite.fsh.h"
 #include "libopendrop/preset/rotary_transporter/passthrough.vsh.h"
@@ -125,11 +130,7 @@ void RotaryTransporter::OnDrawFrame(
 
     warp_program_->Use();
 
-    float zoom_speed =
-        1.f +
-        LogLinear<float>(average_power,
-                  (1 + sin(energy * 1.13 + 0.1) * sin(energy * 1.17)) / 2) *
-            kFramerateScale / 100;
+    float zoom_speed = 1.f + average_power * kFramerateScale;
 
     GlBindUniform(warp_program_, "power", bass_power_);
     GlBindUniform(warp_program_, "energy", bass_energy_);
@@ -155,6 +156,12 @@ void RotaryTransporter::OnDrawFrame(
     constexpr int kMinSymmetry = 3;
     zoom_angle_ += sin(std::log(bass_energy_) * 3 * kFramerateScale) *
                    bass_power_ * kFramerateScale;
+
+    glm::vec3 look_vec_3d(-UnitVectorAtAngle(zoom_angle_) / 2.0f, zoom_speed);
+    glm::vec3 axis = glm::cross(glm::vec3(0, 0, 1), look_vec_3d);
+    float angle = glm::angle(glm::vec3(0, 0, 1), glm::normalize(look_vec_3d));
+    glm::mat3x3 rotation = glm::rotate(angle, glm::normalize(axis));
+
     int petals =
         static_cast<int>(kMinSymmetry + (kMaxSymmetry - kMinSymmetry) *
                                             ((sin(energy * 10) + 1) / 2));
@@ -165,15 +172,17 @@ void RotaryTransporter::OnDrawFrame(
       float angular_displacement = i * (M_PI * 2.0f / petals);
       glm::vec2 displacement_vector = UnitVectorAtAngle(
           angular_displacement + energy * -40 * kFramerateScale);
+
       for (int j = 0; j < vertices_rotary.size(); ++j) {
         vertices_rotary[j] =
             Rotate2d(vertices_[j],
                      angular_displacement - energy * 60 * kFramerateScale) +
             displacement_vector * tube_scale;
         vertices_rotary[j].x *= aspect_ratio();
+        vertices_rotary[j] = (rotation * glm::vec3(vertices_rotary[j], 0)).xy();
       }
       polyline_.UpdateVertices(vertices_rotary);
-      polyline_.UpdateWidth(1 + power * 10);
+      polyline_.UpdateWidth(std::max(1.0f, 10.0f / (petals - 2)) + power * 20);
       polyline_.UpdateColor(HsvToRgb(glm::vec3(
           energy * kFramerateScale + i / static_cast<float>(petals), 1, 1)));
       polyline_.Draw();
