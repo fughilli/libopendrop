@@ -90,8 +90,8 @@ void NextPreset(OpenDropController *controller,
                 std::shared_ptr<gl::GlTextureManager> texture_manager) {
   // TODO: Refactor such that preset geometry is configured after attaching to
   // the preset blender.
-  std::array<float, 2> durations =
-      opendrop::Coefficients::Random<2>(0.2f, 15.0f);
+  float duration = opendrop::Coefficients::Random<1>(3.0f, 15.0f)[0];
+  float ramp_duration = opendrop::Coefficients::Random<1>(0.1f, 2.0f)[0];
   auto status_or_render_target =
       gl::GlRenderTarget::MakeShared(0, 0, texture_manager);
   if (!status_or_render_target.ok()) {
@@ -105,8 +105,8 @@ void NextPreset(OpenDropController *controller,
     return;
   }
   controller->preset_blender()->AddPreset(
-      *status_or_preset, *status_or_render_target,
-      durations[0] + durations[1] * 2, durations[1]);
+      *status_or_preset, *status_or_render_target, duration + ramp_duration * 2,
+      ramp_duration);
 }
 }  // namespace
 

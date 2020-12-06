@@ -13,6 +13,8 @@ class Coefficients {
   static std::array<float, N> Random(float minimum, float maximum) {
     static std::random_device device;
     static std::default_random_engine random_engine(device());
+    CHECK(minimum <= maximum)
+        << "minimum must be less than or equal to maximum";
     std::uniform_real_distribution<float> distribution(minimum, maximum);
 
     std::array<float, N> return_coefficients;
