@@ -116,6 +116,7 @@ void CubeBoom::OnDrawFrame(
                   glm::ivec2(width(), height()));
     GlBindUniform(warp_program_, "power", power);
     GlBindUniform(warp_program_, "energy", energy);
+    GlBindUniform(warp_program_, "model_transform", glm::mat4(1.0f));
     GlBindRenderTargetTextureToUniform(warp_program_, "last_frame",
                                        front_render_target_,
                                        gl::GlTextureBindingOptions());
