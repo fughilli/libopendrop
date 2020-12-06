@@ -76,6 +76,7 @@ using ::opendrop::OpenDropController;
 using ::opendrop::OpenDropControllerInterface;
 using ::opendrop::PcmFormat;
 using ::opendrop::RateLimiter;
+using ::opendrop::Oneshot;
 // Target FPS.
 constexpr int kFps = 60;
 // Target frame time, in microseconds.
@@ -196,7 +197,6 @@ extern "C" int main(int argc, char *argv[]) {
     int late_frames_to_skip_preset =
         absl::GetFlag(FLAGS_late_frames_to_skip_preset);
 
-    SDL_ShowCursor(SDL_DISABLE);
 
     while (!exit_event_received) {
       // Record the start of the frame in the draw timer.
@@ -223,6 +223,8 @@ extern "C" int main(int argc, char *argv[]) {
           }
         }
       }
+
+      bool mouse_moved = false;
 
       SDL_Event event;
       while (SDL_PollEvent(&event)) {
@@ -261,11 +263,34 @@ extern "C" int main(int argc, char *argv[]) {
                 break;
             }
             break;
+          case SDL_MOUSEMOTION:
+            mouse_moved = true;
+            break;
           case SDL_QUIT:
             exit_event_received = true;
             break;
         }
       }
+
+      // Handle mouse events
+
+      static Oneshot<float> hide_cursor_oneshot(2.0f);
+      static bool cursor_shown = true;
+
+      if (mouse_moved) {
+        if (!cursor_shown) {
+          cursor_shown = true;
+          SDL_ShowCursor(SDL_ENABLE);
+        }
+        hide_cursor_oneshot.Start(open_drop_controller->global_state().t());
+      }
+      if (hide_cursor_oneshot.IsDueOnce(
+              open_drop_controller->global_state().t())) {
+        cursor_shown = false;
+        SDL_ShowCursor(SDL_DISABLE);
+      }
+      // End handle mouse events
+
       sdl_gl_interface->SwapBuffers();
 
       // Record the end of the draw operations.
