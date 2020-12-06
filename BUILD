@@ -55,6 +55,7 @@ cc_binary(
         "//led_driver:pulseaudio_interface",
         "//libopendrop/preset:preset_list",
         "//libopendrop/util:logging",
+        "//libopendrop/util:rate_limiter",
         "@com_google_absl//absl/debugging:failure_signal_handler",
         "@com_google_absl//absl/flags:flag",
         "@com_google_absl//absl/flags:parse",

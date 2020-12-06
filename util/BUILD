@@ -60,6 +60,12 @@ cc_library(
 )
 
 cc_library(
+    name = "rate_limiter",
+    hdrs = ["rate_limiter.h"],
+    deps = [":oneshot"],
+)
+
+cc_library(
     name = "coefficients",
     hdrs = ["coefficients.h"],
 )

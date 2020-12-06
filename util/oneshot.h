@@ -7,7 +7,7 @@ template <typename T>
 class Oneshot {
  public:
   // Constructs a oneshot timer with the given duration.
-  explicit Oneshot(T duration) : duration_(duration) {}
+  explicit Oneshot(T duration) : duration_(duration), deadline_(0) {}
 
   // Starts the oneshot timer at time `start_time`.
   void Start(T start_time) { deadline_ = start_time + duration_; }

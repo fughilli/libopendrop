@@ -50,6 +50,7 @@
 #include "libopendrop/sdl_gl_interface.h"
 #include "libopendrop/util/coefficients.h"
 #include "libopendrop/util/logging.h"
+#include "libopendrop/util/rate_limiter.h"
 
 ABSL_FLAG(std::string, pulseaudio_server, "",
           "PulseAudio server to connect to");
@@ -74,6 +75,7 @@ namespace {
 using ::opendrop::OpenDropController;
 using ::opendrop::OpenDropControllerInterface;
 using ::opendrop::PcmFormat;
+using ::opendrop::RateLimiter;
 // Target FPS.
 constexpr int kFps = 60;
 // Target frame time, in microseconds.
@@ -85,6 +87,9 @@ constexpr int kTargetFrameTimeLateToleranceUs = 100000;
 constexpr int kAudioBufferSize = 256;
 // Minimum number of milliseconds that should be delayed.
 constexpr int kMinimumDelayUs = 2000;
+// Minimum time, in seconds, that must elapse in between automated preset
+// blender additions.
+constexpr float kMinimumPresetAddTime = 5.0f;
 
 void NextPreset(OpenDropController *controller,
                 std::shared_ptr<gl::GlTextureManager> texture_manager) {
@@ -210,9 +215,12 @@ extern "C" int main(int argc, char *argv[]) {
       if ((open_drop_controller->global_state().t() - fire_time) > 0.5f) {
         if (std::abs(open_drop_controller->global_state().power() /
                      open_drop_controller->global_state().average_power()) >
-            3.0f) {
+            2.0f) {
           fire_time = open_drop_controller->global_state().t();
-          NextPreset(open_drop_controller.get(), texture_manager);
+          static RateLimiter<float> next_preset_limiter(kMinimumPresetAddTime);
+          if (next_preset_limiter.Permitted(fire_time)) {
+            NextPreset(open_drop_controller.get(), texture_manager);
+          }
         }
       }
 
