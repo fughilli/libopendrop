@@ -27,7 +27,8 @@ INSTANTIATE_TEST_SUITE_P(
     ::testing::Values(TestValues{{0, 1, 1}, {1, 0, 0}},
                       TestValues{{1.0f / 3.0f, 1, 1}, {0, 1, 0}},
                       TestValues{{2.0f / 3.0f, 1, 1}, {0, 0, 1}},
-                      TestValues{{0, 0, 0}, {0, 0, 0}}));
+                      TestValues{{0, 0, 0}, {0, 0, 0}},
+                      TestValues{{10000000, 1, 1}, {1, 0, 0}}));
 
 }  // namespace
 }  // namespace opendrop
