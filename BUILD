@@ -43,7 +43,13 @@ cc_binary(
         "-lXss",
         "-lXi",
         "-lGL",
-    ],
+    ] + select({
+        "//:pi_build": [
+            "-Lexternal/raspberry_pi/sysroot/opt/vc/lib",
+            "-lbcm_host",
+        ],
+        "//conditions:default": [],
+    }),
     linkstatic = 1,
     deps = [
         ":cleanup",

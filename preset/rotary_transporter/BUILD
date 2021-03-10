@@ -6,6 +6,9 @@ cc_library(
     name = "rotary_transporter",
     srcs = ["rotary_transporter.cc"],
     hdrs = ["rotary_transporter.h"],
+    copts = [
+        "-DGLM_ENABLE_EXPERIMENTAL",
+    ],
     linkstatic = 1,
     deps = [
         ":composite",
