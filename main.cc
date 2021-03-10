@@ -68,15 +68,28 @@ ABSL_FLAG(int, window_y, -1,
           "override is applied.");
 ABSL_FLAG(int, late_frames_to_skip_preset, 100,
           "Number of late frames required to skip preset");
+ABSL_FLAG(bool, auto_transition, true,
+          "Whether or not to transition presets automatically as a function of "
+          "the audio input.");
+ABSL_FLAG(float, transition_threshold, 2.0f,
+          "Some coefficient provided to the transition function. Must be a "
+          "positive, nonzero value. Lower values (X => 0) cause faster, more "
+          "sensitive transition events. Higher values (X => inf) cause slower, "
+          "more conservative transition events.");
+ABSL_FLAG(float, transition_cooldown_period, 2.0f,
+          "A delay, in seconds, that must elapse in between auto transition "
+          "events. Must be positive. A value of 0 disables the cooldown.");
+ABSL_FLAG(int, max_presets, 2,
+          "Maximum number of presets on the screen at a time.");
 
 namespace led_driver {
 
 namespace {
+using ::opendrop::Oneshot;
 using ::opendrop::OpenDropController;
 using ::opendrop::OpenDropControllerInterface;
 using ::opendrop::PcmFormat;
 using ::opendrop::RateLimiter;
-using ::opendrop::Oneshot;
 // Target FPS.
 constexpr int kFps = 60;
 // Target frame time, in microseconds.
@@ -88,12 +101,15 @@ constexpr int kTargetFrameTimeLateToleranceUs = 100000;
 constexpr int kAudioBufferSize = 256;
 // Minimum number of milliseconds that should be delayed.
 constexpr int kMinimumDelayUs = 2000;
-// Minimum time, in seconds, that must elapse in between automated preset
-// blender additions.
-constexpr float kMinimumPresetAddTime = 5.0f;
 
 void NextPreset(OpenDropController *controller,
                 std::shared_ptr<gl::GlTextureManager> texture_manager) {
+  int max_presets = absl::GetFlag(FLAGS_max_presets);
+  if (max_presets > 0) {
+    if (controller->preset_blender()->NumPresets() >= max_presets) {
+      return;
+    }
+  }
   // TODO: Refactor such that preset geometry is configured after attaching to
   // the preset blender.
   float duration = opendrop::Coefficients::Random<1>(3.0f, 15.0f)[0];
@@ -197,6 +213,7 @@ extern "C" int main(int argc, char *argv[]) {
     int late_frames_to_skip_preset =
         absl::GetFlag(FLAGS_late_frames_to_skip_preset);
 
+    bool auto_transition = absl::GetFlag(FLAGS_auto_transition);
 
     while (!exit_event_received) {
       // Record the start of the frame in the draw timer.
@@ -211,15 +228,23 @@ extern "C" int main(int argc, char *argv[]) {
 
       open_drop_controller->DrawFrame(prev_dt);
 
-      static float fire_time = 0.0f;
-      if ((open_drop_controller->global_state().t() - fire_time) > 0.5f) {
-        if (std::abs(open_drop_controller->global_state().power() /
-                     open_drop_controller->global_state().average_power()) >
-            2.0f) {
-          fire_time = open_drop_controller->global_state().t();
-          static RateLimiter<float> next_preset_limiter(kMinimumPresetAddTime);
-          if (next_preset_limiter.Permitted(fire_time)) {
-            NextPreset(open_drop_controller.get(), texture_manager);
+      if (auto_transition) {
+        static float fire_time = 0.0f;
+        if ((open_drop_controller->global_state().t() - fire_time) > 0.5f) {
+          // rho is the automatic transition instantaneous power threshold
+          // coefficient, or the ratio between the instantaneous power and the
+          // average power of the signal required for the `NextPreset` function
+          // to be called.
+          const static float rho = absl::GetFlag(FLAGS_transition_threshold);
+          if (std::abs(open_drop_controller->global_state().power() /
+                       open_drop_controller->global_state().average_power()) >
+              rho) {
+            fire_time = open_drop_controller->global_state().t();
+            static RateLimiter<float> next_preset_limiter(
+                absl::GetFlag(FLAGS_transition_cooldown_period));
+            if (next_preset_limiter.Permitted(fire_time)) {
+              NextPreset(open_drop_controller.get(), texture_manager);
+            }
           }
         }
       }
