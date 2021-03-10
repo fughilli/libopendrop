@@ -25,6 +25,8 @@ function usage() {
 enable_debug=0
 run_binary=0
 
+passthrough_args=()
+
 while [[ ! -z "$@" ]]; do
   arg=$1
   shift
@@ -49,8 +51,7 @@ while [[ ! -z "$@" ]]; do
       ;;
 
     *)
-      echo $1
-      shift
+      passthrough_args+="${arg}"
       ;;
   esac
 done
@@ -121,10 +122,10 @@ if [[ ! -z $position ]]; then
 fi
 
 if [[ $run_binary == 1 ]]; then
-  ../bazel-bin/libopendrop/main $options $@
+  ../bazel-bin/libopendrop/main $options ${passthrough_args[@]}
 else
   bazelisk run //libopendrop:main $debug_options \
     --copt=-I/usr/include/SDL2 \
     -- \
-    $options $@
+    $options ${passthrough_args[@]}
 fi
