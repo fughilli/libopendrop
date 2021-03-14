@@ -1,5 +1,8 @@
 #!/bin/bash
 
+set -o errexit
+set -o pipefail
+
 bazelisk build --distinct_host_configuration --config=pi :main -c dbg
 cp ../bazel-bin/libopendrop/main /tmp/libopendrop
 chmod +rw /tmp/libopendrop
