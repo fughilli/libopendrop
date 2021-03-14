@@ -19,11 +19,13 @@ function usage() {
   echoerr "-d  \tEnable debug logging."
   echoerr "-b  \tRun from the binary output of bazel instead of building "
   echoerr "    \tlibopendrop again."
+  echoerr "-dv \tEnable debugging with valgrind. Implies '-b'."
   echoerr "-p  \tPosition on the screen. Must be of the form \`<x>,<y>\`."
 }
 
 enable_debug=0
 run_binary=0
+enable_valgrind=0
 
 passthrough_args=()
 
@@ -43,6 +45,11 @@ while [[ ! -z "$@" ]]; do
 
     '-b')
       run_binary=1
+      ;;
+
+    '-dv')
+      run_binary=1
+      enable_valgrind=1
       ;;
 
     '-p')
@@ -121,8 +128,15 @@ if [[ ! -z $position ]]; then
     --window_y=$position_y"
 fi
 
+if [[ $enable_valgrind == 1 ]]; then
+  valgrind_command="valgrind --track-origins=yes --leak-check=full"
+else
+  valgrind_command=""
+fi
+
 if [[ $run_binary == 1 ]]; then
-  ../bazel-bin/libopendrop/main $options ${passthrough_args[@]}
+  $valgrind_command ../bazel-bin/libopendrop/main $options \
+    ${passthrough_args[@]}
 else
   bazelisk run //libopendrop:main $debug_options \
     --copt=-I/usr/include/SDL2 \
