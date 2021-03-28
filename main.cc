@@ -249,6 +249,10 @@ extern "C" int main(int argc, char *argv[]) {
         }
       }
 
+      if (open_drop_controller->preset_blender()->NumPresets() == 0) {
+        NextPreset(open_drop_controller.get(), texture_manager);
+      }
+
       bool mouse_moved = false;
 
       SDL_Event event;

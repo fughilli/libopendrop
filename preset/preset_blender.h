@@ -45,6 +45,7 @@ class PresetActivation {
   PresetActivationState state_;
   OneshotIncremental<float> expiry_timer_, transition_timer_;
 };
+
 class PresetBlender {
  public:
   PresetBlender(int width, int height);
@@ -64,6 +65,8 @@ class PresetBlender {
                  std::shared_ptr<gl::GlRenderTarget> output_render_target);
 
   void UpdateGeometry(int width, int height);
+
+  size_t NumPresets() const { return preset_activations_.size(); }
 
  private:
   void Update(float dt);
