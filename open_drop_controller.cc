@@ -21,7 +21,7 @@ namespace {
 // Decay coefficient for the audio sample normalizer. This value should be
 // sufficiently close to 1 that quieter parts of songs do not cause the
 // normalization factor to decay significantly.
-constexpr float kNormalizerAlpha = 0.999f;
+constexpr float kNormalizerAlpha = 0.95f;
 
 // Whether or not to immediately increase the audio normalization coefficient
 // when a higher maximum value is detected.
