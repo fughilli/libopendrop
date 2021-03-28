@@ -15,6 +15,7 @@
 #include "libopendrop/preset/rotary_transporter/composite.fsh.h"
 #include "libopendrop/preset/rotary_transporter/passthrough.vsh.h"
 #include "libopendrop/preset/rotary_transporter/warp.fsh.h"
+#include "libopendrop/util/coefficients.h"
 #include "libopendrop/util/colors.h"
 #include "libopendrop/util/gl_util.h"
 #include "libopendrop/util/logging.h"
@@ -68,6 +69,9 @@ RotaryTransporter::RotaryTransporter(
   right_vocal_filter_ =
       IirBandFilter(kCenterFrequency / kSamplingRate,
                     kBandwidth / kSamplingRate, IirBandFilterType::kBandpass);
+
+  zoom_angle_ = Coefficients::Random<1>(0.f, M_PI * 2)[0];
+  border_color_phase_ = Coefficients::Random<1>(0.f, 1.f)[0];
 }
 
 absl::StatusOr<std::shared_ptr<Preset>> RotaryTransporter::MakeShared(
@@ -102,8 +106,10 @@ void RotaryTransporter::OnDrawFrame(
     absl::Span<const float> samples, std::shared_ptr<GlobalState> state,
     float alpha, std::shared_ptr<gl::GlRenderTarget> output_render_target) {
   float energy = state->energy();
+  float normalized_energy = state->normalized_energy();
   float power = state->power();
   float average_power = state->average_power();
+  float normalized_power = SafeDivide(power, average_power);
 
   bass_power_ = bass_filter_->ComputePower(state->left_channel());
   bass_energy_ += bass_power_ * state->dt();
@@ -129,7 +135,7 @@ void RotaryTransporter::OnDrawFrame(
 
     warp_program_->Use();
 
-    float zoom_speed = 1.f + average_power * kFramerateScale;
+    float zoom_speed = 1.f + normalized_power / 10 * kFramerateScale;
 
     GlBindUniform(warp_program_, "power", bass_power_);
     GlBindUniform(warp_program_, "energy", bass_energy_);
@@ -140,21 +146,21 @@ void RotaryTransporter::OnDrawFrame(
                   glm::ivec2(width(), height()));
     GlBindRenderTargetTextureToUniform(
         warp_program_, "last_frame", front_render_target_,
-        gl::GlTextureBindingOptions(
-            {.sampling_mode = gl::GlTextureSamplingMode::kClampToBorder,
-             .border_color = glm::vec4(
-                 HsvToRgb(glm::vec3(bass_energy_ * 10 * kFramerateScale, 1,
-                                    bass_power_ * 10)),
-                 1)}));
+        {.sampling_mode = gl::GlTextureSamplingMode::kClampToBorder,
+         .border_color =
+             glm::vec4(HsvToRgb({normalized_energy / 100 * kFramerateScale +
+                                     border_color_phase_,
+                                 1, normalized_power / 2}),
+                       1)});
 
     // Force all fragments to draw with a full-screen rectangle.
     rectangle_.Draw();
 
     // Draw the waveform.
-    constexpr int kMaxSymmetry = 30;
+    constexpr int kMaxSymmetry = 5;
     constexpr int kMinSymmetry = 3;
-    zoom_angle_ += sin(std::log(bass_energy_) * 3 * kFramerateScale) *
-                   bass_power_ * kFramerateScale;
+    zoom_angle_ += 10* sin(normalized_power * kFramerateScale) * bass_power_ *
+                   kFramerateScale;
 
     glm::vec3 look_vec_3d(-UnitVectorAtAngle(zoom_angle_) / 2.0f, zoom_speed);
     glm::vec3 axis = glm::cross(glm::vec3(0, 0, 1), look_vec_3d);
@@ -182,7 +188,7 @@ void RotaryTransporter::OnDrawFrame(
         vertices_rotary[j] = glm::vec2(rotated.x, rotated.y);
       }
       polyline_.UpdateVertices(vertices_rotary);
-      polyline_.UpdateWidth(std::max(1.0f, 10.0f / (petals - 2)) + power * 20);
+      polyline_.UpdateWidth(std::max(3.0f, 10.0f / (petals - 2)) + power * 20);
       polyline_.UpdateColor(HsvToRgb(glm::vec3(
           energy * kFramerateScale + i / static_cast<float>(petals), 1, 1)));
       polyline_.Draw();

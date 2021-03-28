@@ -4,6 +4,7 @@ PRESET_DEPS_LIST = [
     "//libopendrop/preset/alien_rorschach",
     "//libopendrop/preset/cube_boom",
     "//libopendrop/preset/glowsticks_3d",
+    "//libopendrop/preset/glowsticks_3d_zoom",
     "//libopendrop/preset/kaleidoscope",
     "//libopendrop/preset/rotary_transporter",
     "//libopendrop/preset/simple_preset",

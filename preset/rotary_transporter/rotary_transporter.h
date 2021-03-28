@@ -53,6 +53,8 @@ class RotaryTransporter : public Preset {
 
   float bass_power_ = 0.0f;
   float bass_energy_ = 0.0f;
+
+  float border_color_phase_ = 0.0f;
 };
 
 }  // namespace opendrop

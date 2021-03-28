@@ -1,5 +1,5 @@
-#ifndef PRESETS_GLOWSTICKS_3D_GLOWSTICKS_3D_H_
-#define PRESETS_GLOWSTICKS_3D_GLOWSTICKS_3D_H_
+#ifndef PRESETS_GLOWSTICKS_3D_ZOOM_GLOWSTICKS_3D_ZOOM_H_
+#define PRESETS_GLOWSTICKS_3D_ZOOM_GLOWSTICKS_3D_ZOOM_H_
 
 #include <array>
 #include <glm/vec2.hpp>
@@ -18,15 +18,15 @@
 
 namespace opendrop {
 
-class Glowsticks3d : public Preset {
+class Glowsticks3dZoom : public Preset {
  public:
   static absl::StatusOr<std::shared_ptr<Preset>> MakeShared(
       std::shared_ptr<gl::GlTextureManager> texture_manager);
 
-  std::string name() const override { return "Glowsticks3d"; }
+  std::string name() const override { return "Glowsticks3dZoom"; }
 
  protected:
-  Glowsticks3d(std::shared_ptr<gl::GlProgram> warp_program,
+  Glowsticks3dZoom(std::shared_ptr<gl::GlProgram> warp_program,
                std::shared_ptr<gl::GlProgram> ribbon_program,
                std::shared_ptr<gl::GlProgram> composite_program,
                std::shared_ptr<gl::GlRenderTarget> front_render_target,
@@ -67,8 +67,7 @@ class Glowsticks3d : public Preset {
   std::array<float, 3> segment_scales_;
   glm::vec2 base_position_;
   std::array<Accumulator<float>, kNumSegments> segment_angle_accumulators_;
-  std::array<float, 2> color_phase_coefficients_;
-  std::array<float, 2> color_rate_coefficients_;
+  std::array<float, 2> color_coefficients_;
   std::array<float, kNumSegments> direction_reversal_coefficients_;
   std::array<float, kNumSegments> rotational_rate_coefficients_;
 
@@ -76,14 +75,20 @@ class Glowsticks3d : public Preset {
   std::array<InterpolatorIterator<float>, kNumSegments>
       segment_angle_iterators_;
 
+  std::shared_ptr<IirFilter> bass_filter_;
+  std::shared_ptr<IirFilter> vocal_filter_;
+
   Rectangle rectangle_;
   Ribbon<glm::vec3> ribbon_;
   Ribbon<glm::vec3> ribbon2_;
   Polyline debug_segments_;
   bool flip_y_;
   OneshotIncremental<float> flip_oneshot_;
+  float zoom_angle_ = 0;
+  float bass_energy_ = 0;
+  float vocal_energy_ = 0;
 };
 
 }  // namespace opendrop
 
-#endif  // PRESETS_GLOWSTICKS_3D_GLOWSTICKS_3D_H_
+#endif  // PRESETS_GLOWSTICKS_3D_ZOOM_GLOWSTICKS_3D_ZOOM_H_

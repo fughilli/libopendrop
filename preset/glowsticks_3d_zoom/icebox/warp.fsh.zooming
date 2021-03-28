@@ -4,22 +4,31 @@ varying vec2 screen_uv;
 
 uniform sampler2D last_frame;
 uniform ivec2 last_frame_size;
-uniform float normalized_energy;
-uniform float normalized_power;
-uniform float framerate_scale;
+uniform float energy;
+uniform float power;
+
+// Rotates a screen UV coordinate around the origin by `angle`.
+vec2 rotate(vec2 screen_uv, float angle) {
+  float c = cos(angle);
+  float s = sin(angle);
+
+  return vec2(c * screen_uv.x - s * screen_uv.y,
+              s * screen_uv.x + c * screen_uv.y);
+}
 
 // Converts a normalized screen coordinate to a normalized texture coordinate.
 vec2 screen_to_tex(vec2 screen_uv) { return (screen_uv + vec2(1., 1.)) * 0.5; }
 
 // Zooms a screen UV coordinate by displacing it along its axis.
-vec2 zoom(vec2 screen_uv, float zoom) {
-  return screen_uv * (1.0 + (zoom - 1.0) * framerate_scale);
+vec2 zoom(vec2 screen_uv, float zoom) { return screen_uv * zoom; }
+
+// Zooms a screen UV coordinate by displacing it along its axis.
+vec2 zoom_towards(vec2 screen_uv, float zoom, vec2 target) {
+  return (screen_uv - target) * zoom + target;
 }
 
-// Returns the product of two sinusoids with the given coefficients of `arg`.
-// Choosing the coefficients such that the number of decimal places required to
-// represent their ratio is maximized will give a greater appearance of
-// "randomness".
+vec2 unit_at_angle(float angle) { return vec2(cos(angle), sin(angle)); }
+
 float cos_product(float coeff_a, float coeff_b, float arg) {
   return cos(coeff_a * arg) * cos(coeff_b * arg);
 }
@@ -34,10 +43,25 @@ vec4 plus_sample(sampler2D texture, ivec2 texture_size, vec2 uv,
          4.0f;
 }
 
-const float kMaxBrighten = 1.005;
+float sign_scale(float coeff_a, float coeff_b, float arg) {
+  if (arg > 0) {
+    return arg * coeff_a;
+  }
+  return arg * coeff_b;
+}
+
+const float kMaxBrighten = 1.01;
 const float kBrightenSwingMagnitude = 0.3;
 const float kCosProductCoeffA = 23.456;
 const float kCosProductCoeffB = 9.123;
+
+// Returns the product of two sinusoids with the given coefficients of `arg`.
+// Choosing the coefficients such that the number of decimal places required to
+// represent their ratio is maximized will give a greater appearance of
+// "randomness".
+float sin_product(float coeff_a, float coeff_b, float arg) {
+  return sin(coeff_a * arg) * sin(coeff_b * arg);
+}
 
 void main() {
   vec2 texture_uv = vec2(0.0, 0.0);
@@ -48,21 +72,26 @@ void main() {
   // alternation being inversely proportional to the current intensity of the
   // audio. We multiply in the power such that instantaneous changes in the
   // audio cause more immediately perceptible "jumps" in the zoom effect.
-  texture_uv = zoom(screen_uv, cos_product(34, 15, normalized_energy) * 0.3 *
-                                       (normalized_power / 10) +
-                                   1.0);
+  texture_uv = zoom_towards(
+      screen_uv, sign_scale(0.5, 0.1, sin(energy * 20)) * power + 1.001,
+      unit_at_angle(energy * 30));
+
+  // Rotate the texture by a pseudo-random amount that varies by `energy`.
+  // Additionally multiply in `power` for the same reason as above.
+  texture_uv =
+      rotate(texture_uv, sin_product(100 / 7.334, 10 / 9.225, energy) * power);
 
   texture_uv = screen_to_tex(texture_uv);
 
   // Mix the fragment color with the previously sampled color. Multiply the
   // sampled result by a value less than unity such that the energy input by the
   // drawn GL primitives dissipates over time.
+  // gl_FragColor = gl_Color * 0.5 + texture2D(last_frame, texture_uv) * 0.95;
+
   vec4 sample = plus_sample(last_frame, last_frame_size, texture_uv, 1.0f);
-  float brighten_darken_coefficient =
-      ((kMaxBrighten - kBrightenSwingMagnitude) +
-       cos_product(kCosProductCoeffA, kCosProductCoeffB,
-                   normalized_energy / 1000) *
-           kBrightenSwingMagnitude);
+  float brighten_darken_coefficient = 0.93;
+  //((kMaxBrighten - kBrightenSwingMagnitude) +
+  // cos_product(20, 9, energy) * kBrightenSwingMagnitude);
   gl_FragColor = clamp(gl_Color * (1 - length(sample.rgb)) +
                            sample * brighten_darken_coefficient,
                        0, 1);
