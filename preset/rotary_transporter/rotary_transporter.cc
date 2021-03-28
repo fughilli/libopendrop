@@ -1,4 +1,3 @@
-#define GLM_SWIZZLE
 #include "libopendrop/preset/rotary_transporter/rotary_transporter.h"
 
 #define _USE_MATH_DEFINES
@@ -179,7 +178,8 @@ void RotaryTransporter::OnDrawFrame(
                      angular_displacement - energy * 60 * kFramerateScale) +
             displacement_vector * tube_scale;
         vertices_rotary[j].x *= aspect_ratio();
-        vertices_rotary[j] = (rotation * glm::vec3(vertices_rotary[j], 0)).xy();
+        glm::vec3 rotated = (rotation * glm::vec3(vertices_rotary[j], 0));
+        vertices_rotary[j] = glm::vec2(rotated.x, rotated.y);
       }
       polyline_.UpdateVertices(vertices_rotary);
       polyline_.UpdateWidth(std::max(1.0f, 10.0f / (petals - 2)) + power * 20);
