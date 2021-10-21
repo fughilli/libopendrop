@@ -9,7 +9,12 @@ namespace opendrop {
 
 class GlobalState {
  public:
-  GlobalState() : initialized_(false) {}
+  struct Options {
+    int sampling_rate;
+  };
+
+  GlobalState(Options options)
+      : options_(std::move(options)), initialized_(false) {}
 
   // Updates the global state. `samples` is a const view of the current buffer
   // of audio samples, and `dt` is the elapsed time, in seconds, since the last
@@ -25,6 +30,8 @@ class GlobalState {
   Accumulator<float>& normalized_energy() {
     return properties_.normalized_energy;
   }
+
+  int sampling_rate() const { return options_.sampling_rate; }
 
   absl::Span<const float> left_channel() { return left_channel_; }
   absl::Span<const float> right_channel() { return right_channel_; }
@@ -63,6 +70,8 @@ class GlobalState {
     // Normalized energy (energy accumulated as \int{power / average_power}).
     Accumulator<float> normalized_energy;
   };
+
+  Options options_;
 
   bool initialized_;
   IirFilter average_power_initialization_filter_{

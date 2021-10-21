@@ -81,6 +81,8 @@ ABSL_FLAG(float, transition_cooldown_period, 2.0f,
           "events. Must be positive. A value of 0 disables the cooldown.");
 ABSL_FLAG(int, max_presets, 2,
           "Maximum number of presets on the screen at a time.");
+ABSL_FLAG(int, sampling_rate, 44100,
+          "Sampling rate to use with the input source, in Hz.");
 
 namespace led_driver {
 
@@ -165,11 +167,13 @@ extern "C" int main(int argc, char *argv[]) {
     LOG(INFO) << "Initializing OpenDrop...";
 
     auto texture_manager = std::make_shared<gl::GlTextureManager>();
+    const int sampling_rate = absl::GetFlag(FLAGS_sampling_rate);
 
     std::shared_ptr<OpenDropController> open_drop_controller =
         std::make_shared<OpenDropController>(OpenDropController::Options{
             .gl_interface = sdl_gl_interface,
             .texture_manager = texture_manager,
+            .sampling_rate = sampling_rate,
             .audio_buffer_size = kAudioBufferSize,
             .width = absl::GetFlag(FLAGS_window_width),
             .height = absl::GetFlag(FLAGS_window_height)});
@@ -184,8 +188,8 @@ extern "C" int main(int argc, char *argv[]) {
     }
     auto pa_interface = std::make_shared<PulseAudioInterface>(
         absl::GetFlag(FLAGS_pulseaudio_server),
-        absl::GetFlag(FLAGS_pulseaudio_source), "input_stream", channel_count,
-        [&](absl::Span<const float> samples) {
+        absl::GetFlag(FLAGS_pulseaudio_source), "input_stream", sampling_rate,
+        channel_count, [&](absl::Span<const float> samples) {
           switch (channel_count) {
             case 1:
               open_drop_controller->audio_processor().AddPcmSamples(

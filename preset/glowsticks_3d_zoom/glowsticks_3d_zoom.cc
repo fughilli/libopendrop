@@ -80,15 +80,6 @@ Glowsticks3dZoom::Glowsticks3dZoom(
       ribbon2_(glm::vec3(), kRibbonSegmentCount),
       flip_y_(false),
       flip_oneshot_(kFlipMinimumInterval) {
-  constexpr float kSamplingRate = 44100.0f;
-  constexpr float kCenterFrequency = 300.0f;
-  constexpr float kBandwidth = 50.0f;
-  bass_filter_ = IirBandFilter(50.0f / kSamplingRate, 40.0f / kSamplingRate,
-                               IirBandFilterType::kBandpass);
-  vocal_filter_ =
-      IirBandFilter(kCenterFrequency / kSamplingRate,
-                    kBandwidth / kSamplingRate, IirBandFilterType::kBandpass);
-
   segment_scales_ = Coefficients::Random<3>(0.1, 0.3);
   segment_scales_[2] = 1.0f;
 
@@ -178,6 +169,18 @@ std::pair<glm::vec2, glm::vec2> Glowsticks3dZoom::ComputeRibbonSegment(
 void Glowsticks3dZoom::OnDrawFrame(
     absl::Span<const float> samples, std::shared_ptr<GlobalState> state,
     float alpha, std::shared_ptr<gl::GlRenderTarget> output_render_target) {
+  if (bass_filter_ == nullptr) {
+    // TODO: Refactor into constructor. Plumb GlobalState.
+    constexpr float kCenterFrequency = 300.0f;
+    constexpr float kBandwidth = 50.0f;
+    bass_filter_ = IirBandFilter(50.0f / state->sampling_rate(),
+                                 40.0f / state->sampling_rate(),
+                                 IirBandFilterType::kBandpass);
+    vocal_filter_ = IirBandFilter(kCenterFrequency / state->sampling_rate(),
+                                  kBandwidth / state->sampling_rate(),
+                                  IirBandFilterType::kBandpass);
+  }
+
   float average_power = state->average_power();
   float energy = state->energy();
   float normalized_energy = state->normalized_energy();
@@ -296,7 +299,8 @@ void Glowsticks3dZoom::OnDrawFrame(
         warp_program_, "last_frame", front_render_target_,
         gl::GlTextureBindingOptions(
             {.sampling_mode = gl::GlTextureSamplingMode::kClampToBorder,
-             .border_color = glm::vec4(HsvToRgb({bass_energy_, 1, bass_power}), 1)}));
+             .border_color =
+                 glm::vec4(HsvToRgb({bass_energy_, 1, bass_power}), 1)}));
 
     // Force all fragments to draw with a full-screen rectangle.
     rectangle_.Draw();

@@ -14,6 +14,7 @@ class OpenDropControllerInterface {
  public:
   struct Options {
     std::shared_ptr<gl::GlInterface> gl_interface;
+    int sampling_rate;
     ptrdiff_t audio_buffer_size;
   };
   // Initializes an OpenDropControllerInterface with the given GlInterface and

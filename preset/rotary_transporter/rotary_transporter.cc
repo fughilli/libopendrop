@@ -55,21 +55,6 @@ RotaryTransporter::RotaryTransporter(
       composite_program_(composite_program),
       front_render_target_(front_render_target),
       back_render_target_(back_render_target) {
-  constexpr float kSamplingRate = 44100.0f;
-  constexpr float kCenterFrequency = 300.0f;
-  constexpr float kBandwidth = 50.0f;
-  bass_filter_ = IirBandFilter(50.0f / kSamplingRate, 40.0f / kSamplingRate,
-                               IirBandFilterType::kBandpass);
-  vocal_filter_ =
-      IirBandFilter(kCenterFrequency / kSamplingRate,
-                    kBandwidth / kSamplingRate, IirBandFilterType::kBandpass);
-  left_vocal_filter_ =
-      IirBandFilter(kCenterFrequency / kSamplingRate,
-                    kBandwidth / kSamplingRate, IirBandFilterType::kBandpass);
-  right_vocal_filter_ =
-      IirBandFilter(kCenterFrequency / kSamplingRate,
-                    kBandwidth / kSamplingRate, IirBandFilterType::kBandpass);
-
   zoom_angle_ = Coefficients::Random<1>(0.f, M_PI * 2)[0];
   border_color_phase_ = Coefficients::Random<1>(0.f, 1.f)[0];
 }
@@ -105,6 +90,24 @@ void RotaryTransporter::OnUpdateGeometry() {
 void RotaryTransporter::OnDrawFrame(
     absl::Span<const float> samples, std::shared_ptr<GlobalState> state,
     float alpha, std::shared_ptr<gl::GlRenderTarget> output_render_target) {
+  if (bass_filter_ == nullptr) {
+    // TODO: Refactor into constructor. Plumb GlobalState.
+    constexpr float kCenterFrequency = 300.0f;
+    constexpr float kBandwidth = 50.0f;
+    bass_filter_ = IirBandFilter(50.0f / state->sampling_rate(),
+                                 40.0f / state->sampling_rate(),
+                                 IirBandFilterType::kBandpass);
+    vocal_filter_ = IirBandFilter(kCenterFrequency / state->sampling_rate(),
+                                  kBandwidth / state->sampling_rate(),
+                                  IirBandFilterType::kBandpass);
+    left_vocal_filter_ = IirBandFilter(
+        kCenterFrequency / state->sampling_rate(),
+        kBandwidth / state->sampling_rate(), IirBandFilterType::kBandpass);
+    right_vocal_filter_ = IirBandFilter(
+        kCenterFrequency / state->sampling_rate(),
+        kBandwidth / state->sampling_rate(), IirBandFilterType::kBandpass);
+  }
+
   float energy = state->energy();
   float normalized_energy = state->normalized_energy();
   float power = state->power();
@@ -159,7 +162,7 @@ void RotaryTransporter::OnDrawFrame(
     // Draw the waveform.
     constexpr int kMaxSymmetry = 5;
     constexpr int kMinSymmetry = 3;
-    zoom_angle_ += 10* sin(normalized_power * kFramerateScale) * bass_power_ *
+    zoom_angle_ += 10 * sin(normalized_power * kFramerateScale) * bass_power_ *
                    kFramerateScale;
 
     glm::vec3 look_vec_3d(-UnitVectorAtAngle(zoom_angle_) / 2.0f, zoom_speed);

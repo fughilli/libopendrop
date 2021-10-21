@@ -43,11 +43,7 @@ ShapeBounce::ShapeBounce(
       back_render_target_(back_render_target),
       ngon_(n),
       bass_power_filter_({0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1},
-                         0.99f) {
-  constexpr float kSamplingRate = 44100.0f;
-  bass_filter_ = IirBandFilter(50.0f / kSamplingRate, 40.0f / kSamplingRate,
-                               IirBandFilterType::kBandpass);
-}
+                         0.99f) {}
 
 absl::StatusOr<std::shared_ptr<Preset>> ShapeBounce::MakeShared(
     std::shared_ptr<gl::GlTextureManager> texture_manager) {
@@ -84,6 +80,12 @@ void ShapeBounce::OnUpdateGeometry() {
 void ShapeBounce::OnDrawFrame(
     absl::Span<const float> samples, std::shared_ptr<GlobalState> state,
     float alpha, std::shared_ptr<gl::GlRenderTarget> output_render_target) {
+  if (bass_filter_ == nullptr) {
+    // TODO: Refactor into constructor. Plumb GlobalState.
+    bass_filter_ = IirBandFilter(50.0f / state->sampling_rate(),
+                                 40.0f / state->sampling_rate(),
+                                 IirBandFilterType::kBandpass);
+  }
   float energy = state->energy();
   float power = state->power();
 

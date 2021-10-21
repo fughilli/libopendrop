@@ -31,11 +31,13 @@ constexpr bool kNormalizerInstantUpscale = true;
 OpenDropController::OpenDropController(Options options)
     : OpenDropControllerInterface(
           {.gl_interface = options.gl_interface,
+           .sampling_rate = options.sampling_rate,
            .audio_buffer_size = options.audio_buffer_size}),
       options_(std::move(options)) {
   UpdateGeometry(options_.width, options_.height);
 
-  global_state_ = std::make_shared<GlobalState>();
+  global_state_ = std::make_shared<GlobalState>(
+      GlobalState::Options{.sampling_rate = options_.sampling_rate});
   normalizer_ =
       std::make_shared<Normalizer>(kNormalizerAlpha, kNormalizerInstantUpscale);
 

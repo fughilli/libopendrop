@@ -18,6 +18,7 @@ class OpenDropController : public OpenDropControllerInterface {
   struct Options {
     std::shared_ptr<gl::GlInterface> gl_interface;
     std::shared_ptr<gl::GlTextureManager> texture_manager;
+    int sampling_rate;
     ptrdiff_t audio_buffer_size;
     int width;
     int height;
