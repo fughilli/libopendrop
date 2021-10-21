@@ -150,6 +150,16 @@ def GenerateIirBandTaps(center_frequency: float, bandwidth: float,
     return feedforward_taps, feedback_taps
 
 
+def GenerateIirLowTaps(
+        cutoff_frequency: float) -> Tuple[List[float], List[float]]:
+    decay = 2 * numpy.pi * cutoff_frequency / (
+        2 * numpy.pi * cutoff_frequency + 1)
+    feedforward_taps = [decay]
+    feedback_taps = [1 - decay]
+
+    return feedforward_taps, feedback_taps
+
+
 def GenerateIirFilterDeclaration(feedforward_taps: List[float],
                                  feedback_taps: List[float]) -> Text:
     return "IirFilter filter_{{{{{}}}, {{{}}}}};".format(
@@ -158,7 +168,7 @@ def GenerateIirFilterDeclaration(feedforward_taps: List[float],
 
 
 if __name__ == '__main__':
-    bode_plotter = BodePlotter(44100, (10, 20000), 200)
+    bode_plotter = BodePlotter(44100, (10, 20000), 50)
     filter_frequency_hz = 1600
     bandwidth_hz = 900
 
@@ -185,6 +195,18 @@ if __name__ == '__main__':
     feedforward_taps, feedback_taps = GenerateIirBandTaps(
         filter_frequency_hz / bode_plotter.sampling_rate,
         bandwidth_hz / bode_plotter.sampling_rate, FILTER_TYPE_BANDPASS)
+
+    print(GenerateIirFilterDeclaration(feedforward_taps, feedback_taps))
+
+    filter = IirFilter(feedforward_taps, feedback_taps)
+
+    pyplot.plot(*bode_plotter.Plot(filter))
+    pyplot.show()
+
+    # Lowpass Filter
+    cutoff_hz = 1000
+    feedforward_taps, feedback_taps = GenerateIirLowTaps(
+        cutoff_hz / bode_plotter.sampling_rate)
 
     print(GenerateIirFilterDeclaration(feedforward_taps, feedback_taps))
 
