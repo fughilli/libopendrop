@@ -73,6 +73,28 @@ std::shared_ptr<IirFilter> IirBandFilter(float center_frequency,
                                          float bandwidth,
                                          IirBandFilterType type);
 
+// Implements a hysteretic "map" filter. This filter takes a time-varying
+// signal, computes its maxima and minima with a decay towards its low-passed
+// value (average), and outputs a value in the range [0.0, 1.0].
+class HystereticMapFilter : public Filter {
+ public:
+  // Constructs a HystereticMapFilter using `averaging_filter` to compute the
+  // signal average, towards which the computed signal minima and maxima will
+  // exponentially decay towards by the coefficient `alpha`.
+  HystereticMapFilter(FirFilter averaging_filter, float alpha)
+      : averaging_filter_(std::move(averaging_filter)),
+        alpha_(std::clamp<float>(alpha, 0.0f, 1.0f)) {}
+
+  virtual float ProcessSample(float sample) override;
+
+ private:
+  FirFilter averaging_filter_;
+  const float alpha_;
+
+  float maximum_ = std::numeric_limits<float>::lowest();
+  float minimum_ = std::numeric_limits<float>::max();
+};
+
 }  // namespace opendrop
 
 #endif  // UTIL_FIR_FILTER_H_

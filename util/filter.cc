@@ -2,6 +2,8 @@
 
 #include <cmath>
 
+#include "libopendrop/util/math.h"
+
 namespace opendrop {
 
 float Filter::ComputePower(absl::Span<const float> samples) {
@@ -88,6 +90,22 @@ std::shared_ptr<IirFilter> IirBandFilter(float center_frequency,
                                              -(R * R)                // b2
                                          }));
   }
+}
+
+float HystereticMapFilter::ProcessSample(float sample) {
+  const float average = averaging_filter_.ProcessSample(sample);
+  if (sample > maximum_) {
+    maximum_ = sample;
+  } else {
+    maximum_ = maximum_ * alpha_ + average * (1.0f - alpha_);
+  }
+  if (sample < minimum_) {
+    minimum_ = sample;
+  } else {
+    minimum_ = minimum_ * alpha_ + average * (1.0f - alpha_);
+  }
+
+  return MapValue<float, true>(sample, minimum_, maximum_, 0.0f, 1.0f);
 }
 
 }  // namespace opendrop

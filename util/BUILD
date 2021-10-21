@@ -130,6 +130,7 @@ cc_library(
     hdrs = ["filter.h"],
     deps = [
         ":logging",
+        ":math",
         "@com_google_absl//absl/types:span",
     ],
 )
