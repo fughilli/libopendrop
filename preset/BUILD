@@ -9,6 +9,7 @@ PRESET_DEPS_LIST = [
     "//libopendrop/preset/rotary_transporter",
     "//libopendrop/preset/simple_preset",
     "//libopendrop/preset/template_preset",
+    "//libopendrop/preset/shape_bounce",
 ]
 
 cc_library(
