@@ -23,6 +23,15 @@ cc_library(
 )
 
 cc_library(
+    name = "ngon",
+    srcs = ["ngon.cc"],
+    hdrs = ["ngon.h"],
+    deps = [
+        ":primitive",
+    ],
+)
+
+cc_library(
     name = "ribbon",
     hdrs = [
         "ribbon.cc",
