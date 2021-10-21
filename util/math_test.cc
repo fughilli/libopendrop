@@ -40,5 +40,14 @@ TEST(MathTest, LogLinearIsLogAtNEqualsZero) {
   }
 }
 
+TEST(MathTest, MapValueProducesExpectedValue) {
+  EXPECT_NEAR(MapValue<float>(0.5, 0.0, 1.0, 0.0, 10.0), 5.0, kEpsilon);
+  EXPECT_NEAR((MapValue<float, false>(-0.5, 0.0, 1.0, 0.0, 10.0)), -5.0,
+              kEpsilon);
+  EXPECT_NEAR((MapValue<float, true>(-0.5, 0.0, 1.0, 0.0, 10.0)), 0.0,
+              kEpsilon);
+  EXPECT_NEAR((MapValue<float, false>(4, 2, 6, -10, -20)), -15, kEpsilon);
+}
+
 }  // namespace
 }  // namespace opendrop

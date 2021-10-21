@@ -36,6 +36,15 @@ T LogLinear(T arg, T n) {
   return n * arg + (1 - n) * std::log(arg);
 }
 
+template <typename T, bool clamp = false>
+T MapValue(T arg, T in_low, T in_high, T out_low, T out_high) {
+  if constexpr (clamp) {
+    if (arg < in_low) return out_low;
+    if (arg > in_high) return out_high;
+  }
+  return (arg - in_low) / (in_high - in_low) * (out_high - out_low) + out_low;
+}
+
 }  // namespace opendrop
 
 #endif  // LIBOPENDROP_UTIL_MATH_H_
