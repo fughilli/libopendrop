@@ -112,8 +112,8 @@ void NextPreset(OpenDropController *controller,
   }
   // TODO: Refactor such that preset geometry is configured after attaching to
   // the preset blender.
-  float duration = opendrop::Coefficients::Random<1>(3.0f, 15.0f)[0];
-  float ramp_duration = opendrop::Coefficients::Random<1>(0.1f, 2.0f)[0];
+  float duration = opendrop::Coefficients::Random<1>(15.0f, 30.0f)[0];
+  float ramp_duration = opendrop::Coefficients::Random<1>(1.0f, 10.0f)[0];
   auto status_or_render_target =
       gl::GlRenderTarget::MakeShared(0, 0, texture_manager);
   if (!status_or_render_target.ok()) {
