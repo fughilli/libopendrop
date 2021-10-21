@@ -12,13 +12,16 @@ namespace opendrop {
 
 class OpenDropControllerInterface {
  public:
+  struct Options {
+    std::shared_ptr<gl::GlInterface> gl_interface;
+    ptrdiff_t audio_buffer_size;
+  };
   // Initializes an OpenDropControllerInterface with the given GlInterface and
   // audio buffer size.
-  OpenDropControllerInterface(std::shared_ptr<gl::GlInterface> gl_interface,
-                              ptrdiff_t audio_buffer_size)
-      : gl_interface_(gl_interface) {
-    audio_processor_ = std::make_shared<AudioProcessor>(audio_buffer_size);
-  }
+  OpenDropControllerInterface(Options options)
+      : options_(std::move(options)),
+        audio_processor_(
+            std::make_shared<AudioProcessor>(options_.audio_buffer_size)) {}
   virtual ~OpenDropControllerInterface() {}
 
   // Updates the GL surface. This should be invoked if the output surface
@@ -30,14 +33,20 @@ class OpenDropControllerInterface {
 
   // Returns the AudioProcessor associated with this
   // OpenDropControllerInterface.
-  AudioProcessor& GetAudioProcessor() { return *audio_processor_; }
+  AudioProcessor& audio_processor() { return *audio_processor_; }
 
- protected:
+  std::shared_ptr<gl::GlInterface> gl_interface() const {
+    return options_.gl_interface;
+  }
+  std::shared_ptr<AudioProcessor> audio_processor() const {
+    return audio_processor_;
+  }
+
+ private:
+  const Options options_;
+
   // The AudioProcessor used by this OpenDropControllerInterface.
   std::shared_ptr<AudioProcessor> audio_processor_;
-
-  // The GlInterface used by this OpenDropControllerInterface.
-  std::shared_ptr<gl::GlInterface> gl_interface_;
 };
 
 }  // namespace opendrop

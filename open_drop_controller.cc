@@ -28,20 +28,19 @@ constexpr float kNormalizerAlpha = 0.95f;
 constexpr bool kNormalizerInstantUpscale = true;
 }  // namespace
 
-OpenDropController::OpenDropController(
-    std::shared_ptr<gl::GlInterface> gl_interface,
-    std::shared_ptr<gl::GlTextureManager> texture_manager,
-    ptrdiff_t audio_buffer_size, int width, int height)
-    : OpenDropControllerInterface(gl_interface, audio_buffer_size),
-      texture_manager_(texture_manager) {
-  UpdateGeometry(height, width);
+OpenDropController::OpenDropController(Options options)
+    : OpenDropControllerInterface(
+          {.gl_interface = options.gl_interface,
+           .audio_buffer_size = options.audio_buffer_size}),
+      options_(std::move(options)) {
+  UpdateGeometry(options_.width, options_.height);
 
   global_state_ = std::make_shared<GlobalState>();
   normalizer_ =
       std::make_shared<Normalizer>(kNormalizerAlpha, kNormalizerInstantUpscale);
 
-  auto status_or_render_target =
-      gl::GlRenderTarget::MakeShared(width, height, texture_manager_);
+  auto status_or_render_target = gl::GlRenderTarget::MakeShared(
+      options_.width, options_.height, options_.texture_manager);
   CHECK(status_or_render_target.ok())
       << "Failed to create output render target";
   output_render_target_ = *status_or_render_target;
@@ -51,7 +50,8 @@ OpenDropController::OpenDropController(
   CHECK(status_or_blit_program.ok()) << "Failed to create blit program";
   blit_program_ = *status_or_blit_program;
 
-  preset_blender_ = std::make_shared<PresetBlender>(width, height);
+  preset_blender_ =
+      std::make_shared<PresetBlender>(options_.width, options_.height);
   CHECK_NULL(preset_blender_) << "Failed to create preset blender";
 }
 
@@ -69,9 +69,9 @@ void OpenDropController::UpdateGeometry(int width, int height) {
 
 void OpenDropController::DrawFrame(float dt) {
   static std::vector<float> samples_interleaved;
-  samples_interleaved.resize(GetAudioProcessor().buffer_size() *
-                             GetAudioProcessor().channels_per_sample());
-  if (!GetAudioProcessor().GetSamples(absl::Span<float>(samples_interleaved))) {
+  samples_interleaved.resize(audio_processor().buffer_size() *
+                             audio_processor().channels_per_sample());
+  if (!audio_processor().GetSamples(absl::Span<float>(samples_interleaved))) {
     LOG(ERROR) << "Failed to get samples";
     return;
   }

@@ -167,10 +167,12 @@ extern "C" int main(int argc, char *argv[]) {
     auto texture_manager = std::make_shared<gl::GlTextureManager>();
 
     std::shared_ptr<OpenDropController> open_drop_controller =
-        std::make_shared<OpenDropController>(
-            sdl_gl_interface, texture_manager, kAudioBufferSize,
-            absl::GetFlag(FLAGS_window_width),
-            absl::GetFlag(FLAGS_window_height));
+        std::make_shared<OpenDropController>(OpenDropController::Options{
+            .gl_interface = sdl_gl_interface,
+            .texture_manager = texture_manager,
+            .audio_buffer_size = kAudioBufferSize,
+            .width = absl::GetFlag(FLAGS_window_width),
+            .height = absl::GetFlag(FLAGS_window_height)});
     std::shared_ptr<OpenDropControllerInterface>
         open_drop_controller_interface = open_drop_controller;
 
@@ -186,12 +188,12 @@ extern "C" int main(int argc, char *argv[]) {
         [&](absl::Span<const float> samples) {
           switch (channel_count) {
             case 1:
-              open_drop_controller->GetAudioProcessor().AddPcmSamples(
+              open_drop_controller->audio_processor().AddPcmSamples(
                   PcmFormat::kMono, samples);
               break;
             default:
             case 2:
-              open_drop_controller->GetAudioProcessor().AddPcmSamples(
+              open_drop_controller->audio_processor().AddPcmSamples(
                   PcmFormat::kStereoInterleaved, samples);
               break;
           }

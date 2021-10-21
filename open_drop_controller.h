@@ -15,9 +15,15 @@ namespace opendrop {
 
 class OpenDropController : public OpenDropControllerInterface {
  public:
-  OpenDropController(std::shared_ptr<gl::GlInterface> gl_interface,
-                     std::shared_ptr<gl::GlTextureManager> texture_manager,
-                     ptrdiff_t audio_buffer_size, int width, int height);
+  struct Options {
+    std::shared_ptr<gl::GlInterface> gl_interface;
+    std::shared_ptr<gl::GlTextureManager> texture_manager;
+    ptrdiff_t audio_buffer_size;
+    int width;
+    int height;
+  };
+
+  OpenDropController(Options options);
   void UpdateGeometry(int width, int height) override;
   void DrawFrame(float dt) override;
 
@@ -26,9 +32,11 @@ class OpenDropController : public OpenDropControllerInterface {
   std::shared_ptr<PresetBlender> preset_blender() { return preset_blender_; }
   GlobalState& global_state() const { return *global_state_; }
 
- protected:
-  std::shared_ptr<gl::GlTextureManager> texture_manager_;
+ private:
+  const Options options_;
+
   int width_, height_;
+
   std::shared_ptr<PresetBlender> preset_blender_;
   std::shared_ptr<GlobalState> global_state_;
   std::shared_ptr<Normalizer> normalizer_;
