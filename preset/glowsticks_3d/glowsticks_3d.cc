@@ -26,7 +26,7 @@ namespace opendrop {
 namespace {
 // Whether or not to draw the segments of the rotating armatures that describe
 // the motion of the ribbon.
-constexpr bool kDrawDebugSegments = true;
+constexpr bool kDrawDebugSegments = false;
 
 // Number of segments to use for the ribbon. This, together with the speed of
 // the ribbon, determines the maximum length on the screen.
