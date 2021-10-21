@@ -53,6 +53,8 @@ void GlBindRenderTargetTextureToUniform(
 void GlBindUniform(std::shared_ptr<GlProgram> program, std::string uniform_name,
                    float value);
 void GlBindUniform(std::shared_ptr<GlProgram> program, std::string uniform_name,
+                   glm::vec4 value);
+void GlBindUniform(std::shared_ptr<GlProgram> program, std::string uniform_name,
                    glm::ivec2 value);
 void GlBindUniform(std::shared_ptr<GlProgram> program, std::string uniform_name,
                    glm::mat4 value);

@@ -70,6 +70,13 @@ void GlBindUniform(std::shared_ptr<GlProgram> program, std::string uniform_name,
 }
 
 void GlBindUniform(std::shared_ptr<GlProgram> program, std::string uniform_name,
+                   glm::vec4 value) {
+  glUniform4fv(
+      glGetUniformLocation(program->program_handle(), uniform_name.c_str()), 1,
+      &value.x);
+}
+
+void GlBindUniform(std::shared_ptr<GlProgram> program, std::string uniform_name,
                    glm::mat4 value) {
   glUniformMatrix4fv(
       glGetUniformLocation(program->program_handle(), uniform_name.c_str()), 1,
