@@ -15,6 +15,8 @@ namespace opendrop {
 // Base class interface for a preset. This class is thread-safe.
 class Preset {
  public:
+  static constexpr int kDefaultMaxPresetCount = 100;
+
   static absl::StatusOr<std::shared_ptr<Preset>> MakeShared(
       std::shared_ptr<gl::GlTextureManager> texture_manager) {
     return absl::InternalError("Inheritors must implement MakeShared");
@@ -35,6 +37,8 @@ class Preset {
   void UpdateGeometry(int width, int height);
 
   virtual std::string name() const = 0;
+
+  virtual int max_count() const { return kDefaultMaxPresetCount; }
 
  protected:
   // Constructs a preset which renders to a raster of the given dimensions.

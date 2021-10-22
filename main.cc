@@ -106,6 +106,8 @@ constexpr int kMinimumDelayUs = 2000;
 
 void NextPreset(OpenDropController *controller,
                 std::shared_ptr<gl::GlTextureManager> texture_manager) {
+  // How many times to attempt to find a preset to add before giving up.
+  constexpr int kAttempts = 3;
   int max_presets = absl::GetFlag(FLAGS_max_presets);
   if (max_presets > 0) {
     if (controller->preset_blender()->NumPresets() >= max_presets) {
@@ -123,9 +125,22 @@ void NextPreset(OpenDropController *controller,
               << status_or_render_target.status();
     return;
   }
-  auto status_or_preset = opendrop::GetRandomPresetFromList(texture_manager);
-  if (!status_or_preset.ok()) {
-    LOG(INFO) << "Failed to create preset: " << status_or_preset.status();
+  absl::StatusOr<std::shared_ptr<opendrop::Preset>> status_or_preset{};
+  int attempts = kAttempts;
+  while (attempts--) {
+    status_or_preset = opendrop::GetRandomPresetFromList(texture_manager);
+    if (!status_or_preset.ok()) {
+      LOG(INFO) << "Failed to create preset: " << status_or_preset.status();
+      return;
+    }
+    std::shared_ptr<opendrop::Preset> preset = status_or_preset.value();
+    if (controller->preset_blender()->QueryPresetCount(preset->name()) <
+        preset->max_count())
+      break;
+    LOG(INFO) << "Too many " << preset->name() << "; trying again...";
+  }
+  if (attempts < 0) {
+    LOG(INFO) << "Failed to add preset after " << kAttempts << " attempts.";
     return;
   }
   controller->preset_blender()->AddPreset(

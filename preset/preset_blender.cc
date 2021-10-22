@@ -205,4 +205,12 @@ void PresetBlender::Update(float dt) {
   }
 }
 
+int PresetBlender::QueryPresetCount(std::string_view name) {
+  int count = 0;
+  for (PresetActivation& activation : preset_activations_) {
+    if (activation.preset()->name() == name) ++count;
+  }
+  return count;
+}
+
 }  // namespace opendrop

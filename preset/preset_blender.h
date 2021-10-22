@@ -9,6 +9,7 @@
 #include <memory>
 #include <utility>
 #include <vector>
+#include <string_view>
 
 #include "libopendrop/preset/preset.h"
 #include "libopendrop/primitive/rectangle.h"
@@ -67,6 +68,8 @@ class PresetBlender {
   void UpdateGeometry(int width, int height);
 
   size_t NumPresets() const { return preset_activations_.size(); }
+
+  int QueryPresetCount(std::string_view name);
 
  private:
   void Update(float dt);
