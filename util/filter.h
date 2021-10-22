@@ -73,6 +73,17 @@ std::shared_ptr<IirFilter> IirBandFilter(float center_frequency,
                                          float bandwidth,
                                          IirBandFilterType type);
 
+enum IirSinglePoleFilterType {
+  // Low-pass filter.
+  kLowpass = 0,
+  // High-pass filter.
+  kHighpass,
+};
+// Initializes and returns an infinite impulse response filter implementing a
+// single-pole low- or high-pass filter.
+std::shared_ptr<IirFilter> IirSinglePoleFilter(float cutoff_frequency,
+                                               IirSinglePoleFilterType type);
+
 // Implements a hysteretic "map" filter. This filter takes a time-varying
 // signal, computes its maxima and minima with a decay towards its low-passed
 // value (average), and outputs a value in the range [0.0, 1.0].

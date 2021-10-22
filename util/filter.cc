@@ -92,6 +92,28 @@ std::shared_ptr<IirFilter> IirBandFilter(float center_frequency,
   }
 }
 
+std::shared_ptr<IirFilter> IirSinglePoleFilter(float cutoff_frequency,
+                                               IirSinglePoleFilterType type) {
+  const float pi_2_fc = 2.0f * M_PI * cutoff_frequency;
+  const float decay = pi_2_fc / (pi_2_fc + 1.0f);
+  switch (type) {
+    case IirSinglePoleFilterType::kLowpass:
+      return std::make_unique<IirFilter>(std::initializer_list<float>({
+                                             decay,
+                                         }),
+                                         std::initializer_list<float>({
+                                             1 - decay,
+                                         }));
+    case IirSinglePoleFilterType::kHighpass:
+      return std::make_unique<IirFilter>(std::initializer_list<float>({
+                                             1 - decay,
+                                         }),
+                                         std::initializer_list<float>({
+                                             decay,
+                                         }));
+  }
+}
+
 float HystereticMapFilter::ProcessSample(float sample) {
   const float average = averaging_filter_.ProcessSample(sample);
   if (sample > maximum_) {
