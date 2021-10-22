@@ -127,6 +127,10 @@ float HystereticMapFilter::ProcessSample(float sample) {
     minimum_ = minimum_ * alpha_ + average * (1.0f - alpha_);
   }
 
+  if (maximum_ == minimum_) {
+    return sample;
+  }
+
   return MapValue<float, true>(sample, minimum_, maximum_, 0.0f, 1.0f);
 }
 
