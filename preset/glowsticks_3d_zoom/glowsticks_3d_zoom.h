@@ -86,7 +86,6 @@ class Glowsticks3dZoom : public Preset {
   OneshotIncremental<float> flip_oneshot_;
   float zoom_angle_ = 0;
   float bass_energy_ = 0;
-  float vocal_energy_ = 0;
 };
 
 }  // namespace opendrop

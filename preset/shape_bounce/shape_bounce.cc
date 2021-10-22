@@ -24,10 +24,6 @@
 
 namespace opendrop {
 
-namespace {
-constexpr float kScaleFactor = 0.5f;
-}
-
 ShapeBounce::ShapeBounce(
     std::shared_ptr<gl::GlProgram> warp_program,
     std::shared_ptr<gl::GlProgram> composite_program,

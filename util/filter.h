@@ -18,14 +18,14 @@ class Filter {
 };
 
 // Finite impulse response time-domain convolutional filter.
-class FirFilter : public Filter {
+class FirFilter final : public Filter {
  public:
   // Constructs a finite impulse response filter with the provided taps.
   FirFilter(std::initializer_list<float> taps);
 
   // Processes a single sample by this filter, returning the corresponding
   // output sample.
-  virtual float ProcessSample(float sample) override;
+  float ProcessSample(float sample) override;
 
  private:
   // The time-domain filter taps for this filter.
@@ -36,7 +36,7 @@ class FirFilter : public Filter {
 };
 
 // Infinite impulse response time-domain convolutional filter.
-class IirFilter : public Filter {
+class IirFilter final : public Filter {
  public:
   // Constructs an infinite impulse response filter with the provided taps.
   // `x_taps` are the coefficients for the input signal; `y_taps` are the
@@ -46,7 +46,7 @@ class IirFilter : public Filter {
 
   // Processes a single sample by this filter, returning the corresponding
   // output sample.
-  virtual float ProcessSample(float sample) override;
+  float ProcessSample(float sample) override;
 
  private:
   // Time-domain taps and history buffer for the input signal. Ordering is the
@@ -87,7 +87,7 @@ std::shared_ptr<IirFilter> IirSinglePoleFilter(float cutoff_frequency,
 // Implements a hysteretic "map" filter. This filter takes a time-varying
 // signal, computes its maxima and minima with a decay towards its low-passed
 // value (average), and outputs a value in the range [0.0, 1.0].
-class HystereticMapFilter : public Filter {
+class HystereticMapFilter final : public Filter {
  public:
   // Constructs a HystereticMapFilter using `averaging_filter` to compute the
   // signal average, towards which the computed signal minima and maxima will
@@ -96,7 +96,7 @@ class HystereticMapFilter : public Filter {
       : averaging_filter_(std::move(averaging_filter)),
         alpha_(std::clamp<float>(alpha, 0.0f, 1.0f)) {}
 
-  virtual float ProcessSample(float sample) override;
+  float ProcessSample(float sample) override;
 
  private:
   std::shared_ptr<Filter> averaging_filter_;

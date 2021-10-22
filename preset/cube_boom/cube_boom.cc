@@ -42,10 +42,10 @@ CubeBoom::CubeBoom(std::shared_ptr<gl::GlProgram> warp_program,
       front_render_target_(front_render_target),
       back_render_target_(back_render_target),
       depth_output_target_(depth_output_target),
+      cube_(cube_obj::Vertices(), cube_obj::Uvs(), cube_obj::Triangles()),
       monkey_(monkey_obj::Vertices(), monkey_obj::Uvs(),
               monkey_obj::Triangles()),
-      shrek_(shrek_obj::Vertices(), shrek_obj::Uvs(), shrek_obj::Triangles()),
-      cube_(cube_obj::Vertices(), cube_obj::Uvs(), cube_obj::Triangles()) {}
+      shrek_(shrek_obj::Vertices(), shrek_obj::Uvs(), shrek_obj::Triangles()) {}
 
 absl::StatusOr<std::shared_ptr<Preset>> CubeBoom::MakeShared(
     std::shared_ptr<gl::GlTextureManager> texture_manager) {
