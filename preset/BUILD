@@ -10,6 +10,7 @@ PRESET_DEPS_LIST = [
     "//libopendrop/preset/simple_preset",
     "//libopendrop/preset/template_preset",
     "//libopendrop/preset/shape_bounce",
+    "//libopendrop/preset/eye_roll",
 ]
 
 cc_library(
