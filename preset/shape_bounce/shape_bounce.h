@@ -47,8 +47,8 @@ class ShapeBounce : public Preset {
   Rectangle rectangle_;
   Ngon ngon_;
 
-  glm::vec2 velocity_;
-  glm::vec2 position_;
+  glm::vec2 velocity_{0,0};
+  glm::vec2 position_{0,0};
 
   std::shared_ptr<IirFilter> bass_filter_;
   HystereticMapFilter bass_power_filter_;
