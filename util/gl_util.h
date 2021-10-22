@@ -50,16 +50,18 @@ void GlBindRenderTargetTextureToUniform(
     GlTextureBindingOptions binding_options);
 
 // Binds a value by name in a gl::GlProgram.
-void GlBindUniform(std::shared_ptr<GlProgram> program, std::string uniform_name,
-                   float value);
-void GlBindUniform(std::shared_ptr<GlProgram> program, std::string uniform_name,
-                   glm::vec4 value);
-void GlBindUniform(std::shared_ptr<GlProgram> program, std::string uniform_name,
-                   glm::ivec2 value);
-void GlBindUniform(std::shared_ptr<GlProgram> program, std::string uniform_name,
-                   glm::mat4 value);
-void GlBindUniform(std::shared_ptr<GlProgram> program, std::string uniform_name,
-                   int value);
+#define DECLARE_BIND_UNIFORM(type)                       \
+  void GlBindUniform(std::shared_ptr<GlProgram> program, \
+                     std::string uniform_name, type value);
+
+DECLARE_BIND_UNIFORM(float);
+DECLARE_BIND_UNIFORM(int);
+DECLARE_BIND_UNIFORM(glm::vec2);
+DECLARE_BIND_UNIFORM(glm::vec4);
+DECLARE_BIND_UNIFORM(glm::ivec2);
+DECLARE_BIND_UNIFORM(glm::mat4);
+
+#undef DECLARE_BIND_UNIFORM
 
 }  // namespace gl
 
