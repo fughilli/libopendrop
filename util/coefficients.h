@@ -4,6 +4,8 @@
 #include <array>
 #include <random>
 
+#include "libopendrop/util/logging.h"
+
 namespace opendrop {
 
 class Coefficients {

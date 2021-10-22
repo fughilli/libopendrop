@@ -68,6 +68,7 @@ cc_library(
 cc_library(
     name = "coefficients",
     hdrs = ["coefficients.h"],
+    deps = [":logging"],
 )
 
 cc_library(
@@ -160,5 +161,16 @@ cc_test(
         "@com_googletest//:gtest",
         "@com_googletest//:gtest_main",
         "@org_llvm_libcxx//:libcxx",
+    ],
+)
+
+cc_library(
+    name = "signals",
+    srcs = ["signals.cc"],
+    hdrs = ["signals.h"],
+    deps = [
+        ":coefficients",
+        ":math",
+        ":oneshot",
     ],
 )
