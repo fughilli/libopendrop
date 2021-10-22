@@ -133,16 +133,18 @@ void EyeRoll::OnDrawFrame(
   const float mapped_treble_power =
       treble_power_filter_->ProcessSample(treble_power);
 
-  rotary_velocity_l_ += mapped_treble_power * 50 * state->dt();
+  rotary_velocity_l_ += mapped_treble_power * 50 * state->dt() *
+                        sin(energy * 3.15) * sin(energy * 8.75);
   rotary_velocity_l_ *= 0.9;
-  rotary_velocity_r_ += mapped_treble_power * 50 * state->dt();
+  rotary_velocity_r_ += mapped_treble_power * 50 * state->dt() *
+                        sin(energy * 3.51) * sin(energy * 8.57);
   rotary_velocity_r_ *= 0.9;
 
   eye_angle_l_ += rotary_velocity_l_ * state->dt();
   eye_angle_r_ += rotary_velocity_r_ * state->dt();
 
   line_points_.resize(
-      state->left_channel().size());  // + state->right_channel().size());
+      state->left_channel().size());
   for (int i = 0; i < state->left_channel().size(); ++i) {
     line_points_[i] = {
         MapValue<float>(i, 0, state->left_channel().size() - 1, -1, 1),
