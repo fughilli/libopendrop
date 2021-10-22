@@ -13,6 +13,7 @@
 #include "libopendrop/primitive/polyline.h"
 #include "libopendrop/primitive/rectangle.h"
 #include "libopendrop/util/filter.h"
+#include "libopendrop/util/signals.h"
 
 namespace opendrop {
 
@@ -64,6 +65,11 @@ class EyeRoll : public Preset {
   glm::vec2 position_{0, 0};
 
   float line_energy_ = 0;
+
+  RandomEvent blink_event_;
+  RandomEvent wink_event_;
+  RampTweener left_eye_tweener_;
+  RampTweener right_eye_tweener_;
 
   std::shared_ptr<IirFilter> bass_filter_;
   std::shared_ptr<HystereticMapFilter> bass_power_filter_;

@@ -11,6 +11,7 @@
 #include <glm/gtx/transform.hpp>
 #include <glm/mat4x4.hpp>
 
+#include "absl/strings/str_format.h"
 #include "libopendrop/preset/eye_roll/composite.fsh.h"
 #include "libopendrop/preset/eye_roll/line.fsh.h"
 #include "libopendrop/preset/eye_roll/ngon.fsh.h"
@@ -26,7 +27,9 @@
 namespace opendrop {
 namespace {
 constexpr int kCircleSegments = 32;
-}
+
+constexpr bool kEnableWinkDebugging = false;
+}  // namespace
 
 EyeRoll::EyeRoll(std::shared_ptr<gl::GlProgram> warp_program,
                  std::shared_ptr<gl::GlProgram> composite_program,
@@ -43,7 +46,13 @@ EyeRoll::EyeRoll(std::shared_ptr<gl::GlProgram> warp_program,
       front_render_target_(front_render_target),
       back_render_target_(back_render_target),
       ngon_(n),
-      polyline_({1, 1, 1}, {}, 3) {}
+      polyline_({1, 1, 1}, {}, 3),
+      blink_event_{0.5, 15.0},
+      wink_event_{5.0, 45.0},
+      left_eye_tweener_{
+          {.ramp_on_length = 0.5, .on_length = 0.1, .ramp_off_length = 0.3}},
+      right_eye_tweener_{
+          {.ramp_on_length = 0.5, .on_length = 0.1, .ramp_off_length = 0.3}} {}
 
 absl::StatusOr<std::shared_ptr<Preset>> EyeRoll::MakeShared(
     std::shared_ptr<gl::GlTextureManager> texture_manager) {
@@ -143,8 +152,7 @@ void EyeRoll::OnDrawFrame(
   eye_angle_l_ += rotary_velocity_l_ * state->dt();
   eye_angle_r_ += rotary_velocity_r_ * state->dt();
 
-  line_points_.resize(
-      state->left_channel().size());
+  line_points_.resize(state->left_channel().size());
   for (int i = 0; i < state->left_channel().size(); ++i) {
     line_points_[i] = {
         MapValue<float>(i, 0, state->left_channel().size() - 1, -1, 1),
@@ -195,15 +203,34 @@ void EyeRoll::OnDrawFrame(
     rectangle_.Draw();
 
     ngon_program_->Use();
-    float eyelid_pos = (sin(energy * 10) + 1) / 2;
     glViewport(0, 0, width(), height());
     DrawEye({-0.4583, -0.5936}, 0.4, mapped_bass_power, eye_angle_l_,
-            eyelid_pos);
+            SineEase(left_eye_tweener_.Value(state->t())));
     DrawEye({0.4583, -0.5936}, 0.4, mapped_bass_power, eye_angle_r_,
-            eyelid_pos);
+            SineEase(right_eye_tweener_.Value(state->t())));
   }
 
   back_render_target_->swap_texture_unit(front_render_target_.get());
+
+  if (blink_event_.IsDue(state->t())) {
+    left_eye_tweener_.Start(state->t());
+    right_eye_tweener_.Start(state->t());
+  }
+  if (wink_event_.IsDue(state->t())) {
+    if (Coefficients::Random<1>(-1, 1)[0] < 0) {
+      left_eye_tweener_.Start(state->t());
+    } else {
+      right_eye_tweener_.Start(state->t());
+    }
+  }
+  if constexpr (kEnableWinkDebugging) {
+    LOG(INFO) << absl::StrFormat(
+        "Blink: %1.3f, Wink: %1.3f (L: %1.3f, R: %1.3f)",
+        blink_event_.oneshot().FractionDue(state->t()),
+        wink_event_.oneshot().FractionDue(state->t()),
+        left_eye_tweener_.Value(state->t()),
+        right_eye_tweener_.Value(state->t()));
+  }
 }
 
 }  // namespace opendrop

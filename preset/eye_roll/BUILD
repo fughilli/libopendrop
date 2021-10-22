@@ -9,8 +9,8 @@ cc_library(
     linkstatic = 1,
     deps = [
         ":composite",
-        ":ngon",
         ":line",
+        ":ngon",
         ":passthrough",
         ":warp",
         "//libopendrop:gl_interface",
@@ -21,11 +21,13 @@ cc_library(
         "//libopendrop/primitive:rectangle",
         "//libopendrop/util:coefficients",
         "//libopendrop/util:colors",
-        "//libopendrop/util:math",
         "//libopendrop/util:filter",
         "//libopendrop/util:gl_util",
         "//libopendrop/util:logging",
+        "//libopendrop/util:math",
+        "//libopendrop/util:signals",
         "//libopendrop/util:status_macros",
+        "@com_google_absl//absl/strings:str_format",
     ],
 )
 
