@@ -10,6 +10,7 @@ cc_library(
     deps = [
         ":composite",
         ":ngon",
+        ":line",
         ":passthrough",
         ":warp",
         "//libopendrop:gl_interface",
@@ -36,6 +37,11 @@ shader_cc_library(
 shader_cc_library(
     name = "ngon",
     srcs = ["ngon.fsh"],
+)
+
+shader_cc_library(
+    name = "line",
+    srcs = ["line.fsh"],
 )
 
 shader_cc_library(

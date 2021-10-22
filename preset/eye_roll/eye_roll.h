@@ -29,6 +29,7 @@ class EyeRoll : public Preset {
   EyeRoll(std::shared_ptr<gl::GlProgram> warp_program,
           std::shared_ptr<gl::GlProgram> composite_program,
           std::shared_ptr<gl::GlProgram> ngon_program,
+          std::shared_ptr<gl::GlProgram> line_program,
           std::shared_ptr<gl::GlRenderTarget> front_render_target,
           std::shared_ptr<gl::GlRenderTarget> back_render_target,
           std::shared_ptr<gl::GlTextureManager> texture_manager, int n);
@@ -46,16 +47,23 @@ class EyeRoll : public Preset {
   std::shared_ptr<gl::GlProgram> warp_program_;
   std::shared_ptr<gl::GlProgram> composite_program_;
   std::shared_ptr<gl::GlProgram> ngon_program_;
+  std::shared_ptr<gl::GlProgram> line_program_;
   std::shared_ptr<gl::GlRenderTarget> front_render_target_;
   std::shared_ptr<gl::GlRenderTarget> back_render_target_;
 
   Rectangle rectangle_;
   Ngon ngon_;
-  float rotary_velocity_ = 0;
-  float eye_angle_ = 0;
+  Polyline polyline_;
+  std::vector<glm::vec2> line_points_;
+  float rotary_velocity_l_ = 0;
+  float rotary_velocity_r_ = 0;
+  float eye_angle_l_ = 0;
+  float eye_angle_r_ = 0;
 
   glm::vec2 velocity_{0, 0};
   glm::vec2 position_{0, 0};
+
+  float line_energy_ = 0;
 
   std::shared_ptr<IirFilter> bass_filter_;
   std::shared_ptr<HystereticMapFilter> bass_power_filter_;

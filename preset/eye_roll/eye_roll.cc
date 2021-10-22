@@ -12,6 +12,7 @@
 #include <glm/mat4x4.hpp>
 
 #include "libopendrop/preset/eye_roll/composite.fsh.h"
+#include "libopendrop/preset/eye_roll/line.fsh.h"
 #include "libopendrop/preset/eye_roll/ngon.fsh.h"
 #include "libopendrop/preset/eye_roll/passthrough.vsh.h"
 #include "libopendrop/preset/eye_roll/warp.fsh.h"
@@ -30,6 +31,7 @@ constexpr int kCircleSegments = 32;
 EyeRoll::EyeRoll(std::shared_ptr<gl::GlProgram> warp_program,
                  std::shared_ptr<gl::GlProgram> composite_program,
                  std::shared_ptr<gl::GlProgram> ngon_program,
+                 std::shared_ptr<gl::GlProgram> line_program,
                  std::shared_ptr<gl::GlRenderTarget> front_render_target,
                  std::shared_ptr<gl::GlRenderTarget> back_render_target,
                  std::shared_ptr<gl::GlTextureManager> texture_manager, int n)
@@ -37,9 +39,11 @@ EyeRoll::EyeRoll(std::shared_ptr<gl::GlProgram> warp_program,
       warp_program_(warp_program),
       composite_program_(composite_program),
       ngon_program_(ngon_program),
+      line_program_(line_program),
       front_render_target_(front_render_target),
       back_render_target_(back_render_target),
-      ngon_(n) {}
+      ngon_(n),
+      polyline_({1, 1, 1}, {}, 3) {}
 
 absl::StatusOr<std::shared_ptr<Preset>> EyeRoll::MakeShared(
     std::shared_ptr<gl::GlTextureManager> texture_manager) {
@@ -52,14 +56,18 @@ absl::StatusOr<std::shared_ptr<Preset>> EyeRoll::MakeShared(
   ASSIGN_OR_RETURN(
       auto ngon_program,
       gl::GlProgram::MakeShared(passthrough_vsh::Code(), ngon_fsh::Code()));
+  ASSIGN_OR_RETURN(
+      auto line_program,
+      gl::GlProgram::MakeShared(passthrough_vsh::Code(), line_fsh::Code()));
   ASSIGN_OR_RETURN(auto front_render_target,
                    gl::GlRenderTarget::MakeShared(0, 0, texture_manager));
   ASSIGN_OR_RETURN(auto back_render_target,
                    gl::GlRenderTarget::MakeShared(0, 0, texture_manager));
 
-  return std::shared_ptr<EyeRoll>(new EyeRoll(
-      warp_program, composite_program, ngon_program, front_render_target,
-      back_render_target, texture_manager, kCircleSegments));
+  return std::shared_ptr<EyeRoll>(
+      new EyeRoll(warp_program, composite_program, ngon_program, line_program,
+                  front_render_target, back_render_target, texture_manager,
+                  kCircleSegments));
 }
 
 void EyeRoll::OnUpdateGeometry() {
@@ -116,6 +124,8 @@ void EyeRoll::OnDrawFrame(
   float energy = state->energy();
   float power = state->power();
 
+  line_energy_ += sin(energy * 5) * sin(energy * 17) * 10 * state->dt();
+
   const float bass_power = bass_filter_->ComputePower(state->left_channel());
   const float mapped_bass_power = bass_power_filter_->ProcessSample(bass_power);
   const float treble_power =
@@ -123,10 +133,21 @@ void EyeRoll::OnDrawFrame(
   const float mapped_treble_power =
       treble_power_filter_->ProcessSample(treble_power);
 
-  rotary_velocity_ += mapped_treble_power * 50 * state->dt();
-  rotary_velocity_ *= 0.9;
+  rotary_velocity_l_ += mapped_treble_power * 50 * state->dt();
+  rotary_velocity_l_ *= 0.9;
+  rotary_velocity_r_ += mapped_treble_power * 50 * state->dt();
+  rotary_velocity_r_ *= 0.9;
 
-  eye_angle_ += rotary_velocity_ * state->dt();
+  eye_angle_l_ += rotary_velocity_l_ * state->dt();
+  eye_angle_r_ += rotary_velocity_r_ * state->dt();
+
+  line_points_.resize(
+      state->left_channel().size());  // + state->right_channel().size());
+  for (int i = 0; i < state->left_channel().size(); ++i) {
+    line_points_[i] = {
+        MapValue<float>(i, 0, state->left_channel().size() - 1, -1, 1),
+        state->left_channel()[i] / 10};
+  }
 
   {
     auto back_activation = back_render_target_->Activate();
@@ -134,7 +155,7 @@ void EyeRoll::OnDrawFrame(
     warp_program_->Use();
 
     GlBindUniform(warp_program_, "power", power);
-    GlBindUniform(warp_program_, "energy", energy);
+    GlBindUniform(warp_program_, "energy", line_energy_);
     GlBindUniform(warp_program_, "last_frame_size",
                   glm::ivec2(width(), height()));
     GlBindRenderTargetTextureToUniform(warp_program_, "last_frame",
@@ -145,9 +166,12 @@ void EyeRoll::OnDrawFrame(
     // Force all fragments to draw with a full-screen rectangle.
     rectangle_.Draw();
 
-    ngon_program_->Use();
-    glViewport(0, 0, width(), height());
-    DrawEye({0, 0}, 0.3, mapped_bass_power, energy, 0);
+    line_program_->Use();
+    GlBindUniform(line_program_, "model_transform", glm::mat4(1.0f));
+    GlBindUniform(line_program_, "power", power);
+    GlBindUniform(line_program_, "energy", energy);
+    polyline_.UpdateVertices(line_points_);
+    polyline_.Draw();
   }
 
   {
@@ -171,8 +195,10 @@ void EyeRoll::OnDrawFrame(
     ngon_program_->Use();
     float eyelid_pos = (sin(energy * 10) + 1) / 2;
     glViewport(0, 0, width(), height());
-    DrawEye({-0.4583, -0.5936}, 0.4, mapped_bass_power, eye_angle_, eyelid_pos);
-    DrawEye({0.4583, -0.5936}, 0.4, mapped_bass_power, eye_angle_, eyelid_pos);
+    DrawEye({-0.4583, -0.5936}, 0.4, mapped_bass_power, eye_angle_l_,
+            eyelid_pos);
+    DrawEye({0.4583, -0.5936}, 0.4, mapped_bass_power, eye_angle_r_,
+            eyelid_pos);
   }
 
   back_render_target_->swap_texture_unit(front_render_target_.get());
