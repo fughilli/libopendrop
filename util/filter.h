@@ -92,14 +92,14 @@ class HystereticMapFilter : public Filter {
   // Constructs a HystereticMapFilter using `averaging_filter` to compute the
   // signal average, towards which the computed signal minima and maxima will
   // exponentially decay towards by the coefficient `alpha`.
-  HystereticMapFilter(FirFilter averaging_filter, float alpha)
+  HystereticMapFilter(std::shared_ptr<Filter> averaging_filter, float alpha)
       : averaging_filter_(std::move(averaging_filter)),
         alpha_(std::clamp<float>(alpha, 0.0f, 1.0f)) {}
 
   virtual float ProcessSample(float sample) override;
 
  private:
-  FirFilter averaging_filter_;
+  std::shared_ptr<Filter> averaging_filter_;
   const float alpha_;
 
   float maximum_ = std::numeric_limits<float>::lowest();

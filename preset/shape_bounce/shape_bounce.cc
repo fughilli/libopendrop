@@ -41,9 +41,7 @@ ShapeBounce::ShapeBounce(
       ngon_program_(ngon_program),
       front_render_target_(front_render_target),
       back_render_target_(back_render_target),
-      ngon_(n),
-      bass_power_filter_({0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1},
-                         0.99f) {}
+      ngon_(n) {}
 
 absl::StatusOr<std::shared_ptr<Preset>> ShapeBounce::MakeShared(
     std::shared_ptr<gl::GlTextureManager> texture_manager) {
@@ -85,12 +83,16 @@ void ShapeBounce::OnDrawFrame(
     bass_filter_ = IirBandFilter(50.0f / state->sampling_rate(),
                                  40.0f / state->sampling_rate(),
                                  IirBandFilterType::kBandpass);
+    bass_power_filter_ = std::make_shared<HystereticMapFilter>(
+        IirSinglePoleFilter(1.0f / state->sampling_rate(),
+                            IirSinglePoleFilterType::kLowpass),
+        0.999f);
   }
   float energy = state->energy();
   float power = state->power();
 
-  const float bass_power = bass_power_filter_.ProcessSample(
-      bass_filter_->ComputePower(state->left_channel()));
+  const float bass_power = bass_filter_->ComputePower(state->left_channel());
+  const float mapped_bass_power = bass_power_filter_->ProcessSample(bass_power);
 
   {
     auto back_activation = back_render_target_->Activate();
@@ -127,7 +129,7 @@ void ShapeBounce::OnDrawFrame(
 
     ngon_program_->Use();
     glm::vec3 translation(position_.x, position_.y, 0);
-    const float scale = MapValue<float>(bass_power, 0, 1, 0.1, 0.5);
+    const float scale = MapValue<float>(mapped_bass_power, 0, 1, 0.1, 0.5);
     glm::mat4 transform =
         glm::mat4x4(scale, 0, 0, 0,                                 // Row 1
                     0, scale, 0, 0,                                 // Row 2

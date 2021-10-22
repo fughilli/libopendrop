@@ -115,7 +115,7 @@ std::shared_ptr<IirFilter> IirSinglePoleFilter(float cutoff_frequency,
 }
 
 float HystereticMapFilter::ProcessSample(float sample) {
-  const float average = averaging_filter_.ProcessSample(sample);
+  const float average = averaging_filter_->ProcessSample(sample);
   if (sample > maximum_) {
     maximum_ = sample;
   } else {

@@ -51,7 +51,7 @@ class ShapeBounce : public Preset {
   glm::vec2 position_{0,0};
 
   std::shared_ptr<IirFilter> bass_filter_;
-  HystereticMapFilter bass_power_filter_;
+  std::shared_ptr<HystereticMapFilter> bass_power_filter_;
 };
 
 }  // namespace opendrop
