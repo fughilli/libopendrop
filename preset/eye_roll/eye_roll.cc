@@ -171,8 +171,8 @@ void EyeRoll::OnDrawFrame(
     ngon_program_->Use();
     float eyelid_pos = (sin(energy * 10) + 1) / 2;
     glViewport(0, 0, width(), height());
-    DrawEye({-0.4, -0.4}, 0.4, mapped_bass_power, eye_angle_, eyelid_pos);
-    DrawEye({0.4, -0.4}, 0.4, mapped_bass_power, eye_angle_, eyelid_pos);
+    DrawEye({-0.4583, -0.5936}, 0.4, mapped_bass_power, eye_angle_, eyelid_pos);
+    DrawEye({0.4583, -0.5936}, 0.4, mapped_bass_power, eye_angle_, eyelid_pos);
   }
 
   back_render_target_->swap_texture_unit(front_render_target_.get());

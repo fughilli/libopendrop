@@ -16,22 +16,14 @@ vec3 HsvToRgb(vec3 hsv) {
   // X = chroma x (1 - |H' mod 2 - 1|)
   float x = c * (1. - abs(mod(hsv.x * 6., 2.) - 1.));
 
-  switch (int(mod(int(hsv.x * 6), 6))) {
-    case 0:
-      return vec3(c, x, 0.);
-    case 1:
-      return vec3(x, c, 0.);
-    case 2:
-      return vec3(0., c, x);
-    case 3:
-      return vec3(0., x, c);
-    case 4:
-      return vec3(x, 0., c);
-    case 5:
-      return vec3(c, 0., x);
-    default:
-      return vec3(0., 0., 0.);
-  }
+  int hsv_case = int(mod(int(hsv.x * 6), 6));
+  if (hsv_case == 0) return vec3(c, x, 0.);
+  if (hsv_case == 1) return vec3(x, c, 0.);
+  if (hsv_case == 2) return vec3(0., c, x);
+  if (hsv_case == 3) return vec3(0., x, c);
+  if (hsv_case == 4) return vec3(x, 0., c);
+  if (hsv_case == 5) return vec3(c, 0., x);
+  return vec3(0., 0., 0.);
 }
 
 void main() {
