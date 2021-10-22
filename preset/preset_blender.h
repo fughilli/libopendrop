@@ -7,9 +7,9 @@
 
 #include <list>
 #include <memory>
+#include <string_view>
 #include <utility>
 #include <vector>
-#include <string_view>
 
 #include "libopendrop/preset/preset.h"
 #include "libopendrop/primitive/rectangle.h"
@@ -40,11 +40,15 @@ class PresetActivation {
   std::shared_ptr<Preset> preset() { return preset_; }
   std::shared_ptr<gl::GlRenderTarget> render_target() { return render_target_; }
 
+  PresetActivationState state() const { return state_; }
+
  private:
   std::shared_ptr<Preset> preset_;
   std::shared_ptr<gl::GlRenderTarget> render_target_;
   PresetActivationState state_;
   OneshotIncremental<float> expiry_timer_, transition_timer_;
+
+  float maximal_mix_coeff_ = 1.0f;
 };
 
 class PresetBlender {
@@ -53,8 +57,22 @@ class PresetBlender {
 
   template <typename... Args>
   void AddPreset(Args&&... args) {
+    if (preset_activations_.size() == 1) {
+      auto& activation = preset_activations_.front();
+      auto preset = activation.preset();
+      if (preset->should_solo() &&
+          activation.state() < PresetActivationState::kAwaitingTransitionOut) {
+        LOG(INFO) << "Current preset is soloing...";
+        return;
+      }
+    }
     LOG(INFO) << "Adding preset";
     PresetActivation activation(std::forward<Args>(args)...);
+    if (activation.preset()->should_solo()) {
+      for (auto& activation : preset_activations_) {
+        activation.TriggerTransitionOut();
+      }
+    }
     activation.preset()->UpdateGeometry(width_, height_);
     activation.render_target()->UpdateGeometry(width_, height_);
     preset_activations_.push_front(std::move(activation));

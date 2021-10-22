@@ -54,10 +54,9 @@ PresetActivationState PresetActivation::Update(float dt) {
 }
 
 void PresetActivation::TriggerTransitionOut() {
-  CHECK(state_ == kAwaitingTransitionOut || state_ == kIn)
-      << "`TriggerTransitionOut` called when state is not one of "
-         "`kAwaitingTransitionOut` or `kIn`. Actual state is: "
-      << state_;
+  if (state_ == PresetActivationState::kOut) return;
+  if (state_ == PresetActivationState::kTransitionIn)
+    maximal_mix_coeff_ = transition_timer_.FractionDue();
 
   state_ = kTransitionOut;
   transition_timer_.Reset();
@@ -70,10 +69,10 @@ float PresetActivation::GetMixingCoefficient() const {
 
     case PresetActivationState::kIn:
     case PresetActivationState::kAwaitingTransitionOut:
-      return 1.0f;
+      return maximal_mix_coeff_;
 
     case PresetActivationState::kTransitionOut:
-      return 1.0f - transition_timer_.FractionDue();
+      return (1.0f - transition_timer_.FractionDue()) * maximal_mix_coeff_;
 
     case PresetActivationState::kOut:
       return 0.0f;

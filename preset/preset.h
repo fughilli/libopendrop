@@ -39,6 +39,7 @@ class Preset {
   virtual std::string name() const = 0;
 
   virtual int max_count() const { return kDefaultMaxPresetCount; }
+  virtual bool should_solo() const { return false; }
 
  protected:
   // Constructs a preset which renders to a raster of the given dimensions.

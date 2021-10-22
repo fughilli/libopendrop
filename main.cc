@@ -79,6 +79,9 @@ ABSL_FLAG(float, transition_threshold, 2.0f,
 ABSL_FLAG(float, transition_cooldown_period, 2.0f,
           "A delay, in seconds, that must elapse in between auto transition "
           "events. Must be positive. A value of 0 disables the cooldown.");
+ABSL_FLAG(float, solo_cooldown_period, 120.0f,
+          "A delay, in seconds, that must elapse in between transitions to "
+          "solo presets.");
 ABSL_FLAG(int, max_presets, 2,
           "Maximum number of presets on the screen at a time.");
 ABSL_FLAG(int, sampling_rate, 44100,
@@ -106,6 +109,8 @@ constexpr int kMinimumDelayUs = 2000;
 
 void NextPreset(OpenDropController *controller,
                 std::shared_ptr<gl::GlTextureManager> texture_manager) {
+  static RateLimiter<float> solo_rate_limiter{
+      absl::GetFlag(FLAGS_solo_cooldown_period)};
   // How many times to attempt to find a preset to add before giving up.
   constexpr int kAttempts = 3;
   int max_presets = absl::GetFlag(FLAGS_max_presets);
@@ -143,6 +148,14 @@ void NextPreset(OpenDropController *controller,
     LOG(INFO) << "Failed to add preset after " << kAttempts << " attempts.";
     return;
   }
+
+  if (status_or_preset.value()->should_solo() &&
+      !solo_rate_limiter.Permitted(controller->global_state().t())) {
+    LOG(INFO) << "Blocking preset " << status_or_preset.value()->name()
+              << " to keep it from hogging the screen.";
+    return;
+  }
+
   controller->preset_blender()->AddPreset(
       *status_or_preset, *status_or_render_target, duration + ramp_duration * 2,
       ramp_duration);

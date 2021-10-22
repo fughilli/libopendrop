@@ -25,6 +25,7 @@ class EyeRoll : public Preset {
   std::string name() const override { return "EyeRoll"; }
 
   int max_count() const override { return 1; }
+  bool should_solo() const override { return true; }
 
  protected:
   EyeRoll(std::shared_ptr<gl::GlProgram> warp_program,
