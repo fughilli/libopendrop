@@ -142,14 +142,14 @@ void CubeBoom::OnDrawFrame(
                                        back_render_target_,
                                        gl::GlTextureBindingOptions());
 
-    float cube_scale = std::clamp(0.5 + power / 1.5, 0.0, 5.0);
+    float cube_scale = std::clamp(0.3 + power / 3.5, 0.0, 5.0);
 
     glm::mat4 model_transform;
     model_transform =
         glm::mat4x4(cube_scale, 0, 0, 0,  // Row 1
                     0, cube_scale, 0, 0,  // Row 2
                     0, 0, cube_scale, 0,  // Row 3
-                    0, 0, -1, 1           // Row 4
+                    0, 0, 0, 1            // Row 4
                     ) *
         glm::rotate(glm::mat4(1.0f), energy * 10, glm::vec3(0.0f, 0.0f, 1.0f)) *
         glm::rotate(glm::mat4(1.0f), energy * 7, glm::vec3(0.0f, 1.0f, 0.0f)) *
@@ -158,6 +158,7 @@ void CubeBoom::OnDrawFrame(
 
     glViewport(0, 0, width(), height());
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glDepthRange(0, 10);
     glEnable(GL_DEPTH_TEST);
     // Enable one of these at a time.
     // shrek_.Draw();
