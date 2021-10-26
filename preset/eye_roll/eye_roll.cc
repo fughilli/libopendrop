@@ -26,6 +26,12 @@
 
 namespace opendrop {
 namespace {
+enum FlameInputShape {
+  kLine,
+  kPolygon,
+};
+constexpr FlameInputShape kFlameInputShape = kPolygon;
+
 constexpr int kCircleSegments = 32;
 
 constexpr bool kEnableWinkDebugging = false;
@@ -177,11 +183,31 @@ void EyeRoll::OnDrawFrame(
     rectangle_.Draw();
 
     line_program_->Use();
-    GlBindUniform(line_program_, "model_transform", glm::mat4(1.0f));
     GlBindUniform(line_program_, "power", power);
     GlBindUniform(line_program_, "energy", energy);
-    polyline_.UpdateVertices(line_points_);
-    polyline_.Draw();
+
+    switch (kFlameInputShape) {
+      case kLine:
+        GlBindUniform(line_program_, "model_transform", glm::mat4(1.0f));
+        polyline_.UpdateVertices(line_points_);
+        polyline_.Draw();
+        break;
+      case kPolygon: {
+        const float dot_scale =
+            MapValue<float>(mapped_bass_power, 0, 1, 0.1, 0.2);
+        const float dot_translation =
+            sin(energy * 5.77) * cos(energy * 21.13) * 0.2 +
+            power / 10 * cos(energy * 10);
+        GlBindUniform(line_program_, "model_transform",
+                      glm::mat4x4(dot_scale, 0, 0, 0,       // Row 1
+                                  0, dot_scale, 0, 0,       // Row 2
+                                  0, 0, dot_scale, 0,       // Row 3
+                                  dot_translation, 0, 0, 1  // Row 4
+                                  ));
+        ngon_.Draw();
+        break;
+      }
+    }
   }
 
   {

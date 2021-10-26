@@ -27,6 +27,6 @@ vec3 HsvToRgb(vec3 hsv) {
 
 void main() {
   float color_angle =
-      mod((1 + screen_uv.x * cos(energy)) / 2 + energy * 10 + power, 1);
+      mod((1 + screen_uv.x * cos(energy)) / 10 - energy / 10 + power / 10, 1);
   gl_FragColor = vec4(HsvToRgb(vec3(color_angle, 1, 1)), 1);
 }

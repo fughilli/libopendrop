@@ -33,8 +33,8 @@ float sin_product(float coeff_a, float coeff_b, float arg) {
 void main() {
   vec2 texture_uv =
       screen_uv -
-      vec2(cos(screen_uv.y * 10 + energy * 20 + power * 10) / (power + 100),
-           (energy / 10 + power + 1) / last_frame_size.y);
+      vec2(cos(screen_uv.y * 30 + energy * 20 + power * 10) / (power + 100),
+           (energy / 10 + power + 1 + cos(screen_uv.x * 10) / 2) / 100);
   texture_uv = screen_to_tex(texture_uv);
 
   gl_FragColor = texture2D(last_frame, texture_uv) * 0.975;
