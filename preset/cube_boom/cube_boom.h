@@ -22,6 +22,8 @@ class CubeBoom : public Preset {
 
   std::string name() const override { return "CubeBoom"; }
 
+  int max_count() const override { return 1; }
+
  protected:
   CubeBoom(std::shared_ptr<gl::GlProgram> warp_program,
            std::shared_ptr<gl::GlProgram> composite_program,
