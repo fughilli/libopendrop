@@ -1,6 +1,7 @@
 import hashlib
 import os
-from typing import Text
+import re
+from typing import Text, List
 
 from absl import app
 from absl import flags
@@ -36,6 +37,10 @@ const char* __kCode_{hash_string} = R"(
 
 }}
 """)
+
+INCLUDE_RE = re.compile(r"#include (<|\")(?P<include>[a-zA-Z0-9-._]+)(>|\")")
+DEFINE_RE = re.compile(
+    r"#(?P<type>define|ifdef|ifndef) (?P<symbol>[a-zA-Z0-9_]+)")
 
 
 def MakeHashString(shader_filename: Text, code_text: Text):
@@ -75,6 +80,24 @@ def GenerateSource(namespace: Text, code_text: Text,
                                   hash_string=hash_string)
 
 
+def LoadInclude(filename: Text, env: List[Text]) -> Text:
+    with open(filename, 'r') as include_file:
+        return ProcessIncludes(include_file.read(), env)
+
+
+def ProcessIncludes(code_text: Text, env: List[Text]) -> Text:
+    output_text_lines: List[Text] = []
+    for line in code_text.split('\n'):
+        match = INCLUDE_RE.match(line)
+        if match:
+            output_text_lines.append(
+                LoadInclude(match.groupdict()["include"], env).strip())
+            continue
+
+        output_text_lines.append(line)
+    return '\n'.join(output_text_lines)
+
+
 def main(argv):
     if FLAGS.shader_filename == None:
         raise ValueError("--shader_filename must be specified")
@@ -85,6 +108,10 @@ def main(argv):
     shader_filename = FLAGS.shader_filename
 
     code_text = open(shader_filename, 'r').read()
+
+    env: List[Text] = []
+    code_text = ProcessIncludes(code_text, env)
+
     guard_symbol = MakeGuardSymbol(shader_filename)
     namespace = MakeNamespace(shader_filename)
     hash_string = MakeHashString(shader_filename, code_text)

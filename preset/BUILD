@@ -58,6 +58,14 @@ py_binary(
     python_version = "PY3",
 )
 
+py_test(
+    name = "wrap_shader_test",
+    srcs = ["wrap_shader_test.py"],
+    deps = [
+        ":wrap_shader",
+    ],
+)
+
 py_binary(
     name = "wrap_model",
     srcs = ["wrap_model.py"],
