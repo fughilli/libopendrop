@@ -31,18 +31,18 @@ float sin_product(float coeff_a, float coeff_b, float arg) {
 }
 
 const float kFilterKernel[9] =
-    float[](0.0, 0.1, 0.0, 0.1, 0.6, 0.1, 0.0, 0.1, 0.0);
+    float[](0.0, -0.1, 0.0, -0.1, 1.4, -0.1, 0.0, -0.1, 0.0);
 
 float map(float val, float in_low, float in_high, float out_low,
           float out_high) {
   return (val - in_low) / (in_high - in_low) * (out_high - out_low) + out_low;
 }
 
-vec3 hueShift(vec3 color, float hue)
-{
-const vec3 k = vec3(0.57735, 0.57735, 0.57735);
-float cosAngle = cos(hue);
-return vec3(color * cosAngle + cross(k, color) * sin(hue) + k * dot(k, color) * (1.0 - cosAngle));
+vec3 hueShift(vec3 color, float hue) {
+  const vec3 k = vec3(0.57735, 0.57735, 0.57735);
+  float cosAngle = cos(hue);
+  return vec3(color * cosAngle + cross(k, color) * sin(hue) +
+              k * dot(k, color) * (1.0 - cosAngle));
 }
 
 vec4 texture_uv_with_color_sample(sampler2D tex, float p1, float p2, float p3,
@@ -61,7 +61,7 @@ vec4 texture_uv_with_color_sample(sampler2D tex, float p1, float p2, float p3,
     for (int j = 0; j < 3; ++j) {
       accum += texture2D(tex, texture_uv + vec2(map(i, 0, 2, -1, 1),
                                                 map(j, 0, 2, -1, 1)) *
-                                               len / 1000) *
+                                               len / 200) *
                kFilterKernel[j * 3 + i];
     }
   }
@@ -80,7 +80,10 @@ void main() {
                                                 progression_term_2,
                                                 progression_term_3, color);
 
-  vec4 hue_shift = vec4(hueShift(new_color.xyz, 2 * 3.1415926 / 3.000), 1);
+  float len = length(color);
 
-  gl_FragColor = hue_shift * 0.975;//0.975;
+  vec4 hue_shift =
+      vec4(hueShift(new_color.xyz, 2 * 3.1415926 / 10000 + len / 500), 1);
+
+  gl_FragColor = hue_shift * 0.955;  // 0.975;
 }
