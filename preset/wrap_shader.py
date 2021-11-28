@@ -1,7 +1,7 @@
 import hashlib
 import os
 import re
-from typing import Text, List
+from typing import Text, List, Tuple
 
 from absl import app
 from absl import flags
@@ -40,7 +40,8 @@ const char* __kCode_{hash_string} = R"(
 
 INCLUDE_RE = re.compile(r"#include (<|\")(?P<include>[a-zA-Z0-9-._]+)(>|\")")
 DEFINE_RE = re.compile(
-    r"#(?P<type>define|ifdef|ifndef) (?P<symbol>[a-zA-Z0-9_]+)")
+    r"#(?P<type>define|undef|ifdef|ifndef) (?P<symbol>[a-zA-Z0-9_]+)")
+ENDIF_RE = re.compile(r"#endif\s*(//.*)?")
 
 
 def MakeHashString(shader_filename: Text, code_text: Text):
@@ -82,19 +83,61 @@ def GenerateSource(namespace: Text, code_text: Text,
 
 def LoadInclude(filename: Text, env: List[Text]) -> Text:
     with open(filename, 'r') as include_file:
-        return ProcessIncludes(include_file.read(), env)
+        return ProcessMacros(filename, include_file.read(), env)
 
 
-def ProcessIncludes(code_text: Text, env: List[Text]) -> Text:
+def AcceptLine(processing_stack: List[Tuple[Text, bool]]):
+    for _, active in processing_stack:
+        if not active:
+            return False
+    return True
+
+
+def ProcessMacros(filename: Text, code_text: Text, env: List[Text]) -> Text:
     output_text_lines: List[Text] = []
+    processing_stack: List[Tuple[Text, bool]] = []
     for line in code_text.split('\n'):
-        match = INCLUDE_RE.match(line)
-        if match:
+        include_match = INCLUDE_RE.match(line)
+        if include_match:
             output_text_lines.append(
-                LoadInclude(match.groupdict()["include"], env).strip())
+                LoadInclude(include_match.groupdict()["include"], env).strip())
             continue
 
-        output_text_lines.append(line)
+        define_match = DEFINE_RE.match(line)
+        if define_match:
+            define_type = define_match.groupdict()["type"]
+            symbol = define_match.groupdict()["symbol"]
+            if define_type == "define":
+                if symbol not in env:
+                    env.append(symbol)
+                    continue
+            elif define_type == "undef":
+                if symbol in env:
+                    env.remove(symbol)
+                    continue
+                raise Exception(f"{filename:s}:{line_number:d}: "
+                                f"Can't #undef undefined symbol {symbol:s}")
+            elif define_type == "ifdef":
+                processing_stack.append((symbol, (symbol in env)))
+                continue
+            elif define_type == "ifndef":
+                processing_stack.append((symbol, (symbol not in env)))
+                continue
+            else:
+                raise Exception(f"{filename:s}:{line_number:d}: "
+                                f"Unknown macro #{define_type:s}")
+
+        endif_match = ENDIF_RE.match(line)
+        if endif_match:
+            if len(processing_stack) == 0:
+                raise Exception(f"{filename:s}:{line_number:d}: "
+                                f"No matching #if for #endif")
+            processing_stack.pop()
+            continue
+
+        if AcceptLine(processing_stack):
+            output_text_lines.append(line)
+
     return '\n'.join(output_text_lines)
 
 
@@ -110,7 +153,7 @@ def main(argv):
     code_text = open(shader_filename, 'r').read()
 
     env: List[Text] = []
-    code_text = ProcessIncludes(code_text, env)
+    code_text = ProcessMacros(shader_filename, code_text, env)
 
     guard_symbol = MakeGuardSymbol(shader_filename)
     namespace = MakeNamespace(shader_filename)
