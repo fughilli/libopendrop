@@ -54,4 +54,7 @@ shader_cc_library(
 shader_cc_library(
     name = "warp",
     srcs = ["warp.fsh"],
+    deps = [
+        "//libopendrop/preset/common:math",
+    ],
 )

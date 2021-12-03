@@ -1,5 +1,7 @@
 #version 120
 
+#include "libopendrop/preset/common/math.shh"
+
 varying vec2 screen_uv;
 
 uniform sampler2D last_frame;
@@ -7,48 +9,9 @@ uniform ivec2 last_frame_size;
 uniform float energy;
 uniform float power;
 
-// Rotates a screen UV coordinate around the origin by `angle`.
-vec2 rotate(vec2 screen_uv, float angle) {
-  float c = cos(angle);
-  float s = sin(angle);
-
-  return vec2(c * screen_uv.x - s * screen_uv.y,
-              s * screen_uv.x + c * screen_uv.y);
-}
-
-// Converts a normalized screen coordinate to a normalized texture coordinate.
-vec2 screen_to_tex(vec2 screen_uv) { return (screen_uv + vec2(1., 1.)) * 0.5; }
-
-// Zooms a screen UV coordinate by displacing it along its axis.
-vec2 zoom(vec2 screen_uv, float zoom) { return screen_uv * zoom; }
-
-// Returns the product of two sinusoids with the given coefficients of `arg`.
-// Choosing the coefficients such that the number of decimal places required to
-// represent their ratio is maximized will give a greater appearance of
-// "randomness".
-float sin_product(float coeff_a, float coeff_b, float arg) {
-  return sin(coeff_a * arg) * sin(coeff_b * arg);
-}
-
 const float kFilterKernel[9] =
     float[](0.2, -0.1, 0.2, -0.1, 0.65, -0.1, 0.2, -0.1, 0.2);
 
-float map(float val, float in_low, float in_high, float out_low,
-          float out_high) {
-  return (val - in_low) / (in_high - in_low) * (out_high - out_low) + out_low;
-}
-
-vec3 hueShift(vec3 color, float hue) {
-  const vec3 k = vec3(0.57735, 0.57735, 0.57735);
-  float cosAngle = cos(hue);
-  return vec3(color * cosAngle + cross(k, color) * sin(hue) +
-              k * dot(k, color) * (1.0 - cosAngle));
-}
-
-float sin_product_range(float coeff_a, float coeff_b, float min, float max,
-                        float arg) {
-  return sin_product(coeff_a, coeff_b, arg) * (max - min) + min;
-}
 
 vec4 texture_uv_with_color_sample(sampler2D tex, float p1, float p2, float p3,
                                   vec4 color) {
@@ -97,7 +60,7 @@ void main() {
 
   float len = length(color);
 
-  vec4 hue_shift = vec4(hueShift(new_color.xyz, len / 5), 1);
+  vec4 hue_shift = shift_hue(new_color, len / 5);
 
   gl_FragColor = hue_shift * 0.955;  // 0.975;
 }
