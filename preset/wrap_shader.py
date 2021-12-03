@@ -38,7 +38,7 @@ const char* __kCode_{hash_string} = R"(
 }}
 """)
 
-INCLUDE_RE = re.compile(r"#include (<|\")(?P<include>[a-zA-Z0-9-._]+)(>|\")")
+INCLUDE_RE = re.compile(r"#include (<|\")(?P<include>[a-zA-Z0-9-._\/]+)(>|\")")
 DEFINE_RE = re.compile(
     r"#(?P<type>define|undef|ifdef|ifndef) (?P<symbol>[a-zA-Z0-9_]+)")
 ENDIF_RE = re.compile(r"#endif\s*(//.*)?")

@@ -34,6 +34,20 @@ blah
 #endif  // FILE_C
 """)
 
+FILE_C_QUOTES = ("""#ifndef FILE_C
+#define FILE_C
+#include "file_a"
+blah
+#endif  // FILE_C
+""")
+
+FILE_C_QUALIFIED_PATH = ("""#ifndef FILE_C
+#define FILE_C
+#include "foobar/baz/file_a"
+blah
+#endif  // FILE_C
+""")
+
 EXPECTED_FILE_C = ("""foo
 bar
 baz
@@ -87,6 +101,20 @@ class TestWrapShader(unittest.TestCase):
         fs.create_file('file_a', contents=FILE_A)
         self.assertEqual(wrap_shader.ProcessMacros('file_c', FILE_C, []),
                          EXPECTED_FILE_C)
+
+    @patchfs
+    def test_single_include_quotes(self, fs):
+        fs.create_file('file_a', contents=FILE_A)
+        self.assertEqual(
+            wrap_shader.ProcessMacros('file_c', FILE_C_QUOTES, []),
+            EXPECTED_FILE_C)
+
+    @patchfs
+    def test_single_include_qualified_path(self, fs):
+        fs.create_file('foobar/baz/file_a', contents=FILE_A)
+        self.assertEqual(
+            wrap_shader.ProcessMacros('file_c', FILE_C_QUALIFIED_PATH, []),
+            EXPECTED_FILE_C)
 
     @patchfs
     def test_nested_include(self, fs):
