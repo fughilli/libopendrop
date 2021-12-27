@@ -11,6 +11,7 @@ PRESET_DEPS_LIST = [
     "//libopendrop/preset/template_preset",
     "//libopendrop/preset/shape_bounce",
     "//libopendrop/preset/eye_roll",
+    "//libopendrop/preset/cube_wreath",
 ]
 
 cc_library(
