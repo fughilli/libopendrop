@@ -131,8 +131,8 @@ void GlRenderTarget::UpdateGeometry(int width, int height) {
   }
 
   glBindTexture(GL_TEXTURE_2D, texture_handle_);
-  LOG(DEBUG) << "Bound RGB texture: " << texture_handle_;
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width_, height_, 0, GL_RGB,
+  LOG(DEBUG) << "Bound RGBA texture: " << texture_handle_;
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width_, height_, 0, GL_RGBA,
                GL_UNSIGNED_BYTE, 0);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
