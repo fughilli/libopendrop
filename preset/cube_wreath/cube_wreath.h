@@ -57,6 +57,7 @@ class CubeWreath : public Preset {
   Rectangle rectangle_;
   Polyline polyline_;
   Model cube_;
+  Model cube_outline_;
 };
 
 }  // namespace opendrop

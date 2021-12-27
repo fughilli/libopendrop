@@ -12,6 +12,7 @@
 
 #include "libopendrop/preset/cube_wreath/composite.fsh.h"
 #include "libopendrop/preset/cube_wreath/cube.obj.h"
+#include "libopendrop/preset/cube_wreath/cube_outline.obj.h"
 #include "libopendrop/preset/cube_wreath/model.fsh.h"
 #include "libopendrop/preset/cube_wreath/passthrough_frag.fsh.h"
 #include "libopendrop/preset/cube_wreath/passthrough_vert.vsh.h"
@@ -46,7 +47,9 @@ CubeWreath::CubeWreath(std::shared_ptr<gl::GlProgram> warp_program,
       back_render_target_(back_render_target),
       depth_output_target_(depth_output_target),
       cube_(cube_obj::Vertices(), cube_obj::Normals(), cube_obj::Uvs(),
-            cube_obj::Triangles()) {}
+            cube_obj::Triangles()),
+      cube_outline_(cube_outline_obj::Vertices(), cube_outline_obj::Normals(),
+                    cube_outline_obj::Uvs(), cube_outline_obj::Triangles()) {}
 
 absl::StatusOr<std::shared_ptr<Preset>> CubeWreath::MakeShared(
     std::shared_ptr<gl::GlTextureManager> texture_manager) {
@@ -118,7 +121,11 @@ void CubeWreath::DrawCubes(float power, float energy) {
         glm::rotate(glm::mat4(1.0f), energy * 7, glm::vec3(0.0f, 1.0f, 0.0f)) *
         glm::rotate(glm::mat4(1.0f), energy * 15, glm::vec3(1.0f, 0.0f, 0.0f));
     GlBindUniform(model_program_, "model_transform", model_transform);
+    GlBindUniform(model_program_, "black", false);
     cube_.Draw();
+
+    GlBindUniform(model_program_, "black", true);
+    cube_outline_.Draw();
   }
 }
 
@@ -148,7 +155,7 @@ void CubeWreath::OnDrawFrame(
   {
     auto model_texture_activation = model_texture_target_->Activate();
 
-    passthrough_program_->Use();
+    auto program_activation = passthrough_program_->Activate();
     GlBindUniform(passthrough_program_, "model_transform", glm::mat4(1.0f));
     glViewport(0, 0, width(), height());
 
@@ -164,12 +171,11 @@ void CubeWreath::OnDrawFrame(
 
   {
     auto depth_output_activation = depth_output_target_->Activate();
-    model_program_->Use();
+    auto program_activation = model_program_->Activate();
 
     GlBindUniform(model_program_, "render_target_size",
                   glm::ivec2(width(), height()));
     GlBindUniform(model_program_, "alpha", alpha);
-    GlBindUniform(model_program_, "model_transform", glm::mat4(1.0f));
     GlBindRenderTargetTextureToUniform(model_program_, "render_target",
                                        model_texture_target_,
                                        gl::GlTextureBindingOptions());
@@ -186,21 +192,19 @@ void CubeWreath::OnDrawFrame(
   {
     auto front_activation = front_render_target_->Activate();
 
-    warp_program_->Use();
+    auto program_activation = warp_program_->Activate();
 
     GlBindUniform(warp_program_, "frame_size", glm::ivec2(width(), height()));
     GlBindUniform(warp_program_, "power", power);
     GlBindUniform(warp_program_, "energy", energy);
     GlBindUniform(warp_program_, "model_transform", glm::mat4(1.0f));
     auto binding_options = gl::GlTextureBindingOptions();
-    binding_options.border_color = glm::vec4(1,1,0,1);
+    binding_options.border_color = glm::vec4(1, 1, 0, 1);
     binding_options.sampling_mode = gl::GlTextureSamplingMode::kClampToBorder;
     GlBindRenderTargetTextureToUniform(warp_program_, "last_frame",
-                                       back_render_target_,
-                                       binding_options);
+                                       back_render_target_, binding_options);
     GlBindRenderTargetTextureToUniform(warp_program_, "input",
-                                       depth_output_target_,
-                                       binding_options);
+                                       depth_output_target_, binding_options);
 
     glViewport(0, 0, width(), height());
     rectangle_.Draw();
@@ -208,7 +212,7 @@ void CubeWreath::OnDrawFrame(
 
   {
     auto output_activation = output_render_target->Activate();
-    composite_program_->Use();
+    auto program_activation = composite_program_->Activate();
 
     GlBindUniform(composite_program_, "render_target_size",
                   glm::ivec2(width(), height()));

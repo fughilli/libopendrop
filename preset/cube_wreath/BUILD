@@ -10,6 +10,7 @@ cc_library(
     deps = [
         ":composite",
         ":cube",
+        ":cube_outline",
         ":model",
         ":monkey",
         ":passthrough_frag",
@@ -52,6 +53,11 @@ shader_cc_library(
 shader_cc_library(
     name = "warp",
     srcs = ["warp.fsh"],
+)
+
+model_cc_library(
+    name = "cube_outline",
+    srcs = ["cube_outline.obj"],
 )
 
 model_cc_library(

@@ -79,6 +79,18 @@ bool GlProgram::Link(std::string* error_text) const {
 
 void GlProgram::Use() const { glUseProgram(program_handle_); }
 
+GlProgramActivation::GlProgramActivation(
+    std::shared_ptr<const GlProgram> program) {
+  glGetIntegerv(GL_CURRENT_PROGRAM, &old_program_);
+  glUseProgram(program->program_handle());
+}
+
+GlProgramActivation::~GlProgramActivation() { glUseProgram(old_program_); }
+
+std::shared_ptr<GlProgramActivation> GlProgram::Activate() const {
+  return std::make_shared<GlProgramActivation>(shared_from_this());
+}
+
 absl::StatusOr<std::shared_ptr<gl::GlProgram>> GlProgram::MakeShared(
     std::string vertex_code, std::string fragment_code) {
   LOG(DEBUG) << "[Compiling program]\nVERTEX SHADER CODE:\n"

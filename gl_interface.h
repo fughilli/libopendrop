@@ -26,7 +26,23 @@ class GlShader {
   unsigned int shader_handle_;
 };
 
-class GlProgram {
+class GlProgram;
+
+// Represents an active shader program. Constructing such an object caches the
+// current program index and invokes glUseProgram() with the program index to
+// which the activation corresponds. The old program index is restored on
+// destruction.
+class GlProgramActivation {
+ public:
+  GlProgramActivation(std::shared_ptr<const GlProgram> program);
+  virtual ~GlProgramActivation();
+
+ private:
+  int old_program_;
+  std::shared_ptr<const GlProgram> program_;
+};
+
+class GlProgram : public std::enable_shared_from_this<GlProgram> {
  public:
   GlProgram();
   ~GlProgram();
@@ -40,6 +56,8 @@ class GlProgram {
 
   static absl::StatusOr<std::shared_ptr<GlProgram>> MakeShared(
       std::string vertex_code, std::string fragment_code);
+
+  std::shared_ptr<GlProgramActivation> Activate() const;
 
  private:
   unsigned int program_handle_;

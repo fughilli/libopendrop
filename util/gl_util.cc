@@ -86,6 +86,7 @@ void GlBindRenderTargetTextureToUniform(
 
 DEFINE_BIND_UNIFORM(float, glUniform1f, value);
 DEFINE_BIND_UNIFORM(int, glUniform1i, value);
+DEFINE_BIND_UNIFORM(bool, glUniform1i, value);
 DEFINE_BIND_UNIFORM_V(glm::vec2, glUniform2fv, &value.x);
 DEFINE_BIND_UNIFORM_V(glm::vec4, glUniform4fv, &value.x);
 DEFINE_BIND_UNIFORM_V(glm::ivec2, glUniform2iv, &value.x);
