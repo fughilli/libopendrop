@@ -23,13 +23,19 @@ HEADER_TEMPLATE = ("""#ifndef {guard_symbol}
 namespace {namespace} {{
 
 constexpr int __kVertexCount_{hash_string} = {vertex_count};
+constexpr int __kNormalCount_{hash_string} = {normal_count};
 constexpr int __kTriangleCount_{hash_string} = {triangle_count};
 extern const std::array<glm::vec3, __kVertexCount_{hash_string}> __kVertices_{hash_string};
+extern const std::array<glm::vec3, __kNormalCount_{hash_string}> __kNormals_{hash_string};
 extern const std::array<glm::vec2, __kVertexCount_{hash_string}> __kUvs_{hash_string};
 extern const std::array<glm::uvec3, __kTriangleCount_{hash_string}> __kTriangles_{hash_string};
 
 static inline const std::array<glm::vec3, __kVertexCount_{hash_string}>& Vertices() {{
   return __kVertices_{hash_string};
+}}
+
+static inline const std::array<glm::vec3, __kNormalCount_{hash_string}>& Normals() {{
+  return __kNormals_{hash_string};
 }}
 
 static inline const std::array<glm::vec2, __kVertexCount_{hash_string}>& Uvs() {{
@@ -51,6 +57,8 @@ namespace {namespace} {{
 
 const std::array<glm::vec3, __kVertexCount_{hash_string}> __kVertices_{hash_string} =
 {vertices_initializer};
+const std::array<glm::vec3, __kNormalCount_{hash_string}> __kNormals_{hash_string} =
+{normals_initializer};
 const std::array<glm::vec2, __kVertexCount_{hash_string}> __kUvs_{hash_string} =
 {uvs_initializer};
 const std::array<glm::uvec3, __kTriangleCount_{hash_string}> __kTriangles_{hash_string} =
@@ -60,6 +68,7 @@ const std::array<glm::uvec3, __kTriangleCount_{hash_string}> __kTriangles_{hash_
 """)
 
 Vertex = Tuple[float]
+Normal = Tuple[float]
 Uv = Tuple[float]
 
 # A FaceIndex is a pair of vertex and uv indices. The indices point to a pair of
@@ -73,8 +82,9 @@ Face = List[FaceIndex]
 # and UV data for a model.
 CollapsedFace = List[int]
 
-ModelData = Tuple[List[Vertex], List[Uv], List[Face]]
-CollapsedModelData = Tuple[List[Vertex], List[Uv], List[CollapsedFace]]
+ModelData = Tuple[List[Vertex], List[Normal], List[Uv], List[Face]]
+CollapsedModelData = Tuple[List[Vertex], List[Normal], List[Uv],
+                           List[CollapsedFace]]
 
 
 def MakeHashString(object_filename: Text, object_text: Text):
@@ -101,20 +111,24 @@ def GetSourceFilename(outputs: Text) -> Text:
 
 
 def GenerateHeader(guard_symbol: Text, namespace: Text, vertex_count: int,
-                   triangle_count: int, hash_string: Text) -> Text:
+                   normal_count: int, triangle_count: int,
+                   hash_string: Text) -> Text:
     return HEADER_TEMPLATE.format(guard_symbol=guard_symbol,
                                   namespace=namespace,
                                   vertex_count=str(vertex_count),
+                                  normal_count=str(normal_count),
                                   triangle_count=str(triangle_count),
                                   hash_string=hash_string)
 
 
 def GenerateSource(header_filename: Text, namespace: Text,
-                   vertices_initializer: Text, uvs_initializer: Text,
-                   triangles_initializer: Text, hash_string: Text) -> Text:
+                   vertices_initializer: Text, normals_initializer: Text,
+                   uvs_initializer: Text, triangles_initializer: Text,
+                   hash_string: Text) -> Text:
     return SOURCE_TEMPLATE.format(header_filename=header_filename,
                                   namespace=namespace,
                                   vertices_initializer=vertices_initializer,
+                                  normals_initializer=normals_initializer,
                                   uvs_initializer=uvs_initializer,
                                   triangles_initializer=triangles_initializer,
                                   hash_string=hash_string)
@@ -177,10 +191,29 @@ def ParseObjectVertexText(object_text: Text) -> List[Vertex]:
     return return_vertex_list
 
 
+def ParseObjectNormalText(object_text: Text) -> List[Normal]:
+    NORMAL_RE = re.compile(r"^vn\s+{}\s+{}\s+{}$".format(
+        MakeCapturingFloatRegex('x', True), MakeCapturingFloatRegex('y', True),
+        MakeCapturingFloatRegex('z', True)))
+
+    return_normal_list = []
+
+    for line in object_text.split(os.linesep):
+        match = NORMAL_RE.match(line)
+        if match is None:
+            continue
+
+        normal_components = tuple(
+            float(match.groupdict()[component]) for component in 'xyz')
+        return_normal_list.append(normal_components)
+
+    return return_normal_list
+
+
 def ParseObjectUvText(object_text: Text) -> List[Uv]:
     VERTEX_RE = re.compile(r"^vt\s+{}\s+{}$".format(
-        MakeCapturingFloatRegex('u', True),
-        MakeCapturingFloatRegex('v', True)))
+        MakeCapturingFloatRegex('u', True), MakeCapturingFloatRegex('v',
+                                                                    True)))
 
     return_vertex_list = []
 
@@ -218,7 +251,7 @@ def ParseObjectFaceText(object_text: Text) -> List[Face]:
             match = INDEX_RE.match(vertex_indices_string)
 
             vertex_indices = tuple(
-                int(match.groupdict()[component]) for component in 'vt')
+                int(match.groupdict()[component]) for component in 'vnt')
             face_indices.append(vertex_indices)
 
         face_list.append(face_indices)
@@ -227,11 +260,14 @@ def ParseObjectFaceText(object_text: Text) -> List[Face]:
 
 
 def ParseObjectText(object_text: Text) -> ModelData:
-    return (ParseObjectVertexText(object_text), ParseObjectUvText(object_text),
-            ParseObjectFaceText(object_text))
+    result = (ParseObjectVertexText(object_text),
+              ParseObjectNormalText(object_text),
+              ParseObjectUvText(object_text), ParseObjectFaceText(object_text))
+    return result
 
 
-def CollapseIndices(vertex_list: List[Vertex], uv_list: List[Uv],
+def CollapseIndices(vertex_list: List[Vertex], normal_list: List[Normal],
+                    uv_list: List[Uv],
                     face_list: List[Face]) -> CollapsedModelData:
     collapsed_mapping = {}
 
@@ -242,11 +278,15 @@ def CollapseIndices(vertex_list: List[Vertex], uv_list: List[Uv],
             collapsed_mapping[indices] = len(collapsed_mapping) + 1
 
     collapsed_vertex_list = [None] * len(collapsed_mapping)
+    collapsed_normal_list = [None] * len(collapsed_mapping)
     collapsed_uv_list = [None] * len(collapsed_mapping)
 
-    for (vertex_index, uv_index), collapsed_index in collapsed_mapping.items():
+    for (vertex_index, normal_index,
+         uv_index), collapsed_index in collapsed_mapping.items():
         vertex = vertex_list[vertex_index - 1]
         collapsed_vertex_list[collapsed_index - 1] = vertex
+        normal = normal_list[normal_index - 1]
+        collapsed_normal_list[collapsed_index - 1] = normal
         uv = uv_list[uv_index - 1]
         collapsed_uv_list[collapsed_index - 1] = uv
 
@@ -257,17 +297,19 @@ def CollapseIndices(vertex_list: List[Vertex], uv_list: List[Uv],
             collapsed_face.append(collapsed_mapping[indices])
         collapsed_face_list.append(collapsed_face)
 
-    return (collapsed_vertex_list, collapsed_uv_list, collapsed_face_list)
+    return (collapsed_vertex_list, collapsed_normal_list, collapsed_uv_list,
+            collapsed_face_list)
 
 
 def LoadCollapsedModel(object_text: Text) -> CollapsedModelData:
-    vertex_list, uv_list, face_list = ParseObjectText(object_text)
+    vertex_list, normal_list, uv_list, face_list = ParseObjectText(object_text)
 
     triangulated_face_list = []
     for face in face_list:
         triangulated_face_list.extend(TriangulatePolygon(face))
 
-    return CollapseIndices(vertex_list, uv_list, triangulated_face_list)
+    return CollapseIndices(vertex_list, normal_list, uv_list,
+                           triangulated_face_list)
 
 
 def MakeIndicesZeroIndexed(
@@ -300,8 +342,8 @@ def main(argv):
     hash_string = MakeHashString(object_filename, object_text)
     outputs = FLAGS.outputs
 
-    collapsed_vertices, collapsed_uvs, collapsed_faces = LoadCollapsedModel(
-        object_text)
+    (collapsed_vertices, collapsed_normals, collapsed_uvs,
+     collapsed_faces) = (LoadCollapsedModel(object_text))
 
     # Make the indices zero-indexed for loading into the GPU.
     collapsed_faces = MakeIndicesZeroIndexed(collapsed_faces)
@@ -309,9 +351,12 @@ def main(argv):
     # Hack to make the inner initializers single-braced.
     collapsed_faces = [tuple(x) for x in collapsed_faces]
 
-    vertices_initializer, uvs_initializer, triangles_initializer = (
-        FormatInitializer(model_list)
-        for model_list in (collapsed_vertices, collapsed_uvs, collapsed_faces))
+    (vertices_initializer, normals_initializer, uvs_initializer,
+     triangles_initializer) = (FormatInitializer(model_list)
+                               for model_list in (collapsed_vertices,
+                                                  collapsed_normals,
+                                                  collapsed_uvs,
+                                                  collapsed_faces))
 
     header_filename = GetHeaderFilename(outputs)
     with open(header_filename, 'w') as header_file:
@@ -319,6 +364,7 @@ def main(argv):
             GenerateHeader(guard_symbol=guard_symbol,
                            namespace=namespace,
                            vertex_count=len(collapsed_vertices),
+                           normal_count=len(collapsed_normals),
                            triangle_count=len(collapsed_faces),
                            hash_string=hash_string))
 
@@ -328,6 +374,7 @@ def main(argv):
             GenerateSource(header_filename=header_filename,
                            namespace=namespace,
                            vertices_initializer=vertices_initializer,
+                           normals_initializer=normals_initializer,
                            uvs_initializer=uvs_initializer,
                            triangles_initializer=triangles_initializer,
                            hash_string=hash_string))
