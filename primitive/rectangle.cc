@@ -26,7 +26,7 @@ void Rectangle::Draw() {
   glEnableClientState(GL_VERTEX_ARRAY);
   // TODO: Parameterize the color.
   glDisable(GL_DEPTH_TEST);
-  glColor4f(0., 0., 0., 1.);
+  glColor4f(color_.r, color_.g, color_.b, color_.a);
   glVertexPointer(3, GL_FLOAT, 0, kFullscreenVertices);
   glDrawElements(GL_QUADS, 4, GL_UNSIGNED_BYTE, kFullscreenIndices);
   glDisableClientState(GL_VERTEX_ARRAY);
