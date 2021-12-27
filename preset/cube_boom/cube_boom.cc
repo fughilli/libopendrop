@@ -42,7 +42,8 @@ CubeBoom::CubeBoom(std::shared_ptr<gl::GlProgram> warp_program,
       front_render_target_(front_render_target),
       back_render_target_(back_render_target),
       depth_output_target_(depth_output_target),
-      cube_(cube_obj::Vertices(), cube_obj::Uvs(), cube_obj::Triangles()),
+      cube_(cube_obj::Vertices(), cube_obj::Normals(), cube_obj::Uvs(),
+            cube_obj::Triangles()),
       monkey_(monkey_obj::Vertices(), monkey_obj::Uvs(),
               monkey_obj::Triangles()),
       shrek_(shrek_obj::Vertices(), shrek_obj::Uvs(), shrek_obj::Triangles()) {}
@@ -157,6 +158,7 @@ void CubeBoom::OnDrawFrame(
     GlBindUniform(model_program_, "model_transform", model_transform);
 
     glViewport(0, 0, width(), height());
+    glClearColor(0, 0, 0, 0);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glDepthRange(0, 10);
     glEnable(GL_DEPTH_TEST);
