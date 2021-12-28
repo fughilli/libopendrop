@@ -84,16 +84,19 @@ absl::StatusOr<std::shared_ptr<Preset>> CubeWreath::MakeShared(
 void CubeWreath::OnUpdateGeometry() {
   glViewport(0, 0, width(), height());
   if (model_texture_target_ != nullptr) {
-    model_texture_target_->UpdateGeometry(width(), height());
+    model_texture_target_->UpdateGeometry(longer_dimension(),
+                                          longer_dimension());
   }
   if (front_render_target_ != nullptr) {
-    front_render_target_->UpdateGeometry(width(), height());
+    front_render_target_->UpdateGeometry(longer_dimension(),
+                                         longer_dimension());
   }
   if (back_render_target_ != nullptr) {
-    back_render_target_->UpdateGeometry(width(), height());
+    back_render_target_->UpdateGeometry(longer_dimension(), longer_dimension());
   }
   if (depth_output_target_ != nullptr) {
-    depth_output_target_->UpdateGeometry(width(), height());
+    depth_output_target_->UpdateGeometry(longer_dimension(),
+                                         longer_dimension());
   }
 }
 
@@ -157,7 +160,7 @@ void CubeWreath::OnDrawFrame(
 
     auto program_activation = passthrough_program_->Activate();
     GlBindUniform(passthrough_program_, "model_transform", glm::mat4(1.0f));
-    glViewport(0, 0, width(), height());
+    glViewport(0, 0, longer_dimension(), longer_dimension());
 
     // Force all fragments to draw with a full-screen rectangle.
     rectangle_.Draw();
@@ -180,7 +183,7 @@ void CubeWreath::OnDrawFrame(
                                        model_texture_target_,
                                        gl::GlTextureBindingOptions());
 
-    glViewport(0, 0, width(), height());
+    glViewport(0, 0, longer_dimension(), longer_dimension());
     glClearColor(0, 0, 0, 0);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glDepthRange(0, 10);
@@ -206,7 +209,7 @@ void CubeWreath::OnDrawFrame(
     GlBindRenderTargetTextureToUniform(warp_program_, "input",
                                        depth_output_target_, binding_options);
 
-    glViewport(0, 0, width(), height());
+    glViewport(0, 0, longer_dimension(), longer_dimension());
     rectangle_.Draw();
   }
 
@@ -221,7 +224,7 @@ void CubeWreath::OnDrawFrame(
                                        front_render_target_,
                                        gl::GlTextureBindingOptions());
 
-    glViewport(0, 0, width(), height());
+    SquareViewport();
     rectangle_.Draw();
 
     back_render_target_->swap_texture_unit(front_render_target_.get());

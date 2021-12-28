@@ -36,6 +36,10 @@ class Preset {
   // render at these dimensions.
   void UpdateGeometry(int width, int height);
 
+  // Configures glViewport() for sampling a square raster and outputting it to a
+  // rectangular raster.
+  void SquareViewport() const;
+
   virtual std::string name() const = 0;
 
   virtual int max_count() const { return kDefaultMaxPresetCount; }
@@ -44,11 +48,15 @@ class Preset {
  protected:
   // Constructs a preset which renders to a raster of the given dimensions.
   Preset(std::shared_ptr<gl::GlTextureManager> texture_manager)
-      : texture_manager_(texture_manager), width_(0), height_(0) {}
+      : texture_manager_(texture_manager),
+        width_(0),
+        height_(0),
+        longer_dimension_(0) {}
 
   // Getters for dimensions.
   int width() const { return width_; }
   int height() const { return height_; }
+  int longer_dimension() const { return longer_dimension_; }
   float aspect_ratio() const { return static_cast<float>(height_) / width_; }
 
   // Callbacks for subclass implementations.
@@ -72,6 +80,7 @@ class Preset {
   std::mutex state_mu_;
   // Preset render dimensions.
   int width_, height_;
+  int longer_dimension_;
 };
 
 }  // namespace opendrop
