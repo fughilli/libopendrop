@@ -123,8 +123,13 @@ void CubeWreath::DrawCubes(float power, float energy) {
         glm::rotate(glm::mat4(1.0f), energy * 10, glm::vec3(0.0f, 0.0f, 1.0f)) *
         glm::rotate(glm::mat4(1.0f), energy * 7, glm::vec3(0.0f, 1.0f, 0.0f)) *
         glm::rotate(glm::mat4(1.0f), energy * 15, glm::vec3(1.0f, 0.0f, 0.0f));
+    GlBindUniform(model_program_, "energy", energy);
     GlBindUniform(model_program_, "model_transform", model_transform);
     GlBindUniform(model_program_, "black", false);
+    GlBindUniform(model_program_, "light_color_a",
+                  glm::vec4(HsvToRgb(glm::vec3(energy, 1, 1)), 1));
+    GlBindUniform(model_program_, "light_color_b",
+                  glm::vec4(HsvToRgb(glm::vec3(energy + 0.5, 1, 1)), 1));
     cube_.Draw();
 
     GlBindUniform(model_program_, "black", true);
