@@ -65,8 +65,6 @@ absl::StatusOr<std::shared_ptr<Preset>> CubeWreath::MakeShared(
   ASSIGN_OR_RETURN(auto passthrough_program,
                    gl::GlProgram::MakeShared(passthrough_vert_vsh::Code(),
                                              passthrough_frag_fsh::Code()));
-  ASSIGN_OR_RETURN(auto model_texture_target,
-                   gl::GlRenderTarget::MakeShared(0, 0, texture_manager));
   ASSIGN_OR_RETURN(auto front_render_target,
                    gl::GlRenderTarget::MakeShared(0, 0, texture_manager));
   ASSIGN_OR_RETURN(auto back_render_target,
@@ -75,10 +73,10 @@ absl::StatusOr<std::shared_ptr<Preset>> CubeWreath::MakeShared(
                    gl::GlRenderTarget::MakeShared(0, 0, texture_manager,
                                                   {.enable_depth = true}));
 
-  return std::shared_ptr<CubeWreath>(new CubeWreath(
-      warp_program, composite_program, model_program, passthrough_program,
-      model_texture_target, front_render_target, back_render_target,
-      depth_output_target, texture_manager));
+  return std::shared_ptr<CubeWreath>(
+      new CubeWreath(warp_program, composite_program, model_program,
+                     passthrough_program, nullptr, front_render_target,
+                     back_render_target, depth_output_target, texture_manager));
 }
 
 void CubeWreath::OnUpdateGeometry() {
@@ -161,23 +159,6 @@ void CubeWreath::OnDrawFrame(
   }
 
   {
-    auto model_texture_activation = model_texture_target_->Activate();
-
-    auto program_activation = passthrough_program_->Activate();
-    GlBindUniform(passthrough_program_, "model_transform", glm::mat4(1.0f));
-    glViewport(0, 0, longer_dimension(), longer_dimension());
-
-    // Force all fragments to draw with a full-screen rectangle.
-    rectangle_.Draw();
-
-    // Draw the waveform.
-    polyline_.UpdateVertices(vertices_);
-    polyline_.UpdateWidth(2 + power * 10);
-    polyline_.UpdateColor(HsvToRgb(glm::vec3(energy, 1, 1)));
-    polyline_.Draw();
-  }
-
-  {
     auto depth_output_activation = depth_output_target_->Activate();
     auto program_activation = model_program_->Activate();
 
@@ -185,7 +166,7 @@ void CubeWreath::OnDrawFrame(
                   glm::ivec2(width(), height()));
     GlBindUniform(model_program_, "alpha", alpha);
     GlBindRenderTargetTextureToUniform(model_program_, "render_target",
-                                       model_texture_target_,
+                                       back_render_target_,
                                        gl::GlTextureBindingOptions());
 
     glViewport(0, 0, longer_dimension(), longer_dimension());
