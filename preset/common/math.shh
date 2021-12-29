@@ -43,4 +43,27 @@ float sin_product_range(float coeff_a, float coeff_b, float min, float max,
   return sin_product(coeff_a, coeff_b, arg) * (max - min) + min;
 }
 
+// Computes the value of a 50% duty rectangular function with period `period`.
+//
+// The function has the following waveshape:
+//
+//        x+ -->
+//
+// val=1  |     ____
+//        |    |    |
+//        |----|----|----
+//        |____|    |____
+// val=-1 |
+//
+//        ^    ^    ^
+//        |    |    |
+//       x=0   |    |
+//             |    |
+// x=period/2 -+    +- x=period
+//
+float rect(float x, float period) {
+  float interp = mod(x, period);
+  return (interp > period / 2.0) ? 1.0 : -1.0;
+}
+
 #endif  // PRESET_COMMON_MATH_SHH_

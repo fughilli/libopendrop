@@ -22,7 +22,8 @@ class Kaleidoscope : public Preset {
   std::string name() const override { return "Kaleidoscope"; }
 
  protected:
-  Kaleidoscope(std::shared_ptr<gl::GlProgram> warp_program,
+  Kaleidoscope(std::shared_ptr<gl::GlProgram> waveform_program,
+               std::shared_ptr<gl::GlProgram> warp_program,
                std::shared_ptr<gl::GlProgram> composite_program,
                std::shared_ptr<gl::GlRenderTarget> front_render_target,
                std::shared_ptr<gl::GlRenderTarget> back_render_target,
@@ -35,6 +36,7 @@ class Kaleidoscope : public Preset {
   void OnUpdateGeometry() override;
 
  private:
+  std::shared_ptr<gl::GlProgram> waveform_program_;
   std::shared_ptr<gl::GlProgram> warp_program_;
   std::shared_ptr<gl::GlProgram> composite_program_;
   std::shared_ptr<gl::GlRenderTarget> front_render_target_;

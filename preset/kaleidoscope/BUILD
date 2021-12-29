@@ -11,6 +11,7 @@ cc_library(
         ":composite",
         ":passthrough",
         ":warp",
+        ":waveform",
         "//libopendrop:gl_interface",
         "//libopendrop:gl_render_target",
         "//libopendrop/preset",
@@ -28,6 +29,7 @@ cc_library(
 shader_cc_library(
     name = "composite",
     srcs = ["composite.fsh"],
+    deps = ["//libopendrop/preset/common:math"],
 )
 
 shader_cc_library(
@@ -36,6 +38,12 @@ shader_cc_library(
 )
 
 shader_cc_library(
+    name = "waveform",
+    srcs = ["waveform.fsh"],
+)
+
+shader_cc_library(
     name = "warp",
     srcs = ["warp.fsh"],
+    deps = ["//libopendrop/preset/common:math"],
 )

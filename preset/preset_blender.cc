@@ -117,7 +117,7 @@ void PresetBlender::DrawFrame(
     glClearBufferuiv(GL_COLOR, 0, black_color);
 
     glBlendEquation(GL_FUNC_ADD);
-    glBlendFunc(GL_SRC_ALPHA, GL_DST_ALPHA);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     glEnable(GL_BLEND);
 
     for (auto activation : preset_activations_) {

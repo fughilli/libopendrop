@@ -1,8 +1,8 @@
 #version 120
 
-varying vec2 screen_uv;
+#include "libopendrop/preset/common/math.shh"
 
-const float PI = 3.1415926;
+varying vec2 screen_uv;
 
 uniform sampler2D last_frame;
 uniform ivec2 last_frame_size;
@@ -17,23 +17,6 @@ const float kEnergyMultiplier = 100;
 const int kMaxDivisions = 6;
 const int kMinDivisions = 1;
 
-vec2 rotate(vec2 screen_uv, float angle) {
-  float c = cos(angle);
-  float s = sin(angle);
-
-  return vec2(c * screen_uv.x - s * screen_uv.y,
-              s * screen_uv.x + c * screen_uv.y);
-}
-
-float rect(float x, float period) {
-  float interp = mod(x, period);
-  return (interp > period / 2.0) ? 1.0 : -1.0;
-}
-
-vec2 screen_to_tex(vec2 screen_uv) { return (screen_uv + vec2(1., 1.)) * 0.5; }
-
-vec2 zoom(vec2 screen_uv, float zoom) { return screen_uv * zoom; }
-
 void main() {
   int num_divisions =
       int((sin(energy * 3) + 1.) / 2. * (kMaxDivisions - kMinDivisions)) +
@@ -41,18 +24,18 @@ void main() {
   float energy_scaled = energy * kEnergyMultiplier;
 
   vec2 offset = 1. / last_frame_size;
-  float mod_a = sin(energy_scaled * 0.313 * PI) +
+  float mod_a = sin(energy_scaled * 0.313 * kPi) +
                 sin(10 * energy_scaled / 9.225) * power / 10;
-  float mod_b = sin(energy_scaled * 0.0782 * PI) +
+  float mod_b = sin(energy_scaled * 0.0782 * kPi) +
                 sin(10 * energy_scaled / 7.932) * power / 10;
 
   float angle =
       atan(screen_uv.y, screen_uv.x) +
       sin(energy_scaled * 3.12 / 10) * sin(energy_scaled * 7.521 / 10) * 0.3;
 
-  float mod_angle = mod(angle, PI / num_divisions);
-  if (mod_angle > PI / (num_divisions * 2)) {
-    mod_angle = (PI / num_divisions) - mod_angle;
+  float mod_angle = mod(angle, kPi / num_divisions);
+  if (mod_angle > kPi / (num_divisions * 2)) {
+    mod_angle = (kPi / num_divisions) - mod_angle;
   }
 
   vec2 sampling_screen_uv =
@@ -85,15 +68,14 @@ void main() {
 
   texture_uv = screen_to_tex(texture_uv);
 
-  float blur_distance = max(0.0, 1 - power * 1);
+  float blur_distance = max(0.0, power * 1);
 
-  vec4 out_color =
-      gl_Color * 0.5 +
+  vec4 sampled_color =
       (texture2D(last_frame, texture_uv + vec2(offset.x, 0.) * blur_distance) +
        texture2D(last_frame, texture_uv - vec2(offset.x, 0.) * blur_distance) +
        texture2D(last_frame, texture_uv + vec2(0., offset.y) * blur_distance) +
        texture2D(last_frame, texture_uv - vec2(0., offset.y) * blur_distance)) *
-          (1.0 / kNumSamples);
+      (1.0 / kNumSamples);
 
   // Modulate the summation weights such that they oscillate
   // back and forth across the +1 boundary. This causes the
@@ -109,5 +91,5 @@ void main() {
            0.021 +
        0.98);
 
-  gl_FragColor = out_color * brighten_darken_weight;
+  gl_FragColor = sampled_color;
 }
