@@ -28,8 +28,9 @@ git_repository(
 
 git_repository(
     name = "com_googletest",
-    branch = "main",
+    commit = "6b74da4757a549563d7c37c8fae3e704662a043b",
     remote = "https://github.com/google/googletest",
+    shallow_since = "1640621124 -0800",
 )
 
 http_archive(
