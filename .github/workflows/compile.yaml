@@ -4,6 +4,9 @@ jobs:
   compile:
     runs-on: ubuntu-latest
     steps:
+    - name: Install C++ dependencies
+      run: |
+        sudo apt-get install -y -qq libpulse-dev libgl-dev libglm-dev libsdl2-dev libncurses5-dev libncurses5
     - name: Checkout
       uses: actions/checkout@v2
       with:
