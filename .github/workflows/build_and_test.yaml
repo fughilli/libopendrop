@@ -1,7 +1,7 @@
 name: Host Build/Test (GCC)
 on: [push, pull_request]
 jobs:
-  compile:
+  build_and_test:
     runs-on: ubuntu-latest
     steps:
     - name: Install C++ dependencies
