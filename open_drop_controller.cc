@@ -1,4 +1,4 @@
-#include "libopendrop/open_drop_controller.h"
+#include "open_drop_controller.h"
 
 #define GL_GLEXT_PROTOTYPES
 #include <GL/gl.h>
@@ -9,11 +9,11 @@
 #include <cstdint>
 #include <iostream>
 
-#include "libopendrop/blit.fsh.h"
-#include "libopendrop/blit.vsh.h"
-#include "libopendrop/primitive/rectangle.h"
-#include "libopendrop/util/gl_util.h"
-#include "libopendrop/util/logging.h"
+#include "blit.fsh.h"
+#include "blit.vsh.h"
+#include "primitive/rectangle.h"
+#include "util/gl_util.h"
+#include "util/logging.h"
 
 namespace opendrop {
 

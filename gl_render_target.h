@@ -5,8 +5,8 @@
 #include <mutex>
 
 #include "absl/status/statusor.h"
-#include "libopendrop/gl_interface.h"
-#include "libopendrop/gl_texture_manager.h"
+#include "gl_interface.h"
+#include "gl_texture_manager.h"
 
 namespace gl {
 

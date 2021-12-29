@@ -3,7 +3,7 @@
 
 #include <glm/vec4.hpp>
 
-#include "libopendrop/primitive/primitive.h"
+#include "primitive/primitive.h"
 
 namespace opendrop {
 

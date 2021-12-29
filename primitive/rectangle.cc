@@ -1,4 +1,4 @@
-#include "libopendrop/primitive/rectangle.h"
+#include "primitive/rectangle.h"
 
 #define GL_GLEXT_PROTOTYPES
 #include <GL/gl.h>

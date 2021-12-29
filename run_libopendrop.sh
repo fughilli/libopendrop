@@ -138,8 +138,9 @@ if [[ $run_binary == 1 ]]; then
   $valgrind_command ../bazel-bin/libopendrop/main $options \
     ${passthrough_args[@]}
 else
-  bazelisk run //libopendrop:main $debug_options \
+  bazelisk run //:main $debug_options \
     --copt=-I/usr/include/SDL2 \
+    --copt=-std=c++17 \
     -- \
     $options ${passthrough_args[@]}
 fi

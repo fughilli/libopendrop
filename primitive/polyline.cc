@@ -1,4 +1,4 @@
-#include "libopendrop/primitive/polyline.h"
+#include "primitive/polyline.h"
 
 #include <array>
 #include <vector>

@@ -3,13 +3,13 @@
 
 #include <memory>
 
-#include "libopendrop/gl_interface.h"
-#include "libopendrop/gl_render_target.h"
-#include "libopendrop/global_state.h"
-#include "libopendrop/normalizer.h"
-#include "libopendrop/open_drop_controller_interface.h"
-#include "libopendrop/preset/preset.h"
-#include "libopendrop/preset/preset_blender.h"
+#include "gl_interface.h"
+#include "gl_render_target.h"
+#include "global_state.h"
+#include "normalizer.h"
+#include "open_drop_controller_interface.h"
+#include "preset/preset.h"
+#include "preset/preset_blender.h"
 
 namespace opendrop {
 

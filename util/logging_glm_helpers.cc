@@ -1,4 +1,4 @@
-#include "libopendrop/util/logging_glm_helpers.h"
+#include "util/logging_glm_helpers.h"
 
 std::ostream& operator<<(std::ostream& os, const glm::vec2& vec) {
   os << "<" << vec.x << ", " << vec.y << ">";

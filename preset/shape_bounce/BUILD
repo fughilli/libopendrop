@@ -1,6 +1,6 @@
-load("//libopendrop/preset:preset_defs.bzl", "shader_cc_library")
+load("//preset:preset_defs.bzl", "shader_cc_library")
 
-package(default_visibility = ["//libopendrop:__subpackages__"])
+package(default_visibility = ["//:__subpackages__"])
 
 cc_library(
     name = "shape_bounce",
@@ -12,19 +12,19 @@ cc_library(
         ":ngon",
         ":passthrough",
         ":warp",
-        "//libopendrop:gl_interface",
-        "//libopendrop:gl_render_target",
-        "//libopendrop/preset",
-        "//libopendrop/primitive:ngon",
-        "//libopendrop/primitive:polyline",
-        "//libopendrop/primitive:rectangle",
-        "//libopendrop/util:coefficients",
-        "//libopendrop/util:colors",
-        "//libopendrop/util:math",
-        "//libopendrop/util:filter",
-        "//libopendrop/util:gl_util",
-        "//libopendrop/util:logging",
-        "//libopendrop/util:status_macros",
+        "//:gl_interface",
+        "//:gl_render_target",
+        "//preset",
+        "//primitive:ngon",
+        "//primitive:polyline",
+        "//primitive:rectangle",
+        "//util:coefficients",
+        "//util:colors",
+        "//util:math",
+        "//util:filter",
+        "//util:gl_util",
+        "//util:logging",
+        "//util:status_macros",
     ],
 )
 

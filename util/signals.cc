@@ -1,4 +1,4 @@
-#include "libopendrop/util/signals.h"
+#include "util/signals.h"
 
 namespace opendrop {
 

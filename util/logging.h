@@ -8,8 +8,8 @@
 #include "absl/strings/str_format.h"
 #include "absl/time/clock.h"
 #include "absl/time/time.h"
-#include "libopendrop/util/logging_helpers.h"
-#include "libopendrop/util/logging_glm_helpers.h"
+#include "util/logging_helpers.h"
+#include "util/logging_glm_helpers.h"
 
 #if defined(ENABLE_DEBUG_LOGGING)
 constexpr static bool kDebugLoggingEnabled = true;

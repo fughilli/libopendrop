@@ -1,4 +1,4 @@
-#include "libopendrop/preset/shape_bounce/shape_bounce.h"
+#include "preset/shape_bounce/shape_bounce.h"
 
 #define _USE_MATH_DEFINES
 #include <cmath>
@@ -11,16 +11,16 @@
 #include <glm/gtx/transform.hpp>
 #include <glm/mat4x4.hpp>
 
-#include "libopendrop/preset/shape_bounce/composite.fsh.h"
-#include "libopendrop/preset/shape_bounce/ngon.fsh.h"
-#include "libopendrop/preset/shape_bounce/passthrough.vsh.h"
-#include "libopendrop/preset/shape_bounce/warp.fsh.h"
-#include "libopendrop/util/coefficients.h"
-#include "libopendrop/util/colors.h"
-#include "libopendrop/util/gl_util.h"
-#include "libopendrop/util/logging.h"
-#include "libopendrop/util/math.h"
-#include "libopendrop/util/status_macros.h"
+#include "preset/shape_bounce/composite.fsh.h"
+#include "preset/shape_bounce/ngon.fsh.h"
+#include "preset/shape_bounce/passthrough.vsh.h"
+#include "preset/shape_bounce/warp.fsh.h"
+#include "util/coefficients.h"
+#include "util/colors.h"
+#include "util/gl_util.h"
+#include "util/logging.h"
+#include "util/math.h"
+#include "util/status_macros.h"
 
 namespace opendrop {
 

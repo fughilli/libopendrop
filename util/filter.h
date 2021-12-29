@@ -6,7 +6,7 @@
 #include <vector>
 
 #include "absl/types/span.h"
-#include "libopendrop/util/logging.h"
+#include "util/logging.h"
 
 namespace opendrop {
 

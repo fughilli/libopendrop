@@ -5,12 +5,12 @@
 #include <vector>
 
 #include "absl/status/statusor.h"
-#include "libopendrop/gl_interface.h"
-#include "libopendrop/gl_render_target.h"
-#include "libopendrop/gl_texture_manager.h"
-#include "libopendrop/preset/preset.h"
-#include "libopendrop/primitive/polyline.h"
-#include "libopendrop/primitive/rectangle.h"
+#include "gl_interface.h"
+#include "gl_render_target.h"
+#include "gl_texture_manager.h"
+#include "preset/preset.h"
+#include "primitive/polyline.h"
+#include "primitive/rectangle.h"
 
 namespace opendrop {
 

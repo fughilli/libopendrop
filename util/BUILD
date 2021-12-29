@@ -1,4 +1,4 @@
-package(default_visibility = ["//libopendrop:__subpackages__"])
+package(default_visibility = ["//:__subpackages__"])
 
 cc_library(
     name = "logging",
@@ -49,8 +49,8 @@ cc_library(
     hdrs = ["gl_util.h"],
     linkstatic = 1,
     deps = [
-        "//libopendrop:gl_interface",
-        "//libopendrop:gl_render_target",
+        "//:gl_interface",
+        "//:gl_render_target",
     ],
 )
 
@@ -173,4 +173,24 @@ cc_library(
         ":math",
         ":oneshot",
     ],
+)
+
+cc_library(
+    name = "pulseaudio_interface",
+    srcs = ["pulseaudio_interface.cc"],
+    hdrs = ["pulseaudio_interface.h"],
+    linkopts = [
+        "-lpulse",
+    ],
+    linkstatic = 1,
+    visibility = ["//visibility:public"],
+    deps = [
+        "@com_google_absl//absl/types:span",
+    ],
+)
+
+cc_library(
+    name = "performance_timer",
+    hdrs = ["performance_timer.h"],
+    visibility = ["//visibility:public"],
 )

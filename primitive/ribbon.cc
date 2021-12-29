@@ -1,10 +1,10 @@
-#include "libopendrop/primitive/ribbon.h"
+#include "primitive/ribbon.h"
 
 #define GL_GLEXT_PROTOTYPES
 #include <GL/gl.h>
 #include <GL/glext.h>
 
-#include "libopendrop/util/logging.h"
+#include "util/logging.h"
 
 namespace opendrop {
 

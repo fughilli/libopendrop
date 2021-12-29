@@ -1,4 +1,4 @@
-#include "libopendrop/preset/cube_boom/cube_boom.h"
+#include "preset/cube_boom/cube_boom.h"
 
 #define _USE_MATH_DEFINES
 #include <cmath>
@@ -10,17 +10,17 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/mat4x4.hpp>
 
-#include "libopendrop/preset/cube_boom/composite.fsh.h"
-#include "libopendrop/preset/cube_boom/cube.obj.h"
-#include "libopendrop/preset/cube_boom/model.fsh.h"
-#include "libopendrop/preset/cube_boom/monkey.obj.h"
-#include "libopendrop/preset/cube_boom/passthrough.vsh.h"
-#include "libopendrop/preset/cube_boom/shrek.obj.h"
-#include "libopendrop/preset/cube_boom/warp.fsh.h"
-#include "libopendrop/util/colors.h"
-#include "libopendrop/util/gl_util.h"
-#include "libopendrop/util/logging.h"
-#include "libopendrop/util/status_macros.h"
+#include "preset/cube_boom/composite.fsh.h"
+#include "preset/cube_boom/cube.obj.h"
+#include "preset/cube_boom/model.fsh.h"
+#include "preset/cube_boom/monkey.obj.h"
+#include "preset/cube_boom/passthrough.vsh.h"
+#include "preset/cube_boom/shrek.obj.h"
+#include "preset/cube_boom/warp.fsh.h"
+#include "util/colors.h"
+#include "util/gl_util.h"
+#include "util/logging.h"
+#include "util/status_macros.h"
 
 namespace opendrop {
 

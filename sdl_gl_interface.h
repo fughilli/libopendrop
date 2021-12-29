@@ -5,7 +5,7 @@
 
 #include <memory>
 
-#include "libopendrop/gl_interface.h"
+#include "gl_interface.h"
 
 namespace gl {
 

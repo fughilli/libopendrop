@@ -1,4 +1,4 @@
-#include "libopendrop/preset/glowsticks_3d_zoom/glowsticks_3d_zoom.h"
+#include "preset/glowsticks_3d_zoom/glowsticks_3d_zoom.h"
 
 #define _USE_MATH_DEFINES
 #include <cmath>
@@ -14,18 +14,18 @@
 #include <vector>
 
 #include "absl/types/span.h"
-#include "libopendrop/preset/glowsticks_3d_zoom/composite.fsh.h"
-#include "libopendrop/preset/glowsticks_3d_zoom/model.fsh.h"
-#include "libopendrop/preset/glowsticks_3d_zoom/model.vsh.h"
-#include "libopendrop/preset/glowsticks_3d_zoom/passthrough.vsh.h"
-#include "libopendrop/preset/glowsticks_3d_zoom/ribbon.fsh.h"
-#include "libopendrop/preset/glowsticks_3d_zoom/warp.fsh.h"
-#include "libopendrop/util/coefficients.h"
-#include "libopendrop/util/colors.h"
-#include "libopendrop/util/gl_util.h"
-#include "libopendrop/util/logging.h"
-#include "libopendrop/util/math.h"
-#include "libopendrop/util/status_macros.h"
+#include "preset/glowsticks_3d_zoom/composite.fsh.h"
+#include "preset/glowsticks_3d_zoom/model.fsh.h"
+#include "preset/glowsticks_3d_zoom/model.vsh.h"
+#include "preset/glowsticks_3d_zoom/passthrough.vsh.h"
+#include "preset/glowsticks_3d_zoom/ribbon.fsh.h"
+#include "preset/glowsticks_3d_zoom/warp.fsh.h"
+#include "util/coefficients.h"
+#include "util/colors.h"
+#include "util/gl_util.h"
+#include "util/logging.h"
+#include "util/math.h"
+#include "util/status_macros.h"
 
 namespace opendrop {
 

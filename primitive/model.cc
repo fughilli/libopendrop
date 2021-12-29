@@ -1,4 +1,4 @@
-#include "libopendrop/primitive/model.h"
+#include "primitive/model.h"
 
 #define GL_GLEXT_PROTOTYPES
 #include <GL/gl.h>

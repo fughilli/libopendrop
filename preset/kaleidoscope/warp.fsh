@@ -1,6 +1,6 @@
 #version 120
 
-#include "libopendrop/preset/common/math.shh"
+#include "preset/common/math.shh"
 
 varying vec2 screen_uv;
 

@@ -3,7 +3,7 @@
 
 #include <cmath>
 
-#include "libopendrop/util/logging.h"
+#include "util/logging.h"
 
 namespace opendrop {
 

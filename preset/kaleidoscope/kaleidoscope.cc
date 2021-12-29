@@ -1,4 +1,4 @@
-#include "libopendrop/preset/kaleidoscope/kaleidoscope.h"
+#include "preset/kaleidoscope/kaleidoscope.h"
 
 #define _USE_MATH_DEFINES
 #include <cmath>
@@ -8,15 +8,15 @@
 
 #include <algorithm>
 
-#include "libopendrop/preset/kaleidoscope/composite.fsh.h"
-#include "libopendrop/preset/kaleidoscope/passthrough.vsh.h"
-#include "libopendrop/preset/kaleidoscope/warp.fsh.h"
-#include "libopendrop/preset/kaleidoscope/waveform.fsh.h"
-#include "libopendrop/util/colors.h"
-#include "libopendrop/util/gl_util.h"
-#include "libopendrop/util/logging.h"
-#include "libopendrop/util/math.h"
-#include "libopendrop/util/status_macros.h"
+#include "preset/kaleidoscope/composite.fsh.h"
+#include "preset/kaleidoscope/passthrough.vsh.h"
+#include "preset/kaleidoscope/warp.fsh.h"
+#include "preset/kaleidoscope/waveform.fsh.h"
+#include "util/colors.h"
+#include "util/gl_util.h"
+#include "util/logging.h"
+#include "util/math.h"
+#include "util/status_macros.h"
 
 namespace opendrop {
 

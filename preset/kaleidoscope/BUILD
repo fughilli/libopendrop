@@ -1,6 +1,6 @@
-load("//libopendrop/preset:preset_defs.bzl", "shader_cc_library")
+load("//preset:preset_defs.bzl", "shader_cc_library")
 
-package(default_visibility = ["//libopendrop:__subpackages__"])
+package(default_visibility = ["//:__subpackages__"])
 
 cc_library(
     name = "kaleidoscope",
@@ -12,16 +12,16 @@ cc_library(
         ":passthrough",
         ":warp",
         ":waveform",
-        "//libopendrop:gl_interface",
-        "//libopendrop:gl_render_target",
-        "//libopendrop/preset",
-        "//libopendrop/primitive:polyline",
-        "//libopendrop/primitive:rectangle",
-        "//libopendrop/util:colors",
-        "//libopendrop/util:gl_util",
-        "//libopendrop/util:logging",
-        "//libopendrop/util:math",
-        "//libopendrop/util:status_macros",
+        "//:gl_interface",
+        "//:gl_render_target",
+        "//preset",
+        "//primitive:polyline",
+        "//primitive:rectangle",
+        "//util:colors",
+        "//util:gl_util",
+        "//util:logging",
+        "//util:math",
+        "//util:status_macros",
         "@com_google_absl//absl/status:statusor",
     ],
 )
@@ -29,7 +29,7 @@ cc_library(
 shader_cc_library(
     name = "composite",
     srcs = ["composite.fsh"],
-    deps = ["//libopendrop/preset/common:math"],
+    deps = ["//preset/common:math"],
 )
 
 shader_cc_library(
@@ -45,5 +45,5 @@ shader_cc_library(
 shader_cc_library(
     name = "warp",
     srcs = ["warp.fsh"],
-    deps = ["//libopendrop/preset/common:math"],
+    deps = ["//preset/common:math"],
 )

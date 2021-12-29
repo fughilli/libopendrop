@@ -39,18 +39,18 @@
 #include "absl/flags/parse.h"
 #include "absl/time/clock.h"
 #include "absl/types/span.h"
-#include "led_driver/performance_timer.h"
-#include "led_driver/pulseaudio_interface.h"
-#include "libopendrop/cleanup.h"
-#include "libopendrop/gl_interface.h"
-#include "libopendrop/gl_texture_manager.h"
-#include "libopendrop/open_drop_controller.h"
-#include "libopendrop/open_drop_controller_interface.h"
-#include "libopendrop/preset/preset_list.h"
-#include "libopendrop/sdl_gl_interface.h"
-#include "libopendrop/util/coefficients.h"
-#include "libopendrop/util/logging.h"
-#include "libopendrop/util/rate_limiter.h"
+#include "util/performance_timer.h"
+#include "util/pulseaudio_interface.h"
+#include "cleanup.h"
+#include "gl_interface.h"
+#include "gl_texture_manager.h"
+#include "open_drop_controller.h"
+#include "open_drop_controller_interface.h"
+#include "preset/preset_list.h"
+#include "sdl_gl_interface.h"
+#include "util/coefficients.h"
+#include "util/logging.h"
+#include "util/rate_limiter.h"
 
 ABSL_FLAG(std::string, pulseaudio_server, "",
           "PulseAudio server to connect to");
@@ -87,14 +87,9 @@ ABSL_FLAG(int, max_presets, 2,
 ABSL_FLAG(int, sampling_rate, 44100,
           "Sampling rate to use with the input source, in Hz.");
 
-namespace led_driver {
+namespace opendrop {
 
 namespace {
-using ::opendrop::Oneshot;
-using ::opendrop::OpenDropController;
-using ::opendrop::OpenDropControllerInterface;
-using ::opendrop::PcmFormat;
-using ::opendrop::RateLimiter;
 // Target FPS.
 constexpr int kFps = 60;
 // Target frame time, in microseconds.
@@ -121,8 +116,8 @@ void NextPreset(OpenDropController *controller,
   }
   // TODO: Refactor such that preset geometry is configured after attaching to
   // the preset blender.
-  float duration = opendrop::Coefficients::Random<1>(20.0f, 100.0f)[0];
-  float ramp_duration = opendrop::Coefficients::Random<1>(1.0f, 5.0f)[0];
+  float duration = Coefficients::Random<1>(20.0f, 100.0f)[0];
+  float ramp_duration = Coefficients::Random<1>(1.0f, 5.0f)[0];
   auto status_or_render_target =
       gl::GlRenderTarget::MakeShared(0, 0, texture_manager);
   if (!status_or_render_target.ok()) {
@@ -130,15 +125,15 @@ void NextPreset(OpenDropController *controller,
               << status_or_render_target.status();
     return;
   }
-  absl::StatusOr<std::shared_ptr<opendrop::Preset>> status_or_preset{};
+  absl::StatusOr<std::shared_ptr<Preset>> status_or_preset{};
   int attempts = kAttempts;
   while (attempts--) {
-    status_or_preset = opendrop::GetRandomPresetFromList(texture_manager);
+    status_or_preset = GetRandomPresetFromList(texture_manager);
     if (!status_or_preset.ok()) {
       LOG(INFO) << "Failed to create preset: " << status_or_preset.status();
       return;
     }
-    std::shared_ptr<opendrop::Preset> preset = status_or_preset.value();
+    std::shared_ptr<Preset> preset = status_or_preset.value();
     if (controller->preset_blender()->QueryPresetCount(preset->name()) <
         preset->max_count())
       break;
@@ -395,4 +390,4 @@ extern "C" int main(int argc, char *argv[]) {
   }
   return 0;
 }
-}  // namespace led_driver
+}  // namespace opendrop

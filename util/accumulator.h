@@ -3,7 +3,7 @@
 
 #include <cmath>
 
-#include "libopendrop/util/interpolator.h"
+#include "util/interpolator.h"
 
 namespace opendrop {
 

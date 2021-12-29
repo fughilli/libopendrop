@@ -2,8 +2,8 @@
 #define GLOBAL_STATE_H_
 
 #include "absl/types/span.h"
-#include "libopendrop/util/accumulator.h"
-#include "libopendrop/util/filter.h"
+#include "util/accumulator.h"
+#include "util/filter.h"
 
 namespace opendrop {
 

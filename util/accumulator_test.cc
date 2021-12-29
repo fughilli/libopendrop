@@ -1,4 +1,4 @@
-#include "libopendrop/util/accumulator.h"
+#include "util/accumulator.h"
 
 #include "googletest/include/gtest/gtest.h"
 

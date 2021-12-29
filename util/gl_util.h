@@ -6,8 +6,8 @@
 #include <glm/vec4.hpp>
 #include <memory>
 
-#include "libopendrop/gl_interface.h"
-#include "libopendrop/gl_render_target.h"
+#include "gl_interface.h"
+#include "gl_render_target.h"
 
 namespace gl {
 

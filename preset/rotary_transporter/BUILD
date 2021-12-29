@@ -1,6 +1,6 @@
-load("//libopendrop/preset:preset_defs.bzl", "shader_cc_library")
+load("//preset:preset_defs.bzl", "shader_cc_library")
 
-package(default_visibility = ["//libopendrop:__subpackages__"])
+package(default_visibility = ["//:__subpackages__"])
 
 cc_library(
     name = "rotary_transporter",
@@ -14,18 +14,18 @@ cc_library(
         ":composite",
         ":passthrough",
         ":warp",
-        "//libopendrop:gl_interface",
-        "//libopendrop:gl_render_target",
-        "//libopendrop/preset",
-        "//libopendrop/primitive:polyline",
-        "//libopendrop/primitive:rectangle",
-        "//libopendrop/util:coefficients",
-        "//libopendrop/util:colors",
-        "//libopendrop/util:filter",
-        "//libopendrop/util:gl_util",
-        "//libopendrop/util:logging",
-        "//libopendrop/util:math",
-        "//libopendrop/util:status_macros",
+        "//:gl_interface",
+        "//:gl_render_target",
+        "//preset",
+        "//primitive:polyline",
+        "//primitive:rectangle",
+        "//util:coefficients",
+        "//util:colors",
+        "//util:filter",
+        "//util:gl_util",
+        "//util:logging",
+        "//util:math",
+        "//util:status_macros",
     ],
 )
 

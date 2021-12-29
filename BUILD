@@ -1,28 +1,10 @@
 load("@com_google_protobuf//:protobuf.bzl", "py_proto_library")
-load("//libopendrop/preset:preset_defs.bzl", "shader_cc_library")
+load("//preset:preset_defs.bzl", "shader_cc_library")
 
-package(default_visibility = ["//libopendrop:__subpackages__"])
-
-VIDEOCORE_COPTS = [
-    "-isystem",
-    "external/raspberry_pi/sysroot/opt/vc/include",
-    "-isystem",
-    "external/raspberry_pi/sysroot/opt/vc/include/interface/vcos/pthreads",
-    "-isystem",
-    "external/raspberry_pi/sysroot/opt/vc/include/interface/vmcs_host/linux",
-    "-L",
-    "external/raspberry_pi/sysroot/opt/vc/lib",
-]
-
-SYSROOT_COPTS = [
-    "-isystem",
-    "external/raspberry_pi/sysroot/usr/include",
-]
+package(default_visibility = ["//:__subpackages__"])
 
 cc_binary(
     name = "main",
-    srcs = ["main.cc"],
-    copts = SYSROOT_COPTS,
     linkopts = [
         "-Wl,-z,notext",
         "-lSDL2",
@@ -43,13 +25,16 @@ cc_binary(
         "-lXss",
         "-lXi",
         "-lGL",
-    ] + select({
-        "//:pi_build": [
-            "-Lexternal/raspberry_pi/sysroot/opt/vc/lib",
-            "-lbcm_host",
-        ],
-        "//conditions:default": [],
-    }),
+    ],
+    linkstatic = 1,
+    deps = [
+        ":main_lib",
+    ],
+)
+
+cc_library(
+    name = "main_lib",
+    srcs = ["main.cc"],
     linkstatic = 1,
     deps = [
         ":cleanup",
@@ -57,17 +42,16 @@ cc_binary(
         ":open_drop_controller",
         ":open_drop_controller_interface",
         ":sdl_gl_interface",
-        "//led_driver:performance_timer",
-        "//led_driver:pulseaudio_interface",
-        "//libopendrop/preset:preset_list",
-        "//libopendrop/util:logging",
-        "//libopendrop/util:rate_limiter",
+        "//preset:preset_list",
+        "//util:logging",
+        "//util:performance_timer",
+        "//util:pulseaudio_interface",
+        "//util:rate_limiter",
         "@com_google_absl//absl/debugging:failure_signal_handler",
         "@com_google_absl//absl/flags:flag",
         "@com_google_absl//absl/flags:parse",
         "@com_google_absl//absl/time",
         "@com_google_absl//absl/types:span",
-        "@org_llvm_libcxx//:libcxx",
     ],
 )
 
@@ -85,7 +69,7 @@ cc_library(
     hdrs = ["gl_interface.h"],
     linkstatic = 1,
     deps = [
-        "//libopendrop/util:logging",
+        "//util:logging",
         "@com_google_absl//absl/status:statusor",
         "@com_google_absl//absl/strings",
     ],
@@ -99,8 +83,8 @@ cc_library(
     deps = [
         ":gl_interface",
         ":gl_texture_manager",
-        "//libopendrop/util:logging",
-        "//libopendrop/util:status_macros",
+        "//util:logging",
+        "//util:status_macros",
         "@com_google_absl//absl/status:statusor",
     ],
 )
@@ -111,7 +95,7 @@ cc_library(
     hdrs = ["gl_texture_manager.h"],
     linkstatic = 1,
     deps = [
-        "//libopendrop/util:logging",
+        "//util:logging",
         "@com_google_absl//absl/status:statusor",
     ],
 )
@@ -138,11 +122,11 @@ cc_library(
         ":global_state",
         ":normalizer",
         ":open_drop_controller_interface",
-        "//libopendrop/preset",
-        "//libopendrop/preset:preset_blender",
-        "//libopendrop/primitive:rectangle",
-        "//libopendrop/util:gl_util",
-        "//libopendrop/util:logging",
+        "//preset",
+        "//preset:preset_blender",
+        "//primitive:rectangle",
+        "//util:gl_util",
+        "//util:logging",
         "@com_google_absl//absl/types:span",
     ],
 )
@@ -168,8 +152,8 @@ cc_library(
     hdrs = ["global_state.h"],
     linkstatic = 1,
     deps = [
-        "//libopendrop/util:accumulator",
-        "//libopendrop/util:filter",
+        "//util:accumulator",
+        "//util:filter",
         "@com_google_absl//absl/types:span",
     ],
 )
@@ -178,7 +162,7 @@ cc_library(
     name = "normalizer",
     hdrs = ["normalizer.h"],
     deps = [
-        "//libopendrop/util:logging",
+        "//util:logging",
         "@com_google_absl//absl/types:span",
     ],
 )

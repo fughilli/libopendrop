@@ -1,4 +1,4 @@
-#include "libopendrop/util/gl_util.h"
+#include "util/gl_util.h"
 
 #define GL_GLEXT_PROTOTYPES
 #include <GL/gl.h>

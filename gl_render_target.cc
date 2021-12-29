@@ -1,4 +1,4 @@
-#include "libopendrop/gl_render_target.h"
+#include "gl_render_target.h"
 
 #define GL_GLEXT_PROTOTYPES
 #include <GL/gl.h>
@@ -6,8 +6,8 @@
 
 #include <iostream>
 
-#include "libopendrop/util/logging.h"
-#include "libopendrop/util/status_macros.h"
+#include "util/logging.h"
+#include "util/status_macros.h"
 
 namespace gl {
 

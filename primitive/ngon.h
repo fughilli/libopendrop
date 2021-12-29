@@ -4,7 +4,7 @@
 #include <vector>
 #include <stdint.h>
 
-#include "libopendrop/primitive/primitive.h"
+#include "primitive/primitive.h"
 
 namespace opendrop {
 

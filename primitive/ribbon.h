@@ -7,7 +7,7 @@
 #include <vector>
 
 #include "absl/types/span.h"
-#include "libopendrop/primitive/primitive.h"
+#include "primitive/primitive.h"
 
 namespace opendrop {
 
@@ -65,6 +65,6 @@ class Ribbon : Primitive {
 
 }  // namespace opendrop
 
-#include "libopendrop/primitive/ribbon.cc"
+#include "primitive/ribbon.cc"
 
 #endif  // PRIMITIVES_RIBBON_H_

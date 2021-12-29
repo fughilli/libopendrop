@@ -1,4 +1,4 @@
-#include "libopendrop/preset/cube_wreath/cube_wreath.h"
+#include "preset/cube_wreath/cube_wreath.h"
 
 #define _USE_MATH_DEFINES
 #include <cmath>
@@ -10,17 +10,17 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/mat4x4.hpp>
 
-#include "libopendrop/preset/cube_wreath/composite.fsh.h"
-#include "libopendrop/preset/cube_wreath/cube.obj.h"
-#include "libopendrop/preset/cube_wreath/cube_outline.obj.h"
-#include "libopendrop/preset/cube_wreath/model.fsh.h"
-#include "libopendrop/preset/cube_wreath/passthrough_frag.fsh.h"
-#include "libopendrop/preset/cube_wreath/passthrough_vert.vsh.h"
-#include "libopendrop/preset/cube_wreath/warp.fsh.h"
-#include "libopendrop/util/colors.h"
-#include "libopendrop/util/gl_util.h"
-#include "libopendrop/util/logging.h"
-#include "libopendrop/util/status_macros.h"
+#include "preset/cube_wreath/composite.fsh.h"
+#include "preset/cube_wreath/cube.obj.h"
+#include "preset/cube_wreath/cube_outline.obj.h"
+#include "preset/cube_wreath/model.fsh.h"
+#include "preset/cube_wreath/passthrough_frag.fsh.h"
+#include "preset/cube_wreath/passthrough_vert.vsh.h"
+#include "preset/cube_wreath/warp.fsh.h"
+#include "util/colors.h"
+#include "util/gl_util.h"
+#include "util/logging.h"
+#include "util/status_macros.h"
 
 namespace opendrop {
 

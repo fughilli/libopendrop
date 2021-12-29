@@ -1,17 +1,17 @@
-package(default_visibility = ["//libopendrop:__subpackages__"])
+package(default_visibility = ["//:__subpackages__"])
 
 PRESET_DEPS_LIST = [
-    "//libopendrop/preset/alien_rorschach",
-    "//libopendrop/preset/cube_boom",
-    "//libopendrop/preset/glowsticks_3d",
-    "//libopendrop/preset/glowsticks_3d_zoom",
-    "//libopendrop/preset/kaleidoscope",
-    "//libopendrop/preset/rotary_transporter",
-    "//libopendrop/preset/simple_preset",
-    "//libopendrop/preset/template_preset",
-    "//libopendrop/preset/shape_bounce",
-    "//libopendrop/preset/eye_roll",
-    "//libopendrop/preset/cube_wreath",
+    "//preset/alien_rorschach",
+    "//preset/cube_boom",
+    "//preset/glowsticks_3d",
+    "//preset/glowsticks_3d_zoom",
+    "//preset/kaleidoscope",
+    "//preset/rotary_transporter",
+    "//preset/simple_preset",
+    "//preset/template_preset",
+    "//preset/shape_bounce",
+    "//preset/eye_roll",
+    "//preset/cube_wreath",
 ]
 
 cc_library(
@@ -20,9 +20,9 @@ cc_library(
     hdrs = ["preset.h"],
     linkstatic = 1,
     deps = [
-        "//libopendrop:gl_interface",
-        "//libopendrop:gl_render_target",
-        "//libopendrop:global_state",
+        "//:gl_interface",
+        "//:gl_render_target",
+        "//:global_state",
         "@com_google_absl//absl/types:span",
     ],
 )
@@ -34,7 +34,7 @@ cc_library(
     deps = [
         ":preset",
         "@com_google_absl//absl/status:statusor",
-        "//libopendrop/util:status_macros",
+        "//util:status_macros",
     ] + PRESET_DEPS_LIST,
 )
 
@@ -44,12 +44,12 @@ cc_library(
     hdrs = ["preset_blender.h"],
     deps = [
         ":preset",
-        "//libopendrop:blit_fsh",
-        "//libopendrop:blit_vsh",
-        "//libopendrop/primitive:rectangle",
-        "//libopendrop/util:gl_util",
-        "//libopendrop/util:logging",
-        "//libopendrop/util:oneshot",
+        "//:blit_fsh",
+        "//:blit_vsh",
+        "//primitive:rectangle",
+        "//util:gl_util",
+        "//util:logging",
+        "//util:oneshot",
     ],
 )
 

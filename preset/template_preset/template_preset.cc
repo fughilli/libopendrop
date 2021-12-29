@@ -1,4 +1,4 @@
-#include "libopendrop/preset/template_preset/template_preset.h"
+#include "preset/template_preset/template_preset.h"
 
 #define _USE_MATH_DEFINES
 #include <cmath>
@@ -8,13 +8,13 @@
 
 #include <algorithm>
 
-#include "libopendrop/preset/template_preset/composite.fsh.h"
-#include "libopendrop/preset/template_preset/passthrough.vsh.h"
-#include "libopendrop/preset/template_preset/warp.fsh.h"
-#include "libopendrop/util/colors.h"
-#include "libopendrop/util/gl_util.h"
-#include "libopendrop/util/logging.h"
-#include "libopendrop/util/status_macros.h"
+#include "preset/template_preset/composite.fsh.h"
+#include "preset/template_preset/passthrough.vsh.h"
+#include "preset/template_preset/warp.fsh.h"
+#include "util/colors.h"
+#include "util/gl_util.h"
+#include "util/logging.h"
+#include "util/status_macros.h"
 
 namespace opendrop {
 

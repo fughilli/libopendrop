@@ -1,4 +1,4 @@
-#include "libopendrop/util/interpolator.h"
+#include "util/interpolator.h"
 
 #include <vector>
 

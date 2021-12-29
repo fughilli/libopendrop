@@ -1,6 +1,6 @@
-load("//libopendrop/preset:preset_defs.bzl", "model_cc_library", "shader_cc_library")
+load("//preset:preset_defs.bzl", "model_cc_library", "shader_cc_library")
 
-package(default_visibility = ["//libopendrop:__subpackages__"])
+package(default_visibility = ["//:__subpackages__"])
 
 cc_library(
     name = "cube_boom",
@@ -15,16 +15,16 @@ cc_library(
         ":shrek",
         ":passthrough",
         ":warp",
-        "//libopendrop:gl_interface",
-        "//libopendrop:gl_render_target",
-        "//libopendrop/preset",
-        "//libopendrop/primitive:model",
-        "//libopendrop/primitive:polyline",
-        "//libopendrop/primitive:rectangle",
-        "//libopendrop/util:colors",
-        "//libopendrop/util:gl_util",
-        "//libopendrop/util:logging",
-        "//libopendrop/util:status_macros",
+        "//:gl_interface",
+        "//:gl_render_target",
+        "//preset",
+        "//primitive:model",
+        "//primitive:polyline",
+        "//primitive:rectangle",
+        "//util:colors",
+        "//util:gl_util",
+        "//util:logging",
+        "//util:status_macros",
     ],
 )
 

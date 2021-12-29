@@ -11,10 +11,10 @@
 #include <utility>
 #include <vector>
 
-#include "libopendrop/preset/preset.h"
-#include "libopendrop/primitive/rectangle.h"
-#include "libopendrop/util/logging.h"
-#include "libopendrop/util/oneshot.h"
+#include "preset/preset.h"
+#include "primitive/rectangle.h"
+#include "util/logging.h"
+#include "util/oneshot.h"
 
 namespace opendrop {
 enum PresetActivationState {

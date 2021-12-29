@@ -1,7 +1,7 @@
 #ifndef LIBOPENDROP_UTIL_RATE_LIMITER_H_
 #define LIBOPENDROP_UTIL_RATE_LIMITER_H_
 
-#include "libopendrop/util/oneshot.h"
+#include "util/oneshot.h"
 
 namespace opendrop {
 

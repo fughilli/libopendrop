@@ -1,4 +1,4 @@
-package(default_visibility = ["//libopendrop:__subpackages__"])
+package(default_visibility = ["//:__subpackages__"])
 
 cc_library(
     name = "primitive",
@@ -39,7 +39,7 @@ cc_library(
     ],
     deps = [
         ":primitive",
-        "//libopendrop/util:logging",
+        "//util:logging",
         "@com_google_absl//absl/types:span",
     ],
 )

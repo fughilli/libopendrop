@@ -1,0 +1,33 @@
+workspace(name = "libopendrop")
+
+BAZEL_VERSION = "3.1.0"
+
+BAZEL_VERSION_SHA = "753434f4fa730266cf5ce21d1fdd425e1e167dd9347ad3e8adc19e8c0d54edca"
+
+load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
+load("@bazel_tools//tools/build_defs/repo:git.bzl", "git_repository")
+
+git_repository(
+    name = "com_google_protobuf",
+    commit = "70b02861f8e8ba711efd187188dfb930db7bcaba",
+    patch_args = ["-p1"],
+    remote = "https://github.com/protocolbuffers/protobuf",
+    shallow_since = "1598416407 -0700",
+)
+
+load("@com_google_protobuf//:protobuf_deps.bzl", "protobuf_deps")
+
+protobuf_deps()
+
+git_repository(
+    name = "com_google_absl",
+    commit = "60d00a5822bb98f18e40b294554f91ca14fb793a",
+    remote = "https://github.com/abseil/abseil-cpp",
+    shallow_since = "1602701537 -0400",
+)
+
+git_repository(
+    name = "com_googletest",
+    branch = "master",
+    remote = "https://github.com/google/googletest",
+)

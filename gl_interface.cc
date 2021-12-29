@@ -7,7 +7,7 @@
 #include <iostream>
 
 #include "absl/strings/str_cat.h"
-#include "libopendrop/util/logging.h"
+#include "util/logging.h"
 
 namespace gl {
 

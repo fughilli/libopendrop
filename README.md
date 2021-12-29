@@ -15,57 +15,32 @@ Milkdrop2 or ProjectM.
 
 ## Building
 
-_**Note:** `libopendrop` started as a replacement for ProjectM in my LED suit
-project, and as such the build system is currently designed for
-cross-compilation support on Raspberry Pi targets. The build system is a bit
-messy as a result; I am working on cleaning this up._
-
-To build `libopendrop`, first install the prerequisites:
+`libopendrop` builds using Bazel. A nice way to manage Bazel installs is to use
+bazelisk. Install bazelisk:
 
 ```
-sudo apt-get install golang-go libpulse-dev libgl-dev libglm-dev \
-                     libncurses5-dev libncurses5 libsdl2-dev \
-                     python3-pip
+sudo apt-get install golang-go
 
 go get github.com/bazelbuild/bazelisk
 
-sudo -H pip3 install absl-py
-
+# Put the golang bin directory onto your PATH. The following works for bash:
 cat >>~/.bashrc << EOF
 export PATH=\$PATH:\$HOME/go/bin
 EOF
 source ~/.bashrc
-
-git clone https://github.com/fughilli/rpi_bazel
-cd rpi_bazel
-git clone https://github.com/fughilli/LedSuitDisplayDriver led_driver
-git clone https://github.com/fughilli/libopendrop
-git clone https://github.com/fughilli/ugfx
 ```
 
-Then, build the binary target with `bazelisk`:
+Next, install the prerequisites for building libopendrop:
 
 ```
-bazelisk build //libopendrop:main -c opt --copt=-I/usr/include/SDL2
+sudo apt-get install libpulse-dev libgl-dev libglm-dev libncurses5-dev \
+                     libncurses5 libsdl2-dev python3-pip
+
+sudo -H pip3 install absl-py
 ```
 
-If all goes well, there should now be a binary in the `bazel-bin` directory:
-
-```
-ls bazel-bin/libopendrop/main
-```
-
-## Executing
-
-You can run it directly, or using `bazelisk`:
-
-```
-export SOURCE=$(pactl list sources | grep Name | grep monitor | head -n 1 | awk '{ print $2 }')
-bazelisk run //libopendrop:main -c opt --copt=-I/usr/include/SDL2 -- --pulseaudio_source=$SOURCE
-
-```
-
-Or, even better, use the runner program:
+Use the runner program to build with bazelisk and run against the system audio
+source:
 
 ```
 ./run_libopendrop.sh -s system
@@ -77,31 +52,6 @@ visualizer. Available options can be listed by passing `-s ?`:
 ```
 ./run_libopendrop.sh -s ?
 ```
-
-### Cross-Compilation
-
-To compile for Raspberry Pi, simply add `--config=pi` to the build command:
-
-```
-bazelisk build --config=pi -c opt //libopendrop:main
-```
-
-You will need to bootstrap the Raspberry Pi with the necessary libraries and
-rebuild the sysroot used by the `rpi_bazel` workspace tooling first; see the
-README for `LedSuitDisplayDriver` for more details.
-
-## Preset Authoring
-
-To add new presets, you can build from the example preset under
-`libopendrop/preset/simple_preset`. This preset uses three GPU shaders,
-`warp.fsh`, `composite.fsh`, and `passthrough.vsh`, and a single CPU shader,
-`simple_preset.cc`. The preset renders a single pass of a (left, right) -> XY
-waveform using `warp.fsh` targeting a back-buffer texture. `warp.fsh` is also
-provided the previously-rendered output from `warp.fsh` at the last frame, which
-is sampled as `last_frame`. The resulting texture is then sampled by
-`composite.fsh` to draw the final result to the display.
-
-See the shader implementation comments for more details.
 
 ### Demo Video
 

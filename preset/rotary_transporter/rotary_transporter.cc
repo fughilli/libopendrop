@@ -1,4 +1,4 @@
-#include "libopendrop/preset/rotary_transporter/rotary_transporter.h"
+#include "preset/rotary_transporter/rotary_transporter.h"
 
 #define _USE_MATH_DEFINES
 #include <cmath>
@@ -12,15 +12,15 @@
 #include <glm/gtx/vector_angle.hpp>
 #include <glm/mat4x4.hpp>
 
-#include "libopendrop/preset/rotary_transporter/composite.fsh.h"
-#include "libopendrop/preset/rotary_transporter/passthrough.vsh.h"
-#include "libopendrop/preset/rotary_transporter/warp.fsh.h"
-#include "libopendrop/util/coefficients.h"
-#include "libopendrop/util/colors.h"
-#include "libopendrop/util/gl_util.h"
-#include "libopendrop/util/logging.h"
-#include "libopendrop/util/math.h"
-#include "libopendrop/util/status_macros.h"
+#include "preset/rotary_transporter/composite.fsh.h"
+#include "preset/rotary_transporter/passthrough.vsh.h"
+#include "preset/rotary_transporter/warp.fsh.h"
+#include "util/coefficients.h"
+#include "util/colors.h"
+#include "util/gl_util.h"
+#include "util/logging.h"
+#include "util/math.h"
+#include "util/status_macros.h"
 
 namespace opendrop {
 

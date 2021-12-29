@@ -7,7 +7,7 @@
 #include <vector>
 
 #include "absl/types/span.h"
-#include "libopendrop/primitive/primitive.h"
+#include "primitive/primitive.h"
 
 namespace opendrop {
 

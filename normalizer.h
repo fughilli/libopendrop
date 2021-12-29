@@ -2,7 +2,7 @@
 #define LIBOPENDROP_NORMALIZER_H_
 
 #include "absl/types/span.h"
-#include "libopendrop/util/logging.h"
+#include "util/logging.h"
 
 namespace opendrop {
 

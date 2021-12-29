@@ -1,4 +1,4 @@
-#include "libopendrop/sdl_gl_interface.h"
+#include "sdl_gl_interface.h"
 
 #include <iostream>
 

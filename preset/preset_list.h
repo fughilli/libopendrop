@@ -5,22 +5,22 @@
 #include <random>
 
 #include "absl/status/statusor.h"
-#include "libopendrop/preset/preset.h"
-#include "libopendrop/util/logging.h"
-#include "libopendrop/util/status_macros.h"
+#include "preset/preset.h"
+#include "util/logging.h"
+#include "util/status_macros.h"
 
 // Preset includes
-#include "libopendrop/preset/alien_rorschach/alien_rorschach.h"
-#include "libopendrop/preset/cube_boom/cube_boom.h"
-#include "libopendrop/preset/cube_wreath/cube_wreath.h"
-#include "libopendrop/preset/eye_roll/eye_roll.h"
-#include "libopendrop/preset/glowsticks_3d/glowsticks_3d.h"
-#include "libopendrop/preset/glowsticks_3d_zoom/glowsticks_3d_zoom.h"
-#include "libopendrop/preset/kaleidoscope/kaleidoscope.h"
-#include "libopendrop/preset/rotary_transporter/rotary_transporter.h"
-#include "libopendrop/preset/shape_bounce/shape_bounce.h"
-#include "libopendrop/preset/simple_preset/simple_preset.h"
-#include "libopendrop/preset/template_preset/template_preset.h"
+#include "preset/alien_rorschach/alien_rorschach.h"
+#include "preset/cube_boom/cube_boom.h"
+#include "preset/cube_wreath/cube_wreath.h"
+#include "preset/eye_roll/eye_roll.h"
+#include "preset/glowsticks_3d/glowsticks_3d.h"
+#include "preset/glowsticks_3d_zoom/glowsticks_3d_zoom.h"
+#include "preset/kaleidoscope/kaleidoscope.h"
+#include "preset/rotary_transporter/rotary_transporter.h"
+#include "preset/shape_bounce/shape_bounce.h"
+#include "preset/simple_preset/simple_preset.h"
+#include "preset/template_preset/template_preset.h"
 
 namespace opendrop {
 

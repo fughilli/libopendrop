@@ -1,4 +1,4 @@
-#include "libopendrop/preset/alien_rorschach/alien_rorschach.h"
+#include "preset/alien_rorschach/alien_rorschach.h"
 
 #define _USE_MATH_DEFINES
 #include <cmath>
@@ -8,14 +8,14 @@
 
 #include <algorithm>
 
-#include "libopendrop/preset/alien_rorschach/composite.fsh.h"
-#include "libopendrop/preset/alien_rorschach/passthrough.vsh.h"
-#include "libopendrop/preset/alien_rorschach/warp.fsh.h"
-#include "libopendrop/util/colors.h"
-#include "libopendrop/util/gl_util.h"
-#include "libopendrop/util/logging.h"
-#include "libopendrop/util/math.h"
-#include "libopendrop/util/status_macros.h"
+#include "preset/alien_rorschach/composite.fsh.h"
+#include "preset/alien_rorschach/passthrough.vsh.h"
+#include "preset/alien_rorschach/warp.fsh.h"
+#include "util/colors.h"
+#include "util/gl_util.h"
+#include "util/logging.h"
+#include "util/math.h"
+#include "util/status_macros.h"
 
 namespace opendrop {
 

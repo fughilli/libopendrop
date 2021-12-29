@@ -1,4 +1,4 @@
-#include "libopendrop/audio_processor.h"
+#include "audio_processor.h"
 
 namespace opendrop {
 

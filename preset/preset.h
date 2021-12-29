@@ -6,9 +6,9 @@
 
 #include "absl/status/statusor.h"
 #include "absl/types/span.h"
-#include "libopendrop/gl_interface.h"
-#include "libopendrop/gl_render_target.h"
-#include "libopendrop/global_state.h"
+#include "gl_interface.h"
+#include "gl_render_target.h"
+#include "global_state.h"
 
 namespace opendrop {
 

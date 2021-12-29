@@ -1,4 +1,4 @@
-#include "libopendrop/util/colors.h"
+#include "util/colors.h"
 
 #include <glm/geometric.hpp>
 

@@ -49,7 +49,7 @@ shader_library = rule(
         "deps": attr.label_list(providers = [DefaultInfo]),
         "outs": attr.output_list(),
         "_wrap_shader_tool": attr.label(
-            default = Label("//libopendrop/preset:wrap_shader"),
+            default = Label("//preset:wrap_shader"),
             executable = True,
             cfg = "exec",
         ),
@@ -90,7 +90,7 @@ def model_cc_library(name, srcs):
         fail("srcs must have a single element")
 
     model_source = srcs[0]
-    wrap_model_tool = "//libopendrop/preset:wrap_model"
+    wrap_model_tool = "//preset:wrap_model"
 
     header_file = model_source + ".h"
     source_file = model_source + ".cc"

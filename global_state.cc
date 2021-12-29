@@ -1,4 +1,4 @@
-#include "libopendrop/global_state.h"
+#include "global_state.h"
 
 #include <cmath>
 
