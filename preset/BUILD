@@ -1,5 +1,7 @@
 package(default_visibility = ["//:__subpackages__"])
 
+load("@py_deps//:requirements.bzl", "requirement")
+
 PRESET_DEPS_LIST = [
     "//preset/alien_rorschach",
     "//preset/cube_boom",
@@ -57,6 +59,9 @@ py_binary(
     name = "wrap_shader",
     srcs = ["wrap_shader.py"],
     python_version = "PY3",
+    deps = [
+        requirement("absl-py"),
+    ],
 )
 
 py_test(
@@ -64,6 +69,7 @@ py_test(
     srcs = ["wrap_shader_test.py"],
     deps = [
         ":wrap_shader",
+        requirement("pyfakefs"),
     ],
 )
 
@@ -71,6 +77,9 @@ py_binary(
     name = "wrap_model",
     srcs = ["wrap_model.py"],
     python_version = "PY3",
+    deps = [
+        requirement("absl-py"),
+    ],
 )
 
 py_test(
