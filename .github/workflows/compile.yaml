@@ -4,19 +4,22 @@ jobs:
   compile:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
+    - name: Checkout
+     uses: actions/checkout@v2
       with:
         submodules: true
-    - uses: bazelbuild/setup-bazelisk@v1
+    - name: Setup Bazelisk
+      uses: bazelbuild/setup-bazelisk@v1
     - name: Mount bazel cache
       uses: actions/cache@v2
       with:
         path: "~/.cache/bazel"
         key: bazel
     - name: Setup Python
-    - uses: actions/setup-python@v2
+      uses: actions/setup-python@v2
       with:
         python-version: '3.8'
         cache: 'pip'
-    - run: pip install -r py_requirements.txt
-    - run: bazelisk build //:main --copt=-I/usr/include/SDL2 --copt=-std=c++17
+      run: pip install -r py_requirements.txt
+    - name: Build
+      run: bazelisk build //:main --copt=-I/usr/include/SDL2 --copt=-std=c++17
