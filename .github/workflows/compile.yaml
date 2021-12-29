@@ -21,6 +21,6 @@ jobs:
         python-version: '3.8'
         cache: 'pip'
     - name: Install requirements
-      run: pip install -r py_requirements.txt
+      run: pip install -r requirements.txt
     - name: Build
       run: bazelisk build //:main --copt=-I/usr/include/SDL2 --copt=-std=c++17
