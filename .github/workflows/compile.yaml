@@ -13,4 +13,10 @@ jobs:
       with:
         path: "~/.cache/bazel"
         key: bazel
+    - name: Setup Python
+    - uses: actions/setup-python@v2
+      with:
+        python-version: '3.8'
+        cache: 'pip'
+    - run: pip install -r py_requirements.txt
     - run: bazelisk build //:main --copt=-I/usr/include/SDL2 --copt=-std=c++17
