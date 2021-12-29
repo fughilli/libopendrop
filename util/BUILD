@@ -39,7 +39,6 @@ cc_test(
         ":logging",
         "@com_googletest//:gtest",
         "@com_googletest//:gtest_main",
-        "@org_llvm_libcxx//:libcxx",
     ],
 )
 
@@ -84,7 +83,6 @@ cc_test(
         ":interpolator",
         "@com_googletest//:gtest",
         "@com_googletest//:gtest_main",
-        "@org_llvm_libcxx//:libcxx",
     ],
 )
 
@@ -101,7 +99,6 @@ cc_test(
         ":accumulator",
         "@com_googletest//:gtest",
         "@com_googletest//:gtest_main",
-        "@org_llvm_libcxx//:libcxx",
     ],
 )
 
@@ -121,7 +118,6 @@ cc_test(
         "@com_google_absl//absl/status:statusor",
         "@com_googletest//:gtest",
         "@com_googletest//:gtest_main",
-        "@org_llvm_libcxx//:libcxx",
     ],
 )
 
@@ -143,7 +139,6 @@ cc_test(
         ":filter",
         "@com_googletest//:gtest",
         "@com_googletest//:gtest_main",
-        "@org_llvm_libcxx//:libcxx",
     ],
 )
 
@@ -160,7 +155,6 @@ cc_test(
         ":math",
         "@com_googletest//:gtest",
         "@com_googletest//:gtest_main",
-        "@org_llvm_libcxx//:libcxx",
     ],
 )
 

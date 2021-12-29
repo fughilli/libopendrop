@@ -250,8 +250,11 @@ def ParseObjectFaceText(object_text: Text) -> List[Face]:
         for vertex_indices_string in line_parts[1:]:
             match = INDEX_RE.match(vertex_indices_string)
 
+            index_strings = tuple(match.groupdict()[component]
+                                  for component in 'vnt')
             vertex_indices = tuple(
-                int(match.groupdict()[component]) for component in 'vnt')
+                int(index_string) if index_string is not None else None
+                for index_string in index_strings)
             face_indices.append(vertex_indices)
 
         face_list.append(face_indices)

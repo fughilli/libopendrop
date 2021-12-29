@@ -13,10 +13,13 @@ vt 5 6
 vt 7 8
 vt 9 1
 vt 2 3
-f 1/1/ 2/2/ 3/3/
-f 2/4/ 1/5/ 4/6/
-f 3/1/ 2/2/ 4/3/
-f 1/4/ 3/5/ 4/6/
+vn 1 2 3
+vn 2 3 4
+vn 3 4 5
+f 1/1/1 2/2/2 3/3/3
+f 2/4/1 1/5/2 4/6/3
+f 3/1/1 2/2/2 4/3/3
+f 1/4/1 3/5/2 4/6/3
 """)
 
 
@@ -68,6 +71,28 @@ class TestWrapModel(unittest.TestCase):
     @parameterized.parameterized.expand([
         ('empty', '', []),
         (
+            'single_normal',
+            'vn 1.0 2.0 3.0',  # Input
+            [(1.0, 2.0, 3.0)]  # Expected
+        ),
+        (
+            'multiple_normals',
+            'vn 1.0 2.0 3.0\nvn -2 3.14 15.777',  # Input
+            [(1.0, 2.0, 3.0), (-2, 3.14, 15.777)]  # Expected
+        ),
+        (
+            'garbage_but_empty',
+            'the quick brown\nfox jumped over\nthe lazy dog\n',  # Input
+            []  # Expected
+        )
+    ])
+    def test_parse_object_normal_text(self, name, input_object_text, expected):
+        self.assertEqual(wrap_model.ParseObjectNormalText(input_object_text),
+                         expected)
+
+    @parameterized.parameterized.expand([
+        ('empty', '', []),
+        (
             'single_vertex',
             'v 1.0 2.0 3.0',  # Input
             [(1.0, 2.0, 3.0)]  # Expected
@@ -114,22 +139,25 @@ class TestWrapModel(unittest.TestCase):
         (
             'single_face',
             'f 1/2/3 4/5/6 7/8/9 10/11/12',  # Input
-            [[(1, 2), (4, 5), (7, 8), (10, 11)]]  # Expected
+            [[(1, 3, 2), (4, 6, 5), (7, 9, 8), (10, 12, 11)]]  # Expected
         ),
         (
             'single_face_omit_normal',
             'f 1/2/ 4/5/ 7/8/ 10/11/',  # Input
-            [[(1, 2), (4, 5), (7, 8), (10, 11)]]  # Expected
+            [[(1, None, 2), (4, None, 5), (7, None, 8),
+              (10, None, 11)]]  # Expected
         ),
         (
             'single_face_omit_normal_and_slash',
             'f 1/2 4/5 7/8 10/11',  # Input
-            [[(1, 2), (4, 5), (7, 8), (10, 11)]]  # Expected
+            [[(1, None, 2), (4, None, 5), (7, None, 8),
+              (10, None, 11)]]  # Expected
         ),
         (
             'multiple_faces',
             'f 1/2/ 3/4/ 5/6/\nf 7/8/ 9/1/ 2/3/',  # Input
-            [[(1, 2), (3, 4), (5, 6)], [(7, 8), (9, 1), (2, 3)]]  # Expected
+            [[(1, None, 2), (3, None, 4), (5, None, 6)],
+             [(7, None, 8), (9, None, 1), (2, None, 3)]]  # Expected
         ),
         (
             'garbage_but_empty',
@@ -142,17 +170,19 @@ class TestWrapModel(unittest.TestCase):
                          expected)
 
     @parameterized.parameterized.expand([
-        ('empty', ([], [], []), ([], [], [])),
+        ('empty', ([], [], [], []), ([], [], [], [])),
         (
             'single_vertex_and_uv',
             (
                 [(1.0, 2.0, 3.0)],  # Vertices
-                [(4.0, 5.0)],  # UVs
-                [[(1, 1), (1, 1), (1, 1)]]  # Faces
+                [(4.0, 5.0, 6.0)],  # Normals
+                [(7.0, 8.0)],  # UVs
+                [[(1, 1, 1), (1, 1, 1), (1, 1, 1)]]  # Faces
             ),
             (
                 [(1.0, 2.0, 3.0)],  # Vertices
-                [(4.0, 5.0)],  # UVs
+                [(4.0, 5.0, 6.0)],  # Normals
+                [(7.0, 8.0)],  # UVs
                 [[1, 1, 1]]  # Faces
             )),
     ])
@@ -165,12 +195,16 @@ class TestWrapModel(unittest.TestCase):
         # UV-textured tetrahedron.
         # Four points.
         vertex_list = [(1, 2, 3), (4, 5, 6), (7, 8, 9), (10, 11, 12)]
+        # Four normals.
+        normal_list = [(2, 3, 4), (5, 6, 7), (8, 9, 10), (11, 12, 13)]
         # 6 UVs.
         uv_list = [(1, 2), (3, 4), (5, 6), (7, 8), (9, 1), (2, 3)]
         # Four triangles, textured alternately by the first and last 3 UVs in
         # the UV list.
-        face_list = [[(1, 1), (2, 2), (3, 3)], [(2, 4), (1, 5), (4, 6)],
-                     [(3, 1), (2, 2), (4, 3)], [(1, 4), (3, 5), (4, 6)]]
+        face_list = [[(1, 1, 1), (2, 2, 2), (3, 3, 3)],
+                     [(2, 2, 4), (1, 1, 5), (4, 4, 6)],
+                     [(3, 3, 1), (2, 2, 2), (4, 4, 3)],
+                     [(1, 1, 4), (3, 3, 5), (4, 4, 6)]]
 
         # Unused; for documentation purposes.
         unique_vertices = [(1, 1), (2, 2), (3, 3), (2, 4), (1, 5), (4, 6),
@@ -179,23 +213,31 @@ class TestWrapModel(unittest.TestCase):
         expected_vertex_list = [(1, 2, 3), (4, 5, 6), (7, 8, 9), (4, 5, 6),
                                 (1, 2, 3), (10, 11, 12), (7, 8, 9),
                                 (10, 11, 12), (1, 2, 3), (7, 8, 9)]
+        expected_normal_list = [(2, 3, 4), (5, 6, 7), (8, 9, 10), (5, 6, 7),
+                                (2, 3, 4), (11, 12, 13), (8, 9, 10),
+                                (11, 12, 13), (2, 3, 4), (8, 9, 10)]
         expected_uv_list = [(1, 2), (3, 4), (5, 6), (7, 8), (9, 1), (2, 3),
                             (1, 2), (5, 6), (7, 8), (9, 1)]
         expected_face_list = [[1, 2, 3], [4, 5, 6], [7, 2, 8], [9, 10, 6]]
         self.assertEqual(
-            wrap_model.CollapseIndices(vertex_list, uv_list, face_list),
-            (expected_vertex_list, expected_uv_list, expected_face_list))
+            wrap_model.CollapseIndices(vertex_list, normal_list, uv_list,
+                                       face_list),
+            (expected_vertex_list, expected_normal_list, expected_uv_list,
+             expected_face_list))
 
     def test_parse_object_text(self):
         vertex_list = [(1.0, 2.0, 3.0), (4.0, 5.0, 6.0), (7.0, 8.0, 9.0),
                        (10.0, 11.0, 12.0)]
+        normal_list = [(1.0, 2.0, 3.0), (2.0, 3.0, 4.0), (3.0, 4.0, 5.0)]
         uv_list = [(1.0, 2.0), (3.0, 4.0), (5.0, 6.0), (7.0, 8.0), (9.0, 1.0),
                    (2.0, 3.0)]
-        face_list = [[(1, 1), (2, 2), (3, 3)], [(2, 4), (1, 5), (4, 6)],
-                     [(3, 1), (2, 2), (4, 3)], [(1, 4), (3, 5), (4, 6)]]
+        face_list = [[(1, 1, 1), (2, 2, 2), (3, 3, 3)],
+                     [(2, 1, 4), (1, 2, 5), (4, 3, 6)],
+                     [(3, 1, 1), (2, 2, 2), (4, 3, 3)],
+                     [(1, 1, 4), (3, 2, 5), (4, 3, 6)]]
 
         self.assertEqual(wrap_model.ParseObjectText(OBJECT_MODEL_TEXT),
-                         (vertex_list, uv_list, face_list))
+                         (vertex_list, normal_list, uv_list, face_list))
 
     def test_load_collapsed_model(self):
         expected_vertex_list = [(1.0, 2.0, 3.0), (4.0, 5.0, 6.0),
@@ -203,15 +245,20 @@ class TestWrapModel(unittest.TestCase):
                                 (1.0, 2.0, 3.0), (10.0, 11.0, 12.0),
                                 (7.0, 8.0, 9.0), (10.0, 11.0, 12.0),
                                 (1.0, 2.0, 3.0), (7.0, 8.0, 9.0)]
+        expected_normal_list = [(1.0, 2.0, 3.0), (2.0, 3.0, 4.0),
+                                (3.0, 4.0, 5.0), (1.0, 2.0, 3.0),
+                                (2.0, 3.0, 4.0), (3.0, 4.0, 5.0),
+                                (1.0, 2.0, 3.0), (3.0, 4.0, 5.0),
+                                (1.0, 2.0, 3.0), (2.0, 3.0, 4.0)]
         expected_uv_list = [(1.0, 2.0), (3.0, 4.0), (5.0, 6.0), (7.0, 8.0),
                             (9.0, 1.0), (2.0, 3.0), (1.0, 2.0), (5.0, 6.0),
                             (7.0, 8.0), (9.0, 1.0)]
         expected_face_list = [[1, 2, 3], [4, 5, 6], [7, 2, 8], [9, 10, 6]]
 
         self.maxDiff = None
-        self.assertEqual(
-            wrap_model.LoadCollapsedModel(OBJECT_MODEL_TEXT),
-            (expected_vertex_list, expected_uv_list, expected_face_list))
+        self.assertEqual(wrap_model.LoadCollapsedModel(OBJECT_MODEL_TEXT),
+                         (expected_vertex_list, expected_normal_list,
+                          expected_uv_list, expected_face_list))
 
 
 if __name__ == '__main__':
