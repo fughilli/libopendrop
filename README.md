@@ -1,5 +1,7 @@
 # libopendrop
 
+![Build and Test Host Workflow](https://github.com/fughilli/libopendrop/actions/workflows/build_and_test.yaml/badge.svg)
+
 `libopendrop` is a visualizer library à la Milkdrop2 or ProjectM. However,
 unlike both Milkdrop2 and ProjectM, it is implemented using modern C++17 with a
 central focus on correctness, performance, and simplicity.
