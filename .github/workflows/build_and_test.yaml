@@ -1,7 +1,7 @@
-name: Host Test (GCC)
+name: Host Build/Test (GCC)
 on: [push, pull_request]
 jobs:
-  test:
+  compile:
     runs-on: ubuntu-latest
     steps:
     - name: Install C++ dependencies
@@ -18,5 +18,7 @@ jobs:
       with:
         path: "~/.cache/bazel"
         key: bazel
+    - name: Build
+      run: bazelisk build //:main --copt=-I/usr/include/SDL2 --copt=-std=c++17
     - name: Test
       run: bazelisk test ... --copt=-I/usr/include/SDL2 --copt=-std=c++17 --test_output=streamed
