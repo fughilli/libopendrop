@@ -70,6 +70,7 @@ py_test(
     deps = [
         ":wrap_shader",
         requirement("pyfakefs"),
+        requirement("parameterized"),
     ],
 )
 
@@ -87,5 +88,6 @@ py_test(
     srcs = ["wrap_model_test.py"],
     deps = [
         ":wrap_model",
+        requirement("parameterized"),
     ],
 )
