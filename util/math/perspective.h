@@ -3,12 +3,15 @@
 namespace opendrop {
 
 struct Directions {
-  static constexpr glm::vec3 kUp = {0, 1, 0};
-  static constexpr glm::vec3 kDown = {0, -1, 0};
-  static constexpr glm::vec3 kRight = {1, 0, 0};
-  static constexpr glm::vec3 kLeft = {-1, 0, 0};
-  static constexpr glm::vec3 kIntoScreen = {0, 0, 1};
-  static constexpr glm::vec3 kOutOfScreen = {0, 0, -1};
+  // TODO: Figure out why constexpr is not working with GLM on RPi.
+  // Maybe something related to detection of supported compiler features in (?):
+  // https://github.com/g-truc/glm/blob/b3f87720261d623986f164b2a7f6a0a938430271/glm/detail/setup.hpp#L280
+  static const glm::vec3 kUp;
+  static const glm::vec3 kDown;
+  static const glm::vec3 kRight;
+  static const glm::vec3 kLeft;
+  static const glm::vec3 kIntoScreen;
+  static const glm::vec3 kOutOfScreen;
 };
 
 glm::mat3x3 OrientTowards(glm::vec3 look_ray);

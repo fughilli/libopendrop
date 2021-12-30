@@ -1,10 +1,30 @@
 load("@com_google_protobuf//:protobuf.bzl", "py_proto_library")
 load("//preset:preset_defs.bzl", "shader_cc_library")
+load(
+    "//toolchain:cross_compilation.bzl",
+    CROSS_COMPILATION_COPTS = "COPTS",
+    CROSS_COMPILATION_DEPS = "DEPS",
+    CROSS_COMPILATION_LINKOPTS = "LINKOPTS",
+)
 
 package(default_visibility = ["//:__subpackages__"])
 
+config_setting(
+    name = "pi_build",
+    values = {
+        "cpu": "armeabihf",
+        "compiler": "clang",
+    },
+)
+
+config_setting(
+    name = "clang_build",
+    values = {"compiler": "clang"},
+)
+
 cc_binary(
     name = "main",
+    copts = CROSS_COMPILATION_COPTS,
     linkopts = [
         "-Wl,-z,notext",
         "-lSDL2",
@@ -25,11 +45,11 @@ cc_binary(
         "-lXss",
         "-lXi",
         "-lGL",
-    ],
+    ] + CROSS_COMPILATION_LINKOPTS,
     linkstatic = 1,
     deps = [
         ":main_lib",
-    ],
+    ] + CROSS_COMPILATION_DEPS,
 )
 
 cc_library(

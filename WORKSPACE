@@ -49,3 +49,13 @@ pip_parse(
 load("@py_deps//:requirements.bzl", "install_deps")
 
 install_deps()
+
+git_repository(
+    name = "rpi_bazel",
+    branch = "master",
+    remote = "https://github.com/fughilli/rpi_bazel",
+)
+
+load("@rpi_bazel//tools/workspace:default.bzl", "add_default_repositories")
+
+add_default_repositories()

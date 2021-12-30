@@ -16,16 +16,29 @@ function usage() {
   echoerr "-s  \tPulseaudio source filter type. The first source of this type"
   echoerr "    \twill be selected. Source type should be one of [system, "
   echoerr "    \tbluetooth]."
+  echoerr ""
   echoerr "-d  \tEnable debug logging."
+  echoerr ""
   echoerr "-b  \tRun from the binary output of bazel instead of building "
   echoerr "    \tlibopendrop again."
+  echoerr ""
   echoerr "-dv \tEnable debugging with valgrind. Implies '-b'."
+  echoerr ""
   echoerr "-p  \tPosition on the screen. Must be of the form \`<x>,<y>\`."
+  echoerr ""
+  echoerr "-c  \tCompiler configuration to use. Should be one of [gcc, clang, "
+  echoerr "    \tpi]. gcc and clang build for the host platform. pi is a "
+  echoerr "    \tcross-compilation configuration targeting armhf on raspberry "
+  echoerr "    \tpi."
+  echoerr ""
+  echoerr "-z  \tOnly build the binary, but do not run it."
 }
 
 enable_debug=0
 run_binary=0
 enable_valgrind=0
+compiler_config="gcc"
+build_only=0
 
 passthrough_args=()
 
@@ -55,6 +68,15 @@ while [[ ! -z "$@" ]]; do
     '-p')
       position=$1
       shift
+      ;;
+
+    '-c')
+      compiler_config=$1
+      shift
+      ;;
+
+    '-z')
+      build_only=1
       ;;
 
     *)
@@ -102,6 +124,22 @@ case $source_type in
     ;;
 esac
 
+compiler_args=""
+
+case $compiler_config in
+  'gcc')
+    compiler_args="--copt=-std=c++17"
+    ;;
+
+  'clang')
+    compiler_args="--config=clang"
+    ;;
+
+  'pi')
+    compiler_args="--config=pi"
+    ;;
+esac
+
 if [[ $enable_debug == 1 ]]; then
   debug_options="-c dbg --copt=-ggdb --copt=-DENABLE_DEBUG_LOGGING"
 else
@@ -138,9 +176,13 @@ if [[ $run_binary == 1 ]]; then
   $valgrind_command ../bazel-bin/libopendrop/main $options \
     ${passthrough_args[@]}
 else
-  bazelisk run //:main $debug_options \
+  bazel_command="run"
+  trailing_args="-- $options ${passthrough_args[@]}"
+  if [[ $build_only == 1 ]]; then
+    bazel_command="build"
+    trailing_args=""
+  fi
+  bazelisk $bazel_command //:main $compiler_args $debug_options \
     --copt=-I/usr/include/SDL2 \
-    --copt=-std=c++17 \
-    -- \
-    $options ${passthrough_args[@]}
+    $trailing_args
 fi
