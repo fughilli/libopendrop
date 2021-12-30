@@ -14,6 +14,8 @@ cc_library(
         ":composite",
         ":passthrough",
         ":warp",
+        "//util/math:vector",
+        "//util/math:perspective",
         "//:gl_interface",
         "//:gl_render_target",
         "//preset",

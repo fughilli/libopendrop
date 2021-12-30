@@ -27,6 +27,8 @@ cc_library(
         "//util:gl_util",
         "//util:logging",
         "//util:status_macros",
+        "//util/math:perspective",
+        "//util/math:vector",
     ],
 )
 
@@ -53,6 +55,7 @@ shader_cc_library(
 shader_cc_library(
     name = "warp",
     srcs = ["warp.fsh"],
+    deps = ["//preset/common:math"],
 )
 
 model_cc_library(

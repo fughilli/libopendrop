@@ -88,8 +88,12 @@ DEFINE_BIND_UNIFORM(float, glUniform1f, value);
 DEFINE_BIND_UNIFORM(int, glUniform1i, value);
 DEFINE_BIND_UNIFORM(bool, glUniform1i, value);
 DEFINE_BIND_UNIFORM_V(glm::vec2, glUniform2fv, &value.x);
+DEFINE_BIND_UNIFORM_V(glm::vec3, glUniform3fv, &value.x);
 DEFINE_BIND_UNIFORM_V(glm::vec4, glUniform4fv, &value.x);
 DEFINE_BIND_UNIFORM_V(glm::ivec2, glUniform2iv, &value.x);
+DEFINE_BIND_UNIFORM_V(glm::ivec3, glUniform3iv, &value.x);
+DEFINE_BIND_UNIFORM_V(glm::ivec4, glUniform3iv, &value.x);
+DEFINE_BIND_UNIFORM_M(glm::mat3, glUniformMatrix3fv, &value[0][0]);
 DEFINE_BIND_UNIFORM_M(glm::mat4, glUniformMatrix4fv, &value[0][0]);
 
 }  // namespace gl

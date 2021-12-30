@@ -20,6 +20,8 @@
 #include "util/gl_util.h"
 #include "util/logging.h"
 #include "util/math.h"
+#include "util/math/perspective.h"
+#include "util/math/vector.h"
 #include "util/status_macros.h"
 
 namespace opendrop {
@@ -28,19 +30,6 @@ namespace {
 
 constexpr float kFramerateScale = 60.0f / 60.0f;
 constexpr float kScaleFactor = 0.5f;
-
-// Rotates a vector counterclockwise by an angle in radians.
-glm::vec2 Rotate2d(glm::vec2 vector, float angle) {
-  float cos_angle = cos(angle);
-  float sin_angle = sin(angle);
-
-  return glm::vec2(vector.x * cos_angle - vector.y * sin_angle,
-                   vector.x * sin_angle + vector.y * cos_angle);
-}
-
-glm::vec2 UnitVectorAtAngle(float angle) {
-  return glm::vec2(cos(angle), sin(angle));
-}
 
 }  // namespace
 
@@ -162,13 +151,9 @@ void RotaryTransporter::OnDrawFrame(
     // Draw the waveform.
     constexpr int kMaxSymmetry = 5;
     constexpr int kMinSymmetry = 3;
-    zoom_angle_ += 10 * sin(normalized_power * kFramerateScale) * bass_power_ *
-                   kFramerateScale;
 
     glm::vec3 look_vec_3d(-UnitVectorAtAngle(zoom_angle_) / 2.0f, zoom_speed);
-    glm::vec3 axis = glm::cross(glm::vec3(0, 0, 1), look_vec_3d);
-    float angle = glm::angle(glm::vec3(0, 0, 1), glm::normalize(look_vec_3d));
-    glm::mat3x3 rotation = glm::rotate(angle, glm::normalize(axis));
+    glm::mat3x3 rotation = OrientTowards(look_vec_3d);
 
     int petals =
         static_cast<int>(kMinSymmetry + (kMaxSymmetry - kMinSymmetry) *
@@ -196,6 +181,9 @@ void RotaryTransporter::OnDrawFrame(
           energy * kFramerateScale + i / static_cast<float>(petals), 1, 1)));
       polyline_.Draw();
     }
+
+    zoom_angle_ +=
+        sin(normalized_power * kFramerateScale) * bass_power_ * kFramerateScale;
   }
 
   {

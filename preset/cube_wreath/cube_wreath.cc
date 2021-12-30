@@ -20,6 +20,8 @@
 #include "util/colors.h"
 #include "util/gl_util.h"
 #include "util/logging.h"
+#include "util/math/perspective.h"
+#include "util/math/vector.h"
 #include "util/status_macros.h"
 
 namespace opendrop {
@@ -98,14 +100,17 @@ void CubeWreath::OnUpdateGeometry() {
   }
 }
 
-void CubeWreath::DrawCubes(float power, float energy) {
+void CubeWreath::DrawCubes(float power, float energy, glm::vec3 zoom_vec) {
   constexpr static int kNumCubes = 16;
 
   float cube_scale = std::clamp(0.1 + (cos(energy * 20) + 1) / 15.5, 0.0, 2.0);
 
+  glm::mat3x3 look_rotation = OrientTowards(zoom_vec);
+
   glm::mat4 model_transform;
   for (int i = 0; i < kNumCubes; ++i) {
     model_transform =
+        glm::mat4(look_rotation) *
         glm::rotate(
             glm::mat4(1.0f),
             static_cast<float>(sin(energy) * 5 + (i * M_PI * 2.0f / kNumCubes)),
@@ -158,6 +163,13 @@ void CubeWreath::OnDrawFrame(
     vertices_[i] = glm::vec2(x_pos, y_pos);
   }
 
+  glm::vec3 zoom_vec =
+      glm::vec3(UnitVectorAtAngle(energy * 2) * std::sin(energy * 0.3f), 0) +
+      Directions::kIntoScreen;
+  glm::vec3 cube_orient_vec = zoom_vec;
+  cube_orient_vec.x /= 2;
+  cube_orient_vec.y /= 2;
+
   {
     auto depth_output_activation = depth_output_target_->Activate();
     auto program_activation = model_program_->Activate();
@@ -174,7 +186,7 @@ void CubeWreath::OnDrawFrame(
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glDepthRange(0, 10);
     glEnable(GL_DEPTH_TEST);
-    DrawCubes(power, energy);
+    DrawCubes(power, energy, cube_orient_vec);
     glDisable(GL_DEPTH_TEST);
   }
 
@@ -186,6 +198,7 @@ void CubeWreath::OnDrawFrame(
     GlBindUniform(warp_program_, "frame_size", glm::ivec2(width(), height()));
     GlBindUniform(warp_program_, "power", power);
     GlBindUniform(warp_program_, "energy", energy);
+    GlBindUniform(warp_program_, "zoom_vec", zoom_vec);
     GlBindUniform(warp_program_, "model_transform", glm::mat4(1.0f));
     auto binding_options = gl::GlTextureBindingOptions();
     binding_options.border_color = glm::vec4(1, 1, 0, 1);

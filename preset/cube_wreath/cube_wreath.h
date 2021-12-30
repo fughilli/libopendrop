@@ -26,14 +26,14 @@ class CubeWreath : public Preset {
 
  protected:
   CubeWreath(std::shared_ptr<gl::GlProgram> warp_program,
-           std::shared_ptr<gl::GlProgram> composite_program,
-           std::shared_ptr<gl::GlProgram> model_program,
-           std::shared_ptr<gl::GlProgram> passthrough_program,
-           std::shared_ptr<gl::GlRenderTarget> model_texture_target,
-           std::shared_ptr<gl::GlRenderTarget> front_render_target,
-           std::shared_ptr<gl::GlRenderTarget> back_render_target,
-           std::shared_ptr<gl::GlRenderTarget> depth_output_target,
-           std::shared_ptr<gl::GlTextureManager> texture_manager);
+             std::shared_ptr<gl::GlProgram> composite_program,
+             std::shared_ptr<gl::GlProgram> model_program,
+             std::shared_ptr<gl::GlProgram> passthrough_program,
+             std::shared_ptr<gl::GlRenderTarget> model_texture_target,
+             std::shared_ptr<gl::GlRenderTarget> front_render_target,
+             std::shared_ptr<gl::GlRenderTarget> back_render_target,
+             std::shared_ptr<gl::GlRenderTarget> depth_output_target,
+             std::shared_ptr<gl::GlTextureManager> texture_manager);
 
   void OnDrawFrame(
       absl::Span<const float> samples, std::shared_ptr<GlobalState> state,
@@ -42,7 +42,7 @@ class CubeWreath : public Preset {
   void OnUpdateGeometry() override;
 
  private:
-  void DrawCubes(float power, float energy);
+  void DrawCubes(float power, float energy, glm::vec3 zoom_vec);
 
   std::shared_ptr<gl::GlProgram> warp_program_;
   std::shared_ptr<gl::GlProgram> composite_program_;

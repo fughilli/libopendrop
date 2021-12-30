@@ -18,6 +18,11 @@ vec2 screen_to_tex(vec2 screen_uv) { return (screen_uv + vec2(1., 1.)) * 0.5; }
 // Zooms a screen UV coordinate by displacing it along its axis.
 vec2 zoom(vec2 screen_uv, float zoom) { return screen_uv * zoom; }
 
+// Zooms a screen UV coordinate by displacing it along its axis.
+vec2 zoom_towards(vec2 screen_uv, float zoom, vec2 target) {
+  return (screen_uv - target) * zoom + target;
+}
+
 // Returns the product of two sinusoids with the given coefficients of `arg`.
 // Choosing the coefficients such that the number of decimal places required to
 // represent their ratio is maximized will give a greater appearance of
@@ -35,7 +40,8 @@ vec4 shift_hue(vec4 color, float hue) {
   const vec3 k = vec3(0.57735, 0.57735, 0.57735);
   float cosine_hue = cos(hue);
   return vec4(color.xyz * cosine_hue + cross(k, color.xyz) * sin(hue) +
-              k * dot(k, color.xyz) * (1.0 - cosine_hue), color.w);
+                  k * dot(k, color.xyz) * (1.0 - cosine_hue),
+              color.w);
 }
 
 float sin_product_range(float coeff_a, float coeff_b, float min, float max,
