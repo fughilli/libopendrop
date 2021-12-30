@@ -91,6 +91,17 @@ See the installation procedure in the
 [setup_pi.sh](https://github.com/fughilli/LedSuitDisplayDriver/blob/f822bf56303b67786c26f9b5d371c053456c1a00/remote_scripts/setup_pi.sh#L12)
 script used to configure the Raspbian system described above for more details.
 
+## Testing
+
+Unit tests are implemented for the libraries in `libopendrop`. Run all tests
+using:
+
+```
+./run_libopendrop.sh -t
+```
+
+The compiler for the tests can be changed with `-c` as above.
+
 ## Preset Authoring
 
 ---

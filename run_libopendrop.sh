@@ -32,10 +32,13 @@ function usage() {
   echoerr "    \tpi."
   echoerr ""
   echoerr "-z  \tOnly build the binary, but do not run it."
+  echoerr ""
+  echoerr "-t  \tRun all tests."
 }
 
 enable_debug=0
 run_binary=0
+run_tests=0
 enable_valgrind=0
 compiler_config="gcc"
 build_only=0
@@ -79,6 +82,10 @@ while [[ ! -z "$@" ]]; do
       build_only=1
       ;;
 
+    '-t')
+      run_tests=1
+      ;;
+
     *)
       passthrough_args+="${arg}"
       ;;
@@ -107,9 +114,7 @@ case $source_type in
     ;;
 
   '')
-    echoerr "Source type not provided!"
-    usage
-    exit 1
+    SOURCE=""
     ;;
 
   '?')
@@ -177,12 +182,20 @@ if [[ $run_binary == 1 ]]; then
     ${passthrough_args[@]}
 else
   bazel_command="run"
-  trailing_args="-- $options ${passthrough_args[@]}"
+  trailing_args="-- $options"
+  target="//:main"
   if [[ $build_only == 1 ]]; then
     bazel_command="build"
     trailing_args=""
   fi
-  bazelisk $bazel_command //:main $compiler_args $debug_options \
+  if [[ $run_tests == 1 ]]; then
+    bazel_command="test"
+    target="//..."
+    trailing_args=""
+  fi
+  bazelisk $bazel_command $target $compiler_args \
     --copt=-I/usr/include/SDL2 \
-    $trailing_args
+    $debug_options \
+    $trailing_args \
+    ${passthrough_args[@]}
 fi

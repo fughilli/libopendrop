@@ -1,3 +1,8 @@
+load(
+    "//toolchain:cross_compilation.bzl",
+    CROSS_COMPILATION_DEPS = "DEPS",
+)
+
 package(default_visibility = ["//:__subpackages__"])
 
 cc_library(
@@ -39,7 +44,7 @@ cc_test(
         ":logging",
         "@com_googletest//:gtest",
         "@com_googletest//:gtest_main",
-    ],
+    ] + CROSS_COMPILATION_DEPS,
 )
 
 cc_library(
@@ -83,7 +88,7 @@ cc_test(
         ":interpolator",
         "@com_googletest//:gtest",
         "@com_googletest//:gtest_main",
-    ],
+    ] + CROSS_COMPILATION_DEPS,
 )
 
 cc_library(
@@ -99,7 +104,7 @@ cc_test(
         ":accumulator",
         "@com_googletest//:gtest",
         "@com_googletest//:gtest_main",
-    ],
+    ] + CROSS_COMPILATION_DEPS,
 )
 
 cc_library(
@@ -118,7 +123,7 @@ cc_test(
         "@com_google_absl//absl/status:statusor",
         "@com_googletest//:gtest",
         "@com_googletest//:gtest_main",
-    ],
+    ] + CROSS_COMPILATION_DEPS,
 )
 
 cc_library(
@@ -139,7 +144,7 @@ cc_test(
         ":filter",
         "@com_googletest//:gtest",
         "@com_googletest//:gtest_main",
-    ],
+    ] + CROSS_COMPILATION_DEPS,
 )
 
 cc_library(
@@ -155,7 +160,7 @@ cc_test(
         ":math",
         "@com_googletest//:gtest",
         "@com_googletest//:gtest_main",
-    ],
+    ] + CROSS_COMPILATION_DEPS,
 )
 
 cc_library(

@@ -1,4 +1,4 @@
-name: Host Build/Test (GCC)
+name: Build/Test
 on: [push, pull_request]
 jobs:
   build_and_test:
@@ -18,7 +18,13 @@ jobs:
       with:
         path: "~/.cache/bazel"
         key: bazel
-    - name: Build
-      run: bazelisk build //:main --copt=-I/usr/include/SDL2 --copt=-std=c++17
-    - name: Test
-      run: bazelisk test ... --copt=-I/usr/include/SDL2 --copt=-std=c++17 --test_output=streamed
+    - name: Build (Host, GCC)
+      run: ./run_libopendrop.sh -b
+    - name: Build (Host, Clang)
+      run: ./run_libopendrop.sh -b -c clang
+    - name: Build (Raspberry Pi, Clang)
+      run: ./run_libopendrop.sh -b -c pi
+    - name: Test (Host, GCC)
+      run: ./run_libopendrop.sh -t
+    - name: Test (Host, Clang)
+      run: ./run_libopendrop.sh -t -c clang
