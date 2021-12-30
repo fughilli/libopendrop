@@ -164,7 +164,7 @@ void RotaryTransporter::OnDrawFrame(
       std::vector<glm::vec2> vertices_rotary(vertices_.size(), glm::vec2(0, 0));
       float angular_displacement = i * (M_PI * 2.0f / petals);
       glm::vec2 displacement_vector = UnitVectorAtAngle(
-          angular_displacement + energy * -40 * kFramerateScale);
+          angular_displacement + energy * -4 * kFramerateScale);
 
       for (int j = 0; j < vertices_rotary.size(); ++j) {
         vertices_rotary[j] =
