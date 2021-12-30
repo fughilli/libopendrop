@@ -31,6 +31,9 @@ T LogLinear(T arg, T n) {
   //
   // Perhaps an answer lies at
   // <https://math.stackexchange.com/questions/107245/continuum-between-linear-and-logarithmic>?
+  //
+  // The goal is to be able to undo exponentiation on a value so that it can be
+  // mapped to a range between 0 and 1.
   CHECK(arg > 0) << "arg must be positive.";
   CHECK(n <= 1 && n >= 0) << "n must be between 0 and 1, inclusive.";
   return n * arg + (1 - n) * std::log(arg);
