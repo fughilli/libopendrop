@@ -52,8 +52,9 @@ install_deps()
 
 git_repository(
     name = "rpi_bazel",
-    branch = "master",
+    commit = "1006f98cd7a1b2d1cfb050c56962981b2d5ce633",
     remote = "https://github.com/fughilli/rpi_bazel",
+    shallow_since = "1604375754 -0800",
 )
 
 load("@rpi_bazel//tools/workspace:default.bzl", "add_default_repositories")
