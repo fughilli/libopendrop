@@ -157,4 +157,7 @@ return GetRandomPreset<opendrop::AlienRorschach,
 
 ## Demo Video
 
-[![Watch the video](https://img.youtube.com/vi/-21v8h5zDC4/2.jpg)](https://www.youtube.com/watch?v=-21v8h5zDC4)
+The following is a demo of `preset/cube_wreath` with input audio from Vortex by
+Rezz and PEEKABOO:
+
+[![Watch the video](https://img.youtube.com/vi/9EKmqaFf8c4/0.jpg)](https://www.youtube.com/watch?v=9EKmqaFf8c4)
