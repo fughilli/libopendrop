@@ -201,7 +201,8 @@ void CubeWreath::OnDrawFrame(
     GlBindUniform(warp_program_, "zoom_vec", zoom_vec);
     GlBindUniform(warp_program_, "model_transform", glm::mat4(1.0f));
     auto binding_options = gl::GlTextureBindingOptions();
-    binding_options.border_color = glm::vec4(1, 1, 0, 1);
+    binding_options.border_color =
+        glm::vec4(HsvToRgb(glm::vec3(energy * 0.1, 1, 1)), 1);
     binding_options.sampling_mode = gl::GlTextureSamplingMode::kClampToBorder;
     GlBindRenderTargetTextureToUniform(warp_program_, "last_frame",
                                        back_render_target_, binding_options);
