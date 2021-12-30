@@ -19,11 +19,11 @@ jobs:
         path: "~/.cache/bazel"
         key: bazel
     - name: Build (Host, GCC)
-      run: ./run_libopendrop.sh -b
+      run: ./run_libopendrop.sh -z
     - name: Build (Host, Clang)
-      run: ./run_libopendrop.sh -b -c clang
+      run: ./run_libopendrop.sh -z -c clang
     - name: Build (Raspberry Pi, Clang)
-      run: ./run_libopendrop.sh -b -c pi
+      run: ./run_libopendrop.sh -z -c pi
     - name: Test (Host, GCC)
       run: ./run_libopendrop.sh -t
     - name: Test (Host, Clang)
