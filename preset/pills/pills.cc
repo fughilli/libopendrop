@@ -15,7 +15,8 @@
 #include "preset/pills/passthrough_frag.fsh.h"
 #include "preset/pills/passthrough_vert.vsh.h"
 #include "preset/pills/pill_center.obj.h"
-#include "preset/pills/pill_ends.obj.h"
+#include "preset/pills/pill_end_bottom.obj.h"
+#include "preset/pills/pill_end_top.obj.h"
 #include "preset/pills/pill_shadow.obj.h"
 #include "preset/pills/warp.fsh.h"
 #include "util/colors.h"
@@ -49,12 +50,15 @@ Pills::Pills(std::shared_ptr<gl::GlProgram> warp_program,
       front_render_target_(front_render_target),
       back_render_target_(back_render_target),
       depth_output_target_(depth_output_target),
-      pill_ends_(pill_ends_obj::Vertices(), pill_ends_obj::Normals(),
-                   pill_ends_obj::Uvs(), pill_ends_obj::Triangles()),
+      pill_end_top_(pill_end_top_obj::Vertices(), pill_end_top_obj::Normals(),
+                    pill_end_top_obj::Uvs(), pill_end_top_obj::Triangles()),
+      pill_end_bottom_(
+          pill_end_bottom_obj::Vertices(), pill_end_bottom_obj::Normals(),
+          pill_end_bottom_obj::Uvs(), pill_end_bottom_obj::Triangles()),
       pill_center_(pill_center_obj::Vertices(), pill_center_obj::Normals(),
-                    pill_center_obj::Uvs(), pill_center_obj::Triangles()),
+                   pill_center_obj::Uvs(), pill_center_obj::Triangles()),
       pill_shadow_(pill_shadow_obj::Vertices(), pill_shadow_obj::Normals(),
-                    pill_shadow_obj::Uvs(), pill_shadow_obj::Triangles()) {}
+                   pill_shadow_obj::Uvs(), pill_shadow_obj::Triangles()) {}
 
 absl::StatusOr<std::shared_ptr<Preset>> Pills::MakeShared(
     std::shared_ptr<gl::GlTextureManager> texture_manager) {
@@ -106,7 +110,8 @@ void Pills::OnUpdateGeometry() {
 void Pills::DrawCubes(float power, float energy, glm::vec3 zoom_vec) {
   constexpr static int kNumCubes = 16;
 
-  float cube_scale = std::clamp(0.1 + (cos(energy * 20) + 1) / 15.5, 0.0, 2.0) * 0.5;
+  float cube_scale =
+      std::clamp(0.1 + (cos(energy * 20) + 1) / 15.5, 0.0, 2.0) * 0.5;
 
   glm::mat3x3 look_rotation = OrientTowards(zoom_vec);
 
@@ -129,13 +134,15 @@ void Pills::DrawCubes(float power, float energy, glm::vec3 zoom_vec) {
         glm::rotate(glm::mat4(1.0f), energy * 10, glm::vec3(0.0f, 0.0f, 1.0f)) *
         glm::rotate(glm::mat4(1.0f), energy * 7, glm::vec3(0.0f, 1.0f, 0.0f)) *
         glm::rotate(glm::mat4(1.0f), energy * 15, glm::vec3(1.0f, 0.0f, 0.0f));
+    const glm::vec4 color_a = glm::vec4(HsvToRgb(glm::vec3(energy, 1, 1)), 1);
+    const glm::vec4 color_b =
+        glm::vec4(HsvToRgb(glm::vec3(energy + 0.5, 1, 1)), 1);
     GlBindUniform(model_program_, "energy", energy);
     GlBindUniform(model_program_, "model_transform", model_transform);
     GlBindUniform(model_program_, "black", false);
     GlBindUniform(model_program_, "light_color_a",
-                  glm::vec4(HsvToRgb(glm::vec3(energy, 1, 1)), 1));
-    GlBindUniform(model_program_, "light_color_b",
-                  glm::vec4(HsvToRgb(glm::vec3(energy + 0.5, 1, 1)), 1));
+                  glm::mix(color_a, color_b, 0.7f));
+    GlBindUniform(model_program_, "light_color_b", color_b);
 
     GlBindUniform(model_program_, "black", true);
     GlBindUniform(model_program_, "max_negative_z", true);
@@ -143,7 +150,11 @@ void Pills::DrawCubes(float power, float energy, glm::vec3 zoom_vec) {
     GlBindUniform(model_program_, "max_negative_z", false);
     pill_center_.Draw();
     GlBindUniform(model_program_, "black", false);
-    pill_ends_.Draw();
+    pill_end_top_.Draw();
+    GlBindUniform(model_program_, "light_color_a",
+                  glm::mix(color_b, color_a, 0.7f));
+    GlBindUniform(model_program_, "light_color_b", color_a);
+    pill_end_bottom_.Draw();
   }
 }
 

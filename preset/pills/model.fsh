@@ -1,5 +1,7 @@
 #version 120
 
+#include "preset/common/math.shh"
+
 uniform sampler2D render_target;
 uniform ivec2 render_target_size;
 uniform float energy;
@@ -22,5 +24,5 @@ void main() {
                mix(light_color_a, light_color_b,
                    dot(normalize(normal), normalize(light_direction))) *
                    0.5);
-  gl_FragDepth = max_negative_z ? 0.9f : gl_FragCoord.z;
+  gl_FragDepth = max_negative_z ? (1.0f - kEpsilon) : gl_FragCoord.z;
 }

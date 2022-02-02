@@ -2,6 +2,7 @@
 #define PRESET_COMMON_MATH_SHH_
 
 const float kPi = 3.141592653589793;
+const float kEpsilon = 1e-6;
 
 // Rotates a screen UV coordinate around the origin by `angle`.
 vec2 rotate(vec2 screen_uv, float angle) {

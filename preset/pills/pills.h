@@ -56,7 +56,8 @@ class Pills : public Preset {
   std::vector<glm::vec2> vertices_;
   Rectangle rectangle_;
   Polyline polyline_;
-  Model pill_ends_;
+  Model pill_end_top_;
+  Model pill_end_bottom_;
   Model pill_center_;
   Model pill_shadow_;
 };

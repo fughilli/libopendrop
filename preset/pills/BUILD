@@ -14,7 +14,8 @@ cc_library(
         ":passthrough_frag",
         ":passthrough_vert",
         ":pill_center",
-        ":pill_ends",
+        ":pill_end_top",
+        ":pill_end_bottom",
         ":pill_shadow",
         ":shrek",
         ":warp",
@@ -51,6 +52,7 @@ shader_cc_library(
 shader_cc_library(
     name = "model",
     srcs = ["model.fsh"],
+    deps = ["//preset/common:math"],
 )
 
 shader_cc_library(
@@ -70,8 +72,12 @@ model_cc_library(
 )
 
 model_cc_library(
-    name = "pill_ends",
-    srcs = ["pill_ends.obj"],
+    name = "pill_end_top",
+    srcs = ["pill_end_top.obj"],
+)
+model_cc_library(
+    name = "pill_end_bottom",
+    srcs = ["pill_end_bottom.obj"],
 )
 
 model_cc_library(
