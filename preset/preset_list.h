@@ -12,6 +12,7 @@
 // Preset includes
 #include "preset/alien_rorschach/alien_rorschach.h"
 #include "preset/cube_boom/cube_boom.h"
+#include "preset/pills/pills.h"
 #include "preset/cube_wreath/cube_wreath.h"
 #include "preset/eye_roll/eye_roll.h"
 #include "preset/glowsticks_3d/glowsticks_3d.h"
@@ -94,12 +95,12 @@ absl::StatusOr<std::shared_ptr<opendrop::Preset>> GetRandomPreset(
 template <typename... Args>
 absl::StatusOr<std::shared_ptr<opendrop::Preset>> GetRandomPresetFromList(
     Args&&... args) {
-  return GetRandomPreset<opendrop::ShapeBounce, opendrop::Kaleidoscope,
+  return GetRandomPreset</*opendrop::ShapeBounce, opendrop::Kaleidoscope,
                          opendrop::SimplePreset, opendrop::AlienRorschach,
                          opendrop::TemplatePreset, opendrop::Glowsticks3d,
                          opendrop::Glowsticks3dZoom,
                          opendrop::RotaryTransporter, opendrop::CubeBoom,
-                         opendrop::EyeRoll, opendrop::CubeWreath>(
+                         opendrop::EyeRoll,*/ opendrop::Pills>(
       std::forward<Args>(args)...);
 }
 
