@@ -12,6 +12,8 @@
 #include <glm/gtx/quaternion.hpp>
 #include <glm/mat4x4.hpp>
 
+#include "preset/pills/alpaca.obj.h"
+#include "preset/pills/alpaca_outline.obj.h"
 #include "preset/pills/composite.fsh.h"
 #include "preset/pills/model.fsh.h"
 #include "preset/pills/passthrough_frag.fsh.h"
@@ -27,6 +29,7 @@
 #include "util/math.h"
 #include "util/math/perspective.h"
 #include "util/math/vector.h"
+#include "util/signals.h"
 #include "util/status_macros.h"
 
 namespace opendrop {
@@ -61,7 +64,14 @@ Pills::Pills(std::shared_ptr<gl::GlProgram> warp_program,
       pill_center_(pill_center_obj::Vertices(), pill_center_obj::Normals(),
                    pill_center_obj::Uvs(), pill_center_obj::Triangles()),
       pill_shadow_(pill_shadow_obj::Vertices(), pill_shadow_obj::Normals(),
-                   pill_shadow_obj::Uvs(), pill_shadow_obj::Triangles()) {}
+                   pill_shadow_obj::Uvs(), pill_shadow_obj::Triangles()),
+      alpaca_(alpaca_obj::Vertices(), alpaca_obj::Normals(), alpaca_obj::Uvs(),
+              alpaca_obj::Triangles()),
+      alpaca_outline_(alpaca_outline_obj::Vertices(),
+                      alpaca_outline_obj::Normals(), alpaca_outline_obj::Uvs(),
+                      alpaca_outline_obj::Triangles())
+
+{}
 
 absl::StatusOr<std::shared_ptr<Preset>> Pills::MakeShared(
     std::shared_ptr<gl::GlTextureManager> texture_manager) {
@@ -151,32 +161,53 @@ void Pills::DrawCubes(float power, float energy, float zoom_coeff,
   glm::mat3x3 look_rotation = OrientTowards(zoom_vec);
 
   float locate_mix_coeff = BoundToRange(zoom_coeff, 0.0f, 1.0f);
-  LOG(INFO) << "locate_mix_coeff = " << locate_mix_coeff << ", zoom_coeff = " << zoom_coeff;
+  float opposite_locate_mix_coeff = BoundToRange(zoom_coeff, -1.0f, 0.0f);
+  LOG(INFO) << "locate_mix_coeff = "
+            << absl::StrFormat("%4.4f", locate_mix_coeff)
+            << ", zoom_coeff = " << absl::StrFormat("%4.4f", zoom_coeff);
 
+  bool printed = false;
   glm::mat4 model_transform;
   for (int i = 0; i < kNumCubes; ++i) {
-    glm::mat4 locate_transform_rotary =
+    // Build a transform that takes an object from the center and brings it out
+    // to sit along a ring centered at its original position.
+    glm::mat4 ring_transform =
+        // Rotation to fan them out.
         glm::rotate(
             glm::mat4(1.0f),
+            // Add a small precession of +-5 radians.
             static_cast<float>(sin(energy) * 5 + (i * M_PI * 2.0f / kNumCubes)),
             glm::vec3(0.0f, 0.0f, 1.0f)) *
+        // Translation to get them to one side.
         glm::translate(
             glm::mat4(1.0f),
+            // Make the radius oscillate from 0.5f to 1.5f.
             glm::vec3(0.5f + (sin(energy * 10) + 1) / 5, 0.0f, 0.0f));
-    glm::mat4 locate_transform_linear = glm::translate(
+
+    // Build a transform that takes an object from the center and moves it out
+    // along a line extending from the left to the right edge of the display.
+    float distribute_coeff = 2 * i / static_cast<float>(kNumCubes - 1);
+    if (zoom_coeff < 0) position_accum_ += (power / 100) * -zoom_coeff;
+    float slide_coeff = position_accum_;
+    LOG_IF(INFO, !printed) << "slide_coeff = " << slide_coeff;
+    printed = true;
+    glm::mat4 line_transform = glm::translate(
         glm::mat4(1.0f),
-        glm::vec3(
-            -1.0f + 2 * i / static_cast<float>(kNumCubes - 1),
-            0.0f, 0.0f));
-    glm::mat4 locate_transform = TransformMix(
-        locate_transform_linear, locate_transform_rotary, locate_mix_coeff);
+        // Rotate the set of objects from one side of the screen to the other.
+        // Choose the extents such that in the worst case we don't have a gap at
+        // either end.
+        glm::vec3((-1.0f + std::fmodf(distribute_coeff + slide_coeff, 2.0f)) *
+                      (static_cast<float>(kNumCubes + 1) / (kNumCubes - 1)),
+                  0.0f, 0.0f));
+    glm::mat4 locate_transform =
+        TransformMix(line_transform, ring_transform, locate_mix_coeff);
 
     model_transform =
         glm::mat4(look_rotation) * locate_transform *
-        glm::mat4x4(cube_scale, 0, 0, 0,  // Row 1
-                    0, cube_scale, 0, 0,  // Row 2
-                    0, 0, cube_scale, 0,  // Row 3
-                    0, 0, 0, 1            // Row 4
+        glm::mat4x4(cube_scale * 1.1, 0, 0, 0,  // Row 1
+                    0, cube_scale * 1.1, 0, 0,  // Row 2
+                    0, 0, cube_scale * 1.1, 0,  // Row 3
+                    0, 0, 0, 1                  // Row 4
                     ) *
         glm::rotate(glm::mat4(1.0f), energy * 10, glm::vec3(0.0f, 0.0f, 1.0f)) *
         glm::rotate(glm::mat4(1.0f), energy * 7, glm::vec3(0.0f, 1.0f, 0.0f)) *
@@ -193,15 +224,25 @@ void Pills::DrawCubes(float power, float energy, float zoom_coeff,
 
     GlBindUniform(model_program_, "black", true);
     GlBindUniform(model_program_, "max_negative_z", true);
-    pill_shadow_.Draw();
+    alpaca_outline_.Draw();
+    // model_transform =
+    //     glm::mat4(look_rotation) * locate_transform *
+    //     glm::mat4x4(cube_scale, 0, 0, 0,  // Row 1
+    //                 0, cube_scale, 0, 0,  // Row 2
+    //                 0, 0, cube_scale, 0,  // Row 3
+    //                 0, 0, 0, 1            // Row 4
+    //                 ) *
+    //     glm::rotate(glm::mat4(1.0f), energy * 10, glm::vec3(0.0f,
+    //     0.0f, 1.0f)) * glm::rotate(glm::mat4(1.0f), energy * 7,
+    //     glm::vec3(0.0f, 1.0f, 0.0f)) * glm::rotate(glm::mat4(1.0f), energy *
+    //     15, glm::vec3(1.0f, 0.0f, 0.0f));
+    // GlBindUniform(model_program_, "model_transform", model_transform);
     GlBindUniform(model_program_, "max_negative_z", false);
-    pill_center_.Draw();
     GlBindUniform(model_program_, "black", false);
-    pill_end_top_.Draw();
     GlBindUniform(model_program_, "light_color_a",
                   glm::mix(color_b, color_a, 0.7f));
     GlBindUniform(model_program_, "light_color_b", color_a);
-    pill_end_bottom_.Draw();
+    alpaca_.Draw();
   }
 }
 
@@ -230,9 +271,15 @@ void Pills::OnDrawFrame(
 
   float zoom_coeff = sin(energy * 2);
 
-  glm::vec3 zoom_vec =
-      glm::vec3(UnitVectorAtAngle(energy * 2) * std::sin(energy * 0.3f), 0) * zoom_coeff +
-      Directions::kIntoScreen;
+  float trunc_zoom_coeff = BoundToRange(SineEase(zoom_coeff), 0.0f, 1.0f);
+  glm::vec3 zoom_vec = glm::vec3(UnitVectorAtAngle(energy * 2) *
+                                     std::sin(energy * 0.3f) * trunc_zoom_coeff,
+                                 0) *
+                           trunc_zoom_coeff +
+                       Directions::kIntoScreen;
+  LOG(INFO) << "trunc_zoom_coeff = "
+            << absl::StrFormat("%4.4f", trunc_zoom_coeff)
+            << " zoom_vec = " << zoom_vec;
   glm::vec3 cube_orient_vec = zoom_vec;
   cube_orient_vec.x /= 2;
   cube_orient_vec.y /= 2;
@@ -262,13 +309,13 @@ void Pills::OnDrawFrame(
 
     auto program_activation = warp_program_->Activate();
 
-
     zoom_coeff = zoom_coeff * 0.2 + 1;
 
     GlBindUniform(warp_program_, "frame_size", glm::ivec2(width(), height()));
     GlBindUniform(warp_program_, "power", power);
     GlBindUniform(warp_program_, "energy", energy);
-    GlBindUniform(warp_program_, "zoom_coeff", zoom_coeff);
+    // Figure out how to keep it from zooming towards the viewer when the line is moving
+    GlBindUniform(warp_program_, "zoom_coeff",zoom_coeff);
     GlBindUniform(warp_program_, "zoom_vec", zoom_vec);
     GlBindUniform(warp_program_, "model_transform", glm::mat4(1.0f));
     auto binding_options = gl::GlTextureBindingOptions();

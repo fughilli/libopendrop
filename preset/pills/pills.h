@@ -61,6 +61,10 @@ class Pills : public Preset {
   Model pill_end_bottom_;
   Model pill_center_;
   Model pill_shadow_;
+  Model alpaca_;
+  Model alpaca_outline_;
+
+  float position_accum_ = 0.0f;
 };
 
 }  // namespace opendrop

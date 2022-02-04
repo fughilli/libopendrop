@@ -8,14 +8,16 @@ cc_library(
     hdrs = ["pills.h"],
     linkstatic = 1,
     deps = [
+        ":alpaca",
+        ":alpaca_outline",
         ":composite",
         ":model",
         ":monkey",
         ":passthrough_frag",
         ":passthrough_vert",
         ":pill_center",
-        ":pill_end_top",
         ":pill_end_bottom",
+        ":pill_end_top",
         ":pill_shadow",
         ":shrek",
         ":warp",
@@ -25,6 +27,7 @@ cc_library(
         "//primitive:model",
         "//primitive:polyline",
         "//primitive:rectangle",
+        "//util:signals",
         "//util:colors",
         "//util:gl_util",
         "//util:logging",
@@ -75,6 +78,7 @@ model_cc_library(
     name = "pill_end_top",
     srcs = ["pill_end_top.obj"],
 )
+
 model_cc_library(
     name = "pill_end_bottom",
     srcs = ["pill_end_bottom.obj"],
@@ -88,4 +92,14 @@ model_cc_library(
 model_cc_library(
     name = "shrek",
     srcs = ["shrek.obj"],
+)
+
+model_cc_library(
+    name = "alpaca_outline",
+    srcs = ["alpaca_outline.obj"],
+)
+
+model_cc_library(
+    name = "alpaca",
+    srcs = ["alpaca.obj"],
 )
