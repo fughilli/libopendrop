@@ -10,16 +10,23 @@ namespace opendrop {
 constexpr float kEpsilon = 1e-6f;
 
 template <typename T>
-inline bool AlmostEqual(T a, T b, T bound = kEpsilon) {
+bool AlmostEqual(T a, T b, T bound = kEpsilon) {
   return std::abs(a - b) <= bound;
 }
 
 template <typename T>
-inline T SafeDivide(T a, T b) {
+T SafeDivide(T a, T b) {
   if (AlmostEqual<T>(b, 0)) {
     return a;
   }
   return a / b;
+}
+
+template <typename T>
+constexpr T BoundToRange(T arg, T low, T high) {
+  if (arg < low) return low;
+  if (arg > high) return high;
+  return arg;
 }
 
 template <typename T>
@@ -45,7 +52,21 @@ T MapValue(T arg, T in_low, T in_high, T out_low, T out_high) {
     if (arg < in_low) return out_low;
     if (arg > in_high) return out_high;
   }
-  return (arg - in_low) / (in_high - in_low) * (out_high - out_low) + out_low;
+  return (out_high - out_low) * ((arg - in_low) / (in_high - in_low)) + out_low;
+}
+
+template <typename A, typename T, bool clamp>
+T MapValueX(A arg, A in_low, A in_high, T out_low, T out_high) {
+  if constexpr (clamp) {
+    if (arg < in_low) return out_low;
+    if (arg > in_high) return out_high;
+  }
+  return (out_high - out_low) * ((arg - in_low) / (in_high - in_low)) + out_low;
+}
+
+template <typename T>
+T Lerp(T low, T high, float alpha) {
+  return MapValueX<float, T, true>(alpha, 0.0f, 1.0f, low, high);
 }
 
 }  // namespace opendrop

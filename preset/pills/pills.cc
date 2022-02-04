@@ -7,7 +7,9 @@
 #include <GL/glext.h>
 
 #include <algorithm>
+#include <glm/gtc/quaternion.hpp>
 #include <glm/gtc/type_ptr.hpp>
+#include <glm/gtx/quaternion.hpp>
 #include <glm/mat4x4.hpp>
 
 #include "preset/pills/composite.fsh.h"
@@ -22,6 +24,7 @@
 #include "util/colors.h"
 #include "util/gl_util.h"
 #include "util/logging.h"
+#include "util/math.h"
 #include "util/math/perspective.h"
 #include "util/math/vector.h"
 #include "util/status_macros.h"
@@ -107,25 +110,69 @@ void Pills::OnUpdateGeometry() {
   }
 }
 
-void Pills::DrawCubes(float power, float energy, glm::vec3 zoom_vec) {
-  constexpr static int kNumCubes = 16;
+std::tuple<float, glm::mat4, glm::mat4> ExtractTransformComponents(
+    glm::mat4 t) {
+  glm::mat4 translation(1);
+  // Copy the translation from t (column 3)
+  translation[3] = t[3];
+  // Copy the rotation from t (upper 3x3)
+  const glm::mat4 rotation(t[0], t[1], t[2], glm::vec4(0, 0, 0, 1));
+
+  const float scale =
+      std::sqrt(t[0].x * t[0].x + t[1].y * t[1].y + t[2].z * t[2].z);
+
+  return std::make_tuple(scale, rotation / scale, translation);
+}
+
+glm::mat4 TransformMix(glm::mat4 t1, glm::mat4 t2, float coeff) {
+  auto [scale1, rotation1, translation1] = ExtractTransformComponents(t1);
+  auto [scale2, rotation2, translation2] = ExtractTransformComponents(t2);
+
+  float new_scale = Lerp(scale1, scale2, coeff);
+  glm::mat4 new_translation = Lerp(translation1, translation2, coeff);
+  glm::mat4 new_rotation = glm::toMat4(
+      glm::mix(glm::quat_cast(rotation1), glm::quat_cast(rotation2), coeff));
+
+  glm::mat4 new_transform = new_translation * new_rotation * new_scale;
+  LOG_IF(INFO, false) << "a = " << coeff << ";\n"
+                      << t1 << " --\n"
+                      << new_transform << " --\n"
+                      << t2;
+  return new_transform;
+}
+
+void Pills::DrawCubes(float power, float energy, float zoom_coeff,
+                      glm::vec3 zoom_vec) {
+  constexpr static int kNumCubes = 9;
 
   float cube_scale =
       std::clamp(0.1 + (cos(energy * 20) + 1) / 15.5, 0.0, 2.0) * 0.5;
 
   glm::mat3x3 look_rotation = OrientTowards(zoom_vec);
 
+  float locate_mix_coeff = BoundToRange(zoom_coeff, 0.0f, 1.0f);
+  LOG(INFO) << "locate_mix_coeff = " << locate_mix_coeff << ", zoom_coeff = " << zoom_coeff;
+
   glm::mat4 model_transform;
   for (int i = 0; i < kNumCubes; ++i) {
-    model_transform =
-        glm::mat4(look_rotation) *
+    glm::mat4 locate_transform_rotary =
         glm::rotate(
             glm::mat4(1.0f),
             static_cast<float>(sin(energy) * 5 + (i * M_PI * 2.0f / kNumCubes)),
             glm::vec3(0.0f, 0.0f, 1.0f)) *
         glm::translate(
             glm::mat4(1.0f),
-            glm::vec3(0.5f + (sin(energy * 10) + 1) / 5, 0.0f, 0.0f)) *
+            glm::vec3(0.5f + (sin(energy * 10) + 1) / 5, 0.0f, 0.0f));
+    glm::mat4 locate_transform_linear = glm::translate(
+        glm::mat4(1.0f),
+        glm::vec3(
+            -1.0f + 2 * i / static_cast<float>(kNumCubes - 1),
+            0.0f, 0.0f));
+    glm::mat4 locate_transform = TransformMix(
+        locate_transform_linear, locate_transform_rotary, locate_mix_coeff);
+
+    model_transform =
+        glm::mat4(look_rotation) * locate_transform *
         glm::mat4x4(cube_scale, 0, 0, 0,  // Row 1
                     0, cube_scale, 0, 0,  // Row 2
                     0, 0, cube_scale, 0,  // Row 3
@@ -181,8 +228,10 @@ void Pills::OnDrawFrame(
     vertices_[i] = glm::vec2(x_pos, y_pos);
   }
 
+  float zoom_coeff = sin(energy * 2);
+
   glm::vec3 zoom_vec =
-      glm::vec3(UnitVectorAtAngle(energy * 2) * std::sin(energy * 0.3f), 0) +
+      glm::vec3(UnitVectorAtAngle(energy * 2) * std::sin(energy * 0.3f), 0) * zoom_coeff +
       Directions::kIntoScreen;
   glm::vec3 cube_orient_vec = zoom_vec;
   cube_orient_vec.x /= 2;
@@ -204,7 +253,7 @@ void Pills::OnDrawFrame(
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glDepthRange(0, 10);
     glEnable(GL_DEPTH_TEST);
-    DrawCubes(power, energy, cube_orient_vec);
+    DrawCubes(power, energy, zoom_coeff, cube_orient_vec);
     glDisable(GL_DEPTH_TEST);
   }
 
@@ -213,9 +262,13 @@ void Pills::OnDrawFrame(
 
     auto program_activation = warp_program_->Activate();
 
+
+    zoom_coeff = zoom_coeff * 0.2 + 1;
+
     GlBindUniform(warp_program_, "frame_size", glm::ivec2(width(), height()));
     GlBindUniform(warp_program_, "power", power);
     GlBindUniform(warp_program_, "energy", energy);
+    GlBindUniform(warp_program_, "zoom_coeff", zoom_coeff);
     GlBindUniform(warp_program_, "zoom_vec", zoom_vec);
     GlBindUniform(warp_program_, "model_transform", glm::mat4(1.0f));
     auto binding_options = gl::GlTextureBindingOptions();

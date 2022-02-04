@@ -7,6 +7,7 @@ varying vec2 screen_uv;
 uniform sampler2D last_frame;
 uniform sampler2D input;
 uniform ivec2 frame_size;
+uniform float zoom_coeff;
 uniform vec3 zoom_vec;
 uniform float energy;
 uniform float power;
@@ -20,7 +21,7 @@ void main() {
   // alternation being inversely proportional to the current intensity of the
   // audio. We multiply in the power such that instantaneous changes in the
   // audio cause more immediately perceptible "jumps" in the zoom effect.
-  texture_uv = zoom_towards(screen_uv, power / 10 + 1.2, -zoom_vec.xy);
+  texture_uv = zoom_towards(screen_uv, zoom_coeff, -zoom_vec.xy);
 
   // Rotate the texture by a pseudo-random amount that varies by `energy`.
   // Additionally multiply in `power` for the same reason as above.

@@ -133,6 +133,7 @@ class _DummyLogger {
 #define __LOG_FUNCTION_FATAL(level) __LOG_FUNCTION_COMMON(level)
 
 #define LOG(level) (__LOG_FUNCTION_##level(level))
+#define LOG_IF(level, condition) if ((condition)) LOG(level)
 #endif
 
 #define CHECK_NULL(pointer)                      \
