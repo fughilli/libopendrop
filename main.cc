@@ -158,6 +158,7 @@ void NextPreset(OpenDropController *controller,
 }  // namespace
 
 extern "C" int main(int argc, char *argv[]) {
+  float user_x = 0.0f;
   absl::ParseCommandLine(argc, argv);
 
   absl::InstallFailureSignalHandler(absl::FailureSignalHandlerOptions());
@@ -319,7 +320,20 @@ extern "C" int main(int argc, char *argv[]) {
               case SDLK_w:
                 LOG(INFO) << "Whitelist";
                 break;
+              case SDLK_k:
+                user_x += 0.001f;
+                break;
+              case SDLK_j:
+                user_x -= 0.001f;
+                break;
+              case SDLK_o:
+                user_x += 0.1f;
+                break;
+              case SDLK_i:
+                user_x -= 0.1f;
+                break;
             }
+            open_drop_controller->global_state().set_user_x(user_x);
             break;
           case SDL_MOUSEMOTION:
             mouse_moved = true;

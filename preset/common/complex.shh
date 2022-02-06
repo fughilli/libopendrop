@@ -1,0 +1,14 @@
+#ifndef PRESET_COMMON_COMPLEX_SHH_
+#define PRESET_COMMON_COMPLEX_SHH_
+
+vec2 conj(vec2 x) { return vec2(x.x, -x.y); }
+
+vec2 cmul(vec2 x, vec2 y) {
+  return vec2(x.x * y.x - x.y * y.y, x.x * y.y + x.y * y.x);
+}
+
+vec2 cinv(vec2 x) { return conj(x) / (length(x) * length(x)); }
+
+vec2 cdiv(vec2 x, vec2 y) { return cmul(x, cinv(y)); }
+
+#endif  // PRESET_COMMON_COMPLEX_SHH_

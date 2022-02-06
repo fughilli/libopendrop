@@ -14,6 +14,7 @@ PRESET_DEPS_LIST = [
     "//preset/shape_bounce",
     "//preset/eye_roll",
     "//preset/cube_wreath",
+    "//preset/dcolor",
 ]
 
 cc_library(

@@ -21,6 +21,7 @@
 #include "preset/shape_bounce/shape_bounce.h"
 #include "preset/simple_preset/simple_preset.h"
 #include "preset/template_preset/template_preset.h"
+#include "preset/dcolor/dcolor.h"
 
 namespace opendrop {
 
@@ -94,12 +95,7 @@ absl::StatusOr<std::shared_ptr<opendrop::Preset>> GetRandomPreset(
 template <typename... Args>
 absl::StatusOr<std::shared_ptr<opendrop::Preset>> GetRandomPresetFromList(
     Args&&... args) {
-  return GetRandomPreset<opendrop::ShapeBounce, opendrop::Kaleidoscope,
-                         opendrop::SimplePreset, opendrop::AlienRorschach,
-                         opendrop::TemplatePreset, opendrop::Glowsticks3d,
-                         opendrop::Glowsticks3dZoom,
-                         opendrop::RotaryTransporter, opendrop::CubeBoom,
-                         opendrop::EyeRoll, opendrop::CubeWreath>(
+  return GetRandomPreset<opendrop::Dcolor>(
       std::forward<Args>(args)...);
 }
 

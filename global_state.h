@@ -26,6 +26,8 @@ class GlobalState {
   float dt() { return properties_.dt; }
   float power() { return properties_.power; }
   float average_power() { return properties_.average_power; }
+  float user_x() { return properties_.user_x; }
+  void set_user_x(float x) { properties_.user_x = x; }
   Accumulator<float>& energy() { return properties_.energy; }
   Accumulator<float>& normalized_energy() {
     return properties_.normalized_energy;
@@ -66,6 +68,8 @@ class GlobalState {
 
     // Average power over time.
     float average_power;
+
+    float user_x;
 
     // Normalized energy (energy accumulated as \int{power / average_power}).
     Accumulator<float> normalized_energy;
