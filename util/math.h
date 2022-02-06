@@ -30,6 +30,16 @@ constexpr T BoundToRange(T arg, T low, T high) {
 }
 
 template <typename T>
+T WrapToRange(T arg, T low, T high) {
+  if constexpr (std::is_floating_point<T>::value) {
+    return std::remainder(arg - low, high - low) + low;
+  }
+  else {
+    return (arg - low) % (high - low) + low;
+  }
+}
+
+template <typename T>
 T LogLinear(T arg, T n) {
   // TODO: This implementation should find some more interesting analytic
   // interpolation between linear and logarithmic such that the curve does not

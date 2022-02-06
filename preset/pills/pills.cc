@@ -169,20 +169,10 @@ void Pills::DrawCubes(float power, float energy, float zoom_coeff,
   bool printed = false;
   glm::mat4 model_transform;
   for (int i = 0; i < kNumCubes; ++i) {
-    // Build a transform that takes an object from the center and brings it out
-    // to sit along a ring centered at its original position.
-    glm::mat4 ring_transform =
-        // Rotation to fan them out.
-        glm::rotate(
-            glm::mat4(1.0f),
-            // Add a small precession of +-5 radians.
-            static_cast<float>(sin(energy) * 5 + (i * M_PI * 2.0f / kNumCubes)),
-            glm::vec3(0.0f, 0.0f, 1.0f)) *
-        // Translation to get them to one side.
-        glm::translate(
-            glm::mat4(1.0f),
-            // Make the radius oscillate from 0.5f to 1.5f.
-            glm::vec3(0.5f + (sin(energy * 10) + 1) / 5, 0.0f, 0.0f));
+    glm::mat4 ring_transform = RingTransform(
+        Directions::kIntoScreen, /*radius=*/0.5f + (sin(energy * 10) + 1) / 5,
+        /*position_along_ring=*/
+        static_cast<float>(sin(energy) * 5 + (i * M_PI * 2.0f / kNumCubes)));
 
     // Build a transform that takes an object from the center and moves it out
     // along a line extending from the left to the right edge of the display.
@@ -314,8 +304,9 @@ void Pills::OnDrawFrame(
     GlBindUniform(warp_program_, "frame_size", glm::ivec2(width(), height()));
     GlBindUniform(warp_program_, "power", power);
     GlBindUniform(warp_program_, "energy", energy);
-    // Figure out how to keep it from zooming towards the viewer when the line is moving
-    GlBindUniform(warp_program_, "zoom_coeff",zoom_coeff);
+    // Figure out how to keep it from zooming towards the viewer when the line
+    // is moving
+    GlBindUniform(warp_program_, "zoom_coeff", zoom_coeff);
     GlBindUniform(warp_program_, "zoom_vec", zoom_vec);
     GlBindUniform(warp_program_, "model_transform", glm::mat4(1.0f));
     auto binding_options = gl::GlTextureBindingOptions();
