@@ -39,8 +39,6 @@
 #include "absl/flags/parse.h"
 #include "absl/time/clock.h"
 #include "absl/types/span.h"
-#include "util/performance_timer.h"
-#include "util/pulseaudio_interface.h"
 #include "cleanup.h"
 #include "gl_interface.h"
 #include "gl_texture_manager.h"
@@ -50,6 +48,8 @@
 #include "sdl_gl_interface.h"
 #include "util/coefficients.h"
 #include "util/logging.h"
+#include "util/performance_timer.h"
+#include "util/pulseaudio_interface.h"
 #include "util/rate_limiter.h"
 
 ABSL_FLAG(std::string, pulseaudio_server, "",
@@ -182,10 +182,16 @@ extern "C" int main(int argc, char *argv[]) {
                          absl::GetFlag(FLAGS_window_height),
                          SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN |
                              SDL_WINDOW_ALLOW_HIGHDPI | SDL_WINDOW_RESIZABLE));
+
+    auto sdl_imgui_interface = std::make_shared<gl::SdlGlInterface>(
+        SDL_CreateWindow("OpenDrop Signals Viewer", -1, -1, 300, 300,
+                         SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN |
+                             SDL_WINDOW_ALLOW_HIGHDPI | SDL_WINDOW_RESIZABLE));
+
     sdl_gl_interface->SetVsync(true);
 
     auto main_context = sdl_gl_interface->AllocateSharedContext();
-    auto main_context_activation = main_context->Activate();
+    auto imgui_context = sdl_gl_interface->AllocateSharedContext();
 
     LOG(INFO) << "Initializing OpenDrop...";
 
@@ -255,101 +261,105 @@ extern "C" int main(int argc, char *argv[]) {
       float prev_dt = static_cast<float>(frame_time) / 1000000.0f;
       frame_timer.Start(frame_start_time);
 
-      open_drop_controller->DrawFrame(prev_dt);
+      { auto imgui_context_activation = imgui_context->Activate(); }
 
-      if (auto_transition) {
-        static float fire_time = 0.0f;
-        if ((open_drop_controller->global_state().t() - fire_time) > 0.5f) {
-          // rho is the automatic transition instantaneous power threshold
-          // coefficient, or the ratio between the instantaneous power and the
-          // average power of the signal required for the `NextPreset` function
-          // to be called.
-          const static float rho = absl::GetFlag(FLAGS_transition_threshold);
-          if (std::abs(open_drop_controller->global_state().power() /
-                       open_drop_controller->global_state().average_power()) >
-              rho) {
-            fire_time = open_drop_controller->global_state().t();
-            static RateLimiter<float> next_preset_limiter(
-                absl::GetFlag(FLAGS_transition_cooldown_period));
-            if (next_preset_limiter.Permitted(fire_time)) {
-              NextPreset(open_drop_controller.get(), texture_manager);
+      {
+        auto main_context_activation = main_context->Activate();
+        open_drop_controller->DrawFrame(prev_dt);
+        if (auto_transition) {
+          static float fire_time = 0.0f;
+          if ((open_drop_controller->global_state().t() - fire_time) > 0.5f) {
+            // rho is the automatic transition instantaneous power threshold
+            // coefficient, or the ratio between the instantaneous power and the
+            // average power of the signal required for the `NextPreset`
+            // function to be called.
+            const static float rho = absl::GetFlag(FLAGS_transition_threshold);
+            if (std::abs(open_drop_controller->global_state().power() /
+                         open_drop_controller->global_state().average_power()) >
+                rho) {
+              fire_time = open_drop_controller->global_state().t();
+              static RateLimiter<float> next_preset_limiter(
+                  absl::GetFlag(FLAGS_transition_cooldown_period));
+              if (next_preset_limiter.Permitted(fire_time)) {
+                NextPreset(open_drop_controller.get(), texture_manager);
+              }
             }
           }
         }
-      }
 
-      if (open_drop_controller->preset_blender()->NumPresets() == 0) {
-        NextPreset(open_drop_controller.get(), texture_manager);
-      }
-
-      bool mouse_moved = false;
-
-      SDL_Event event;
-      while (SDL_PollEvent(&event)) {
-        switch (event.type) {
-          case SDL_WINDOWEVENT:
-            int new_width, new_height;
-            SDL_GL_GetDrawableSize(sdl_gl_interface->GetWindow().get(),
-                                   &new_width, &new_height);
-            switch (event.window.event) {
-              case SDL_WINDOWEVENT_RESIZED:
-              case SDL_WINDOWEVENT_SIZE_CHANGED:
-                open_drop_controller->UpdateGeometry(new_width, new_height);
-                break;
-            }
-            break;
-          case SDL_KEYDOWN:
-            // Handle key
-            switch (event.key.keysym.sym) {
-              case SDLK_n:
-                LOG(INFO) << "Next";
-                NextPreset(dynamic_cast<OpenDropController *>(
-                               open_drop_controller.get()),
-                           texture_manager);
-                break;
-              case SDLK_p:
-                LOG(INFO) << "Previous";
-                break;
-              case SDLK_r:
-                LOG(INFO) << "Random";
-                break;
-              case SDLK_b:
-                LOG(INFO) << "Blacklist";
-                break;
-              case SDLK_w:
-                LOG(INFO) << "Whitelist";
-                break;
-            }
-            break;
-          case SDL_MOUSEMOTION:
-            mouse_moved = true;
-            break;
-          case SDL_QUIT:
-            exit_event_received = true;
-            break;
+        if (open_drop_controller->preset_blender()->NumPresets() == 0) {
+          NextPreset(open_drop_controller.get(), texture_manager);
         }
-      }
 
-      // Handle mouse events
+        bool mouse_moved = false;
 
-      static Oneshot<float> hide_cursor_oneshot(2.0f);
-      static bool cursor_shown = true;
-
-      if (mouse_moved) {
-        if (!cursor_shown) {
-          cursor_shown = true;
-          SDL_ShowCursor(SDL_ENABLE);
+        SDL_Event event;
+        while (SDL_PollEvent(&event)) {
+          switch (event.type) {
+            case SDL_WINDOWEVENT:
+              int new_width, new_height;
+              SDL_GL_GetDrawableSize(sdl_gl_interface->GetWindow().get(),
+                                     &new_width, &new_height);
+              switch (event.window.event) {
+                case SDL_WINDOWEVENT_RESIZED:
+                case SDL_WINDOWEVENT_SIZE_CHANGED:
+                  open_drop_controller->UpdateGeometry(new_width, new_height);
+                  break;
+              }
+              break;
+            case SDL_KEYDOWN:
+              // Handle key
+              switch (event.key.keysym.sym) {
+                case SDLK_n:
+                  LOG(INFO) << "Next";
+                  NextPreset(dynamic_cast<OpenDropController *>(
+                                 open_drop_controller.get()),
+                             texture_manager);
+                  break;
+                case SDLK_p:
+                  LOG(INFO) << "Previous";
+                  break;
+                case SDLK_r:
+                  LOG(INFO) << "Random";
+                  break;
+                case SDLK_b:
+                  LOG(INFO) << "Blacklist";
+                  break;
+                case SDLK_w:
+                  LOG(INFO) << "Whitelist";
+                  break;
+              }
+              break;
+            case SDL_MOUSEMOTION:
+              mouse_moved = true;
+              break;
+            case SDL_QUIT:
+              exit_event_received = true;
+              break;
+          }
         }
-        hide_cursor_oneshot.Start(open_drop_controller->global_state().t());
-      }
-      if (hide_cursor_oneshot.IsDueOnce(
-              open_drop_controller->global_state().t())) {
-        cursor_shown = false;
-        SDL_ShowCursor(SDL_DISABLE);
-      }
-      // End handle mouse events
 
-      sdl_gl_interface->SwapBuffers();
+        // Handle mouse events
+
+        static Oneshot<float> hide_cursor_oneshot(2.0f);
+        static bool cursor_shown = true;
+
+        if (mouse_moved) {
+          if (!cursor_shown) {
+            cursor_shown = true;
+            SDL_ShowCursor(SDL_ENABLE);
+          }
+          hide_cursor_oneshot.Start(open_drop_controller->global_state().t());
+        }
+        if (hide_cursor_oneshot.IsDueOnce(
+                open_drop_controller->global_state().t())) {
+          cursor_shown = false;
+          SDL_ShowCursor(SDL_DISABLE);
+        }
+        // End handle mouse events
+
+        sdl_gl_interface->SwapBuffers();
+      }
 
       // Record the end of the draw operations.
       uint32_t draw_time = draw_timer.End(absl::GetCurrentTimeNanos() / 1000);
