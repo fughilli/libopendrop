@@ -36,7 +36,12 @@ namespace opendrop {
 
 namespace {
 constexpr float kScaleFactor = 2.0f;
-}
+
+enum ModelToDraw {
+  kPill = 0,
+  kAlpaca = 1,
+} kModelToDraw = kAlpaca;
+}  // namespace
 
 Pills::Pills(std::shared_ptr<gl::GlProgram> warp_program,
              std::shared_ptr<gl::GlProgram> composite_program,
@@ -207,32 +212,36 @@ void Pills::DrawCubes(float power, float energy, float zoom_coeff,
         glm::vec4(HsvToRgb(glm::vec3(energy + 0.5, 1, 1)), 1);
     GlBindUniform(model_program_, "energy", energy);
     GlBindUniform(model_program_, "model_transform", model_transform);
-    GlBindUniform(model_program_, "black", false);
-    GlBindUniform(model_program_, "light_color_a",
-                  glm::mix(color_a, color_b, 0.7f));
-    GlBindUniform(model_program_, "light_color_b", color_b);
 
-    GlBindUniform(model_program_, "black", true);
-    GlBindUniform(model_program_, "max_negative_z", true);
-    alpaca_outline_.Draw();
-    // model_transform =
-    //     glm::mat4(look_rotation) * locate_transform *
-    //     glm::mat4x4(cube_scale, 0, 0, 0,  // Row 1
-    //                 0, cube_scale, 0, 0,  // Row 2
-    //                 0, 0, cube_scale, 0,  // Row 3
-    //                 0, 0, 0, 1            // Row 4
-    //                 ) *
-    //     glm::rotate(glm::mat4(1.0f), energy * 10, glm::vec3(0.0f,
-    //     0.0f, 1.0f)) * glm::rotate(glm::mat4(1.0f), energy * 7,
-    //     glm::vec3(0.0f, 1.0f, 0.0f)) * glm::rotate(glm::mat4(1.0f), energy *
-    //     15, glm::vec3(1.0f, 0.0f, 0.0f));
-    // GlBindUniform(model_program_, "model_transform", model_transform);
-    GlBindUniform(model_program_, "max_negative_z", false);
-    GlBindUniform(model_program_, "black", false);
-    GlBindUniform(model_program_, "light_color_a",
-                  glm::mix(color_b, color_a, 0.7f));
-    GlBindUniform(model_program_, "light_color_b", color_a);
-    alpaca_.Draw();
+    switch (kModelToDraw) {
+      case kAlpaca:
+        GlBindUniform(model_program_, "black", true);
+        GlBindUniform(model_program_, "max_negative_z", true);
+        alpaca_outline_.Draw();
+        GlBindUniform(model_program_, "black", false);
+        GlBindUniform(model_program_, "max_negative_z", false);
+        GlBindUniform(model_program_, "light_color_a",
+                      glm::mix(color_b, color_a, 0.7f));
+        GlBindUniform(model_program_, "light_color_b", color_a);
+        alpaca_.Draw();
+        break;
+      case kPill:
+        GlBindUniform(model_program_, "black", true);
+        GlBindUniform(model_program_, "max_negative_z", true);
+        pill_shadow_.Draw();
+        GlBindUniform(model_program_, "max_negative_z", false);
+        pill_center_.Draw();
+        GlBindUniform(model_program_, "black", false);
+        GlBindUniform(model_program_, "light_color_a",
+                      glm::mix(color_a, color_b, 0.7f));
+        GlBindUniform(model_program_, "light_color_b", color_b);
+        pill_end_top_.Draw();
+        GlBindUniform(model_program_, "light_color_a",
+                      glm::mix(color_b, color_a, 0.7f));
+        GlBindUniform(model_program_, "light_color_b", color_a);
+        pill_end_bottom_.Draw();
+        break;
+    }
   }
 }
 
