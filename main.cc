@@ -39,9 +39,12 @@
 #include "absl/flags/parse.h"
 #include "absl/time/clock.h"
 #include "absl/types/span.h"
+#include "backends/imgui_impl_opengl2.h"
+#include "backends/imgui_impl_sdl.h"
 #include "cleanup.h"
 #include "gl_interface.h"
 #include "gl_texture_manager.h"
+#include "imgui.h"
 #include "open_drop_controller.h"
 #include "open_drop_controller_interface.h"
 #include "preset/preset_list.h"
@@ -193,6 +196,14 @@ extern "C" int main(int argc, char *argv[]) {
     auto main_context = sdl_gl_interface->AllocateSharedContext();
     auto imgui_context = sdl_gl_interface->AllocateSharedContext();
 
+    ImGui::CreateContext();
+    // ImGuiIO &io = ImGui::GetIO();
+    // io.Fonts->AddFontFromFileTTF("Ubuntu Sans Mono", 12.0f, nullptr,
+    // nullptr);
+    ImGui_ImplSDL2_InitForOpenGL(sdl_imgui_interface->GetWindow().get(),
+                                 imgui_context.get());
+    ImGui_ImplOpenGL2_Init();
+
     LOG(INFO) << "Initializing OpenDrop...";
 
     auto texture_manager = std::make_shared<gl::GlTextureManager>();
@@ -250,6 +261,7 @@ extern "C" int main(int argc, char *argv[]) {
 
     bool auto_transition = absl::GetFlag(FLAGS_auto_transition);
 
+              int imgui_width = 300, imgui_height = 300;
     while (!exit_event_received) {
       // Record the start of the frame in the draw timer.
       auto frame_start_time = absl::GetCurrentTimeNanos() / 1000;
@@ -261,10 +273,69 @@ extern "C" int main(int argc, char *argv[]) {
       float prev_dt = static_cast<float>(frame_time) / 1000000.0f;
       frame_timer.Start(frame_start_time);
 
-      { auto imgui_context_activation = imgui_context->Activate(); }
+      {
+        auto imgui_context_activation = imgui_context->Activate();
+
+        glViewport(0, 0, imgui_width, imgui_height);
+        glClear(GL_COLOR_BUFFER_BIT);
+
+        ImGui_ImplOpenGL2_NewFrame();
+        ImGui_ImplSDL2_NewFrame(sdl_imgui_interface->GetWindow().get());
+        ImGui::NewFrame();
+
+        SDL_Event event;
+        while (SDL_PollEvent(&event)) {
+          ImGui_ImplSDL2_ProcessEvent(&event);
+          switch (event.type) {
+            case SDL_WINDOWEVENT:
+              SDL_GL_GetDrawableSize(sdl_imgui_interface->GetWindow().get(),
+                                     &imgui_width, &imgui_height);
+              switch (event.window.event) {
+                case SDL_WINDOWEVENT_RESIZED:
+                case SDL_WINDOWEVENT_SIZE_CHANGED:
+                  break;
+              }
+              break;
+            case SDL_KEYDOWN:
+              // Handle key
+              switch (event.key.keysym.sym) {
+                case SDLK_n:
+                  LOG(INFO) << "Next";
+                  break;
+                case SDLK_p:
+                  LOG(INFO) << "Previous";
+                  break;
+                case SDLK_r:
+                  LOG(INFO) << "Random";
+                  break;
+                case SDLK_b:
+                  LOG(INFO) << "Blacklist";
+                  break;
+                case SDLK_w:
+                  LOG(INFO) << "Whitelist";
+                  break;
+              }
+              break;
+            case SDL_MOUSEMOTION:
+              break;
+            case SDL_QUIT:
+              exit_event_received = true;
+              break;
+          }
+        }
+
+        ImGui::Begin("Foo", nullptr, 0);
+        ImGui::End();
+
+        ImGui::Render();
+        ImGui_ImplOpenGL2_RenderDrawData(ImGui::GetDrawData());
+
+        sdl_imgui_interface->SwapBuffers();
+      }
 
       {
         auto main_context_activation = main_context->Activate();
+        if (false) {
         open_drop_controller->DrawFrame(prev_dt);
         if (auto_transition) {
           static float fire_time = 0.0f;
@@ -289,6 +360,7 @@ extern "C" int main(int argc, char *argv[]) {
 
         if (open_drop_controller->preset_blender()->NumPresets() == 0) {
           NextPreset(open_drop_controller.get(), texture_manager);
+        }
         }
 
         bool mouse_moved = false;

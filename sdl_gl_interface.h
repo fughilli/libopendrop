@@ -42,6 +42,8 @@ class SdlGlContext : public GlContext {
 
   std::shared_ptr<GlContextActivation> Activate() override;
 
+  SDL_GLContext* get() { return &context_; }
+
  private:
   std::shared_ptr<SdlGlInterface> interface_;
   SDL_GLContext context_;

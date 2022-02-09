@@ -2,6 +2,8 @@
 
 #include <iostream>
 
+#include "util/logging.h"
+
 namespace gl {
 
 // SdlGlContextActivation implementation
@@ -10,12 +12,14 @@ SdlGlContextActivation::SdlGlContextActivation(
     std::shared_ptr<SdlGlInterface> interface, SDL_GLContext context)
     : interface_(interface), context_(context) {
   // Activate the GL context.
-  SDL_GL_MakeCurrent(interface_->GetWindow().get(), context_);
+  if (SDL_GL_MakeCurrent(interface_->GetWindow().get(), context_) != 0)
+    LOG(FATAL) << "SDL_GL_MakeCurrent failed: " << SDL_GetError();
 }
 
 SdlGlContextActivation::~SdlGlContextActivation() {
   // Deactivate the GL context.
-  SDL_GL_MakeCurrent(interface_->GetWindow().get(), 0);
+  if (SDL_GL_MakeCurrent(interface_->GetWindow().get(), 0) != 0)
+    LOG(FATAL) << "SDL_GL_MakeCurrent failed: " << SDL_GetError();
 }
 
 // SdlGlContext implementation
@@ -34,7 +38,7 @@ std::shared_ptr<GlContextActivation> SdlGlContext::Activate() {
 // ============================================================================
 SdlGlInterface::SdlGlInterface(SDL_Window* window)
     : window_(window, SdlWindowDestroyer()) {
-  SDL_GL_SetAttribute(SDL_GL_SHARE_WITH_CURRENT_CONTEXT, 1);
+  // SDL_GL_SetAttribute(SDL_GL_SHARE_WITH_CURRENT_CONTEXT, 1);
 }
 
 std::shared_ptr<GlContext> SdlGlInterface::AllocateSharedContext() {

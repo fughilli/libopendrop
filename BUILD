@@ -57,6 +57,9 @@ cc_library(
     srcs = ["main.cc"],
     linkstatic = 1,
     deps = [
+        "@imgui//:imgui",
+        "@imgui//:imgui_backend_sdl",
+        "@imgui//:imgui_backend_opengl2",
         ":cleanup",
         ":gl_interface",
         ":open_drop_controller",
