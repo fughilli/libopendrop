@@ -63,6 +63,8 @@ class SdlGlInterface : public GlInterface,
 
   void SetVsync(bool enable) override;
 
+  glm::ivec2 DrawableSize() override;
+
   // Swaps the window double buffers for the window associated with this
   // SdlGlInterface.
   void SwapBuffers() override;

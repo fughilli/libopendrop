@@ -45,6 +45,7 @@
 #include "gl_interface.h"
 #include "gl_texture_manager.h"
 #include "imgui.h"
+#include "implot.h"
 #include "open_drop_controller.h"
 #include "open_drop_controller_interface.h"
 #include "preset/preset_list.h"
@@ -186,22 +187,19 @@ extern "C" int main(int argc, char *argv[]) {
                          SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN |
                              SDL_WINDOW_ALLOW_HIGHDPI | SDL_WINDOW_RESIZABLE));
 
-    auto sdl_imgui_interface = std::make_shared<gl::SdlGlInterface>(
-        SDL_CreateWindow("OpenDrop Signals Viewer", -1, -1, 300, 300,
-                         SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN |
-                             SDL_WINDOW_ALLOW_HIGHDPI | SDL_WINDOW_RESIZABLE));
-
     sdl_gl_interface->SetVsync(true);
 
     auto main_context = sdl_gl_interface->AllocateSharedContext();
-    auto imgui_context = sdl_gl_interface->AllocateSharedContext();
 
     ImGui::CreateContext();
-    // ImGuiIO &io = ImGui::GetIO();
+    ImPlot::CreateContext();
+    ImGuiIO &io = ImGui::GetIO();
+    io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
+    io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
     // io.Fonts->AddFontFromFileTTF("Ubuntu Sans Mono", 12.0f, nullptr,
     // nullptr);
-    ImGui_ImplSDL2_InitForOpenGL(sdl_imgui_interface->GetWindow().get(),
-                                 imgui_context.get());
+    ImGui_ImplSDL2_InitForOpenGL(sdl_gl_interface->GetWindow().get(),
+                                 main_context.get());
     ImGui_ImplOpenGL2_Init();
 
     LOG(INFO) << "Initializing OpenDrop...";
@@ -216,7 +214,8 @@ extern "C" int main(int argc, char *argv[]) {
             .sampling_rate = sampling_rate,
             .audio_buffer_size = kAudioBufferSize,
             .width = absl::GetFlag(FLAGS_window_width),
-            .height = absl::GetFlag(FLAGS_window_height)});
+            .height = absl::GetFlag(FLAGS_window_height),
+            .draw_output_to_quad = false});
     std::shared_ptr<OpenDropControllerInterface>
         open_drop_controller_interface = open_drop_controller;
 
@@ -261,7 +260,9 @@ extern "C" int main(int argc, char *argv[]) {
 
     bool auto_transition = absl::GetFlag(FLAGS_auto_transition);
 
-              int imgui_width = 300, imgui_height = 300;
+    int imgui_width = 300, imgui_height = 300;
+    std::vector<float> interleaved_samples;
+    std::vector<int> interleaved_samples_indices;
     while (!exit_event_received) {
       // Record the start of the frame in the draw timer.
       auto frame_start_time = absl::GetCurrentTimeNanos() / 1000;
@@ -274,108 +275,18 @@ extern "C" int main(int argc, char *argv[]) {
       frame_timer.Start(frame_start_time);
 
       {
-        auto imgui_context_activation = imgui_context->Activate();
+        auto main_context_activation = main_context->Activate();
 
-        glViewport(0, 0, imgui_width, imgui_height);
-        glClear(GL_COLOR_BUFFER_BIT);
-
-        ImGui_ImplOpenGL2_NewFrame();
-        ImGui_ImplSDL2_NewFrame(sdl_imgui_interface->GetWindow().get());
-        ImGui::NewFrame();
+        bool mouse_moved = false;
 
         SDL_Event event;
         while (SDL_PollEvent(&event)) {
           ImGui_ImplSDL2_ProcessEvent(&event);
           switch (event.type) {
             case SDL_WINDOWEVENT:
-              SDL_GL_GetDrawableSize(sdl_imgui_interface->GetWindow().get(),
-                                     &imgui_width, &imgui_height);
               switch (event.window.event) {
                 case SDL_WINDOWEVENT_RESIZED:
                 case SDL_WINDOWEVENT_SIZE_CHANGED:
-                  break;
-              }
-              break;
-            case SDL_KEYDOWN:
-              // Handle key
-              switch (event.key.keysym.sym) {
-                case SDLK_n:
-                  LOG(INFO) << "Next";
-                  break;
-                case SDLK_p:
-                  LOG(INFO) << "Previous";
-                  break;
-                case SDLK_r:
-                  LOG(INFO) << "Random";
-                  break;
-                case SDLK_b:
-                  LOG(INFO) << "Blacklist";
-                  break;
-                case SDLK_w:
-                  LOG(INFO) << "Whitelist";
-                  break;
-              }
-              break;
-            case SDL_MOUSEMOTION:
-              break;
-            case SDL_QUIT:
-              exit_event_received = true;
-              break;
-          }
-        }
-
-        ImGui::Begin("Foo", nullptr, 0);
-        ImGui::End();
-
-        ImGui::Render();
-        ImGui_ImplOpenGL2_RenderDrawData(ImGui::GetDrawData());
-
-        sdl_imgui_interface->SwapBuffers();
-      }
-
-      {
-        auto main_context_activation = main_context->Activate();
-        if (false) {
-        open_drop_controller->DrawFrame(prev_dt);
-        if (auto_transition) {
-          static float fire_time = 0.0f;
-          if ((open_drop_controller->global_state().t() - fire_time) > 0.5f) {
-            // rho is the automatic transition instantaneous power threshold
-            // coefficient, or the ratio between the instantaneous power and the
-            // average power of the signal required for the `NextPreset`
-            // function to be called.
-            const static float rho = absl::GetFlag(FLAGS_transition_threshold);
-            if (std::abs(open_drop_controller->global_state().power() /
-                         open_drop_controller->global_state().average_power()) >
-                rho) {
-              fire_time = open_drop_controller->global_state().t();
-              static RateLimiter<float> next_preset_limiter(
-                  absl::GetFlag(FLAGS_transition_cooldown_period));
-              if (next_preset_limiter.Permitted(fire_time)) {
-                NextPreset(open_drop_controller.get(), texture_manager);
-              }
-            }
-          }
-        }
-
-        if (open_drop_controller->preset_blender()->NumPresets() == 0) {
-          NextPreset(open_drop_controller.get(), texture_manager);
-        }
-        }
-
-        bool mouse_moved = false;
-
-        SDL_Event event;
-        while (SDL_PollEvent(&event)) {
-          switch (event.type) {
-            case SDL_WINDOWEVENT:
-              int new_width, new_height;
-              SDL_GL_GetDrawableSize(sdl_gl_interface->GetWindow().get(),
-                                     &new_width, &new_height);
-              switch (event.window.event) {
-                case SDL_WINDOWEVENT_RESIZED:
-                case SDL_WINDOWEVENT_SIZE_CHANGED:
-                  open_drop_controller->UpdateGeometry(new_width, new_height);
                   break;
               }
               break;
@@ -407,9 +318,71 @@ extern "C" int main(int argc, char *argv[]) {
               break;
             case SDL_QUIT:
               exit_event_received = true;
+              LOG(INFO) << "EXIT RECEIVED";
               break;
           }
         }
+
+        glClear(GL_COLOR_BUFFER_BIT);
+
+        ImGui_ImplOpenGL2_NewFrame();
+        ImGui_ImplSDL2_NewFrame();
+        ImGui::NewFrame();
+
+        ImGui::Begin("Foo", nullptr, 0);
+        ImVec2 wsize = ImGui::GetWindowSize();
+        open_drop_controller->UpdateGeometry(wsize.x, wsize.y);
+
+        {
+          open_drop_controller->DrawFrame(prev_dt);
+          if (auto_transition) {
+            static float fire_time = 0.0f;
+            if ((open_drop_controller->global_state().t() - fire_time) > 0.5f) {
+              // rho is the automatic transition instantaneous power threshold
+              // coefficient, or the ratio between the instantaneous power and
+              // the average power of the signal required for the `NextPreset`
+              // function to be called.
+              const static float rho =
+                  absl::GetFlag(FLAGS_transition_threshold);
+              if (std::abs(
+                      open_drop_controller->global_state().power() /
+                      open_drop_controller->global_state().average_power()) >
+                  rho) {
+                fire_time = open_drop_controller->global_state().t();
+                static RateLimiter<float> next_preset_limiter(
+                    absl::GetFlag(FLAGS_transition_cooldown_period));
+                if (next_preset_limiter.Permitted(fire_time)) {
+                  NextPreset(open_drop_controller.get(), texture_manager);
+                }
+              }
+            }
+          }
+
+          if (open_drop_controller->preset_blender()->NumPresets() == 0) {
+            NextPreset(open_drop_controller.get(), texture_manager);
+          }
+        }
+
+        ImGui::Image((ImTextureID)open_drop_controller->render_target()
+                         ->texture_handle(),
+                     wsize, ImVec2(0, 1), ImVec2(1, 0));
+
+        ImGui::End();
+
+        ImGui::Begin("Foo2", nullptr, 0);
+        if (ImPlot::BeginPlot("samples")) {
+          auto &processor = open_drop_controller->audio_processor();
+          interleaved_samples.resize(processor.buffer_size() *
+                                     processor.channels_per_sample());
+          processor.GetSamples(absl::Span<float>(interleaved_samples));
+          ImPlot::PlotLine("Interleaved Samples", interleaved_samples.data(),
+                           interleaved_samples.size());
+          ImPlot::EndPlot();
+        }
+        ImGui::End();
+
+        ImGui::Render();
+        ImGui_ImplOpenGL2_RenderDrawData(ImGui::GetDrawData());
 
         // Handle mouse events
 
@@ -429,6 +402,14 @@ extern "C" int main(int argc, char *argv[]) {
           SDL_ShowCursor(SDL_DISABLE);
         }
         // End handle mouse events
+
+        if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable) {
+          SDL_Window *backup_current_window = SDL_GL_GetCurrentWindow();
+          SDL_GLContext backup_current_context = SDL_GL_GetCurrentContext();
+          ImGui::UpdatePlatformWindows();
+          ImGui::RenderPlatformWindowsDefault();
+          SDL_GL_MakeCurrent(backup_current_window, backup_current_context);
+        }
 
         sdl_gl_interface->SwapBuffers();
       }
@@ -469,6 +450,9 @@ extern "C" int main(int argc, char *argv[]) {
         }
       }
     }
+
+    ImPlot::DestroyContext();
+    ImGui::DestroyContext();
   }
   return 0;
 }

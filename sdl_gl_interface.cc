@@ -59,6 +59,12 @@ void SdlGlInterface::SetVsync(bool enable) {
   SDL_GL_SetSwapInterval(0);
 }
 
+glm::ivec2 SdlGlInterface::DrawableSize() {
+  int drawable_width = 0, drawable_height = 0;
+  SDL_GL_GetDrawableSize(GetWindow().get(), &drawable_width, &drawable_height);
+  return glm::ivec2(drawable_width, drawable_height);
+}
+
 void SdlGlInterface::SwapBuffers() { SDL_GL_SwapWindow(window_.get()); }
 
 }  // namespace gl

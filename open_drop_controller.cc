@@ -85,7 +85,7 @@ void OpenDropController::DrawFrame(float dt) {
   if (preset_blender_) {
     preset_blender_->DrawFrame(absl::Span<const float>(samples_interleaved),
                                global_state_, output_render_target_);
-    {
+    if (options_.draw_output_to_quad) {
       blit_program_->Use();
       gl::GlBindRenderTargetTextureToUniform(blit_program_, "source_texture",
                                              output_render_target_,

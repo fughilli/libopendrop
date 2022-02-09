@@ -16,13 +16,6 @@ cc_library(
         "imstb_textedit.h",
         "imstb_truetype.h",
     ],
-    linkopts = [
-        "-lm",
-        # FIXME(cfrantz): Detect whether we're building for linux or windows,
-        # and select the appropriate GL library
-        # "-lGL",
-        # "-lopengl32",
-    ],
 )
 
 cc_library(

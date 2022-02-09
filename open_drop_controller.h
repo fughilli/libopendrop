@@ -22,6 +22,7 @@ class OpenDropController : public OpenDropControllerInterface {
     ptrdiff_t audio_buffer_size;
     int width;
     int height;
+    bool draw_output_to_quad;
   };
 
   OpenDropController(Options options);
@@ -32,6 +33,9 @@ class OpenDropController : public OpenDropControllerInterface {
   // instance.
   std::shared_ptr<PresetBlender> preset_blender() { return preset_blender_; }
   GlobalState& global_state() const { return *global_state_; }
+  std::shared_ptr<gl::GlRenderTarget> render_target() {
+    return output_render_target_;
+  }
 
  private:
   const Options options_;

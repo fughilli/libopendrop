@@ -57,9 +57,6 @@ cc_library(
     srcs = ["main.cc"],
     linkstatic = 1,
     deps = [
-        "@imgui//:imgui",
-        "@imgui//:imgui_backend_sdl",
-        "@imgui//:imgui_backend_opengl2",
         ":cleanup",
         ":gl_interface",
         ":open_drop_controller",
@@ -75,6 +72,10 @@ cc_library(
         "@com_google_absl//absl/flags:parse",
         "@com_google_absl//absl/time",
         "@com_google_absl//absl/types:span",
+        "@imgui",
+        "@imgui//:imgui_backend_opengl2",
+        "@imgui//:imgui_backend_sdl",
+        "@implot",
     ],
 )
 

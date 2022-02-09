@@ -1,6 +1,7 @@
 #ifndef GL_INTERFACE_H_
 #define GL_INTERFACE_H_
 
+#include <glm/glm.hpp>
 #include <memory>
 #include <string>
 
@@ -78,6 +79,7 @@ class GlInterface {
  public:
   virtual std::shared_ptr<GlContext> AllocateSharedContext() = 0;
   virtual void SetVsync(bool enable) = 0;
+  virtual glm::ivec2 DrawableSize() = 0;
 
   // Swaps double-buffers.
   virtual void SwapBuffers() = 0;
