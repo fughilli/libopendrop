@@ -62,6 +62,7 @@ cc_library(
         ":open_drop_controller",
         ":open_drop_controller_interface",
         ":sdl_gl_interface",
+        "//debug:signal_scope",
         "//preset:preset_list",
         "//util:logging",
         "//util:performance_timer",

@@ -12,6 +12,7 @@
 #include <glm/gtx/quaternion.hpp>
 #include <glm/mat4x4.hpp>
 
+#include "debug/signal_scope.h"
 #include "preset/pills/alpaca.obj.h"
 #include "preset/pills/alpaca_outline.obj.h"
 #include "preset/pills/composite.fsh.h"
@@ -40,7 +41,7 @@ constexpr float kScaleFactor = 2.0f;
 enum ModelToDraw {
   kPill = 0,
   kAlpaca = 1,
-} kModelToDraw = kAlpaca;
+} kModelToDraw = kPill;
 }  // namespace
 
 Pills::Pills(std::shared_ptr<gl::GlProgram> warp_program,
@@ -160,18 +161,15 @@ void Pills::DrawCubes(float power, float energy, float zoom_coeff,
                       glm::vec3 zoom_vec) {
   constexpr static int kNumCubes = 9;
 
-  float cube_scale =
-      std::clamp(0.1 + (cos(energy * 20) + 1) / 15.5, 0.0, 2.0) * 0.5;
+  float cube_scale = SIGPLOT_AUTO(
+      std::clamp(0.1 + (cos(energy * 20) + 1) / 15.5, 0.0, 2.0) * 0.5);
 
   glm::mat3x3 look_rotation = OrientTowards(zoom_vec);
 
-  float locate_mix_coeff = BoundToRange(zoom_coeff, 0.0f, 1.0f);
-  float opposite_locate_mix_coeff = BoundToRange(zoom_coeff, -1.0f, 0.0f);
-  LOG(INFO) << "locate_mix_coeff = "
-            << absl::StrFormat("%4.4f", locate_mix_coeff)
-            << ", zoom_coeff = " << absl::StrFormat("%4.4f", zoom_coeff);
+  float SIGPLOT_ASSIGN(locate_mix_coeff, std::clamp(zoom_coeff, 0.0f, 1.0f));
+  float SIGPLOT_ASSIGN(opposite_locate_mix_coeff,
+                       std::clamp(zoom_coeff, -1.0f, 0.0f));
 
-  bool printed = false;
   glm::mat4 model_transform;
   for (int i = 0; i < kNumCubes; ++i) {
     glm::mat4 ring_transform = RingTransform(
@@ -183,9 +181,7 @@ void Pills::DrawCubes(float power, float energy, float zoom_coeff,
     // along a line extending from the left to the right edge of the display.
     float distribute_coeff = 2 * i / static_cast<float>(kNumCubes - 1);
     if (zoom_coeff < 0) position_accum_ += (power / 100) * -zoom_coeff;
-    float slide_coeff = position_accum_;
-    LOG_IF(INFO, !printed) << "slide_coeff = " << slide_coeff;
-    printed = true;
+    float SIGPLOT_ASSIGN_WRAP(slide_coeff, position_accum_, 0.0f, 1.0f);
     glm::mat4 line_transform = glm::translate(
         glm::mat4(1.0f),
         // Rotate the set of objects from one side of the screen to the other.
@@ -248,8 +244,9 @@ void Pills::DrawCubes(float power, float energy, float zoom_coeff,
 void Pills::OnDrawFrame(
     absl::Span<const float> samples, std::shared_ptr<GlobalState> state,
     float alpha, std::shared_ptr<gl::GlRenderTarget> output_render_target) {
-  float energy = state->energy();
-  float power = state->power();
+  float SIGPLOT_ASSIGN_WRAP(energy, static_cast<float>(state->energy()), 0.0f,
+                            1.0f);
+  float SIGPLOT_ASSIGN(power, state->power());
 
   auto buffer_size = samples.size() / 2;
   vertices_.resize(buffer_size);
@@ -268,17 +265,16 @@ void Pills::OnDrawFrame(
     vertices_[i] = glm::vec2(x_pos, y_pos);
   }
 
-  float zoom_coeff = sin(energy * 2);
+  float SIGPLOT_ASSIGN(zoom_coeff, sin(energy * 2));
 
-  float trunc_zoom_coeff = BoundToRange(SineEase(zoom_coeff), 0.0f, 1.0f);
+  float SIGPLOT_ASSIGN(trunc_zoom_coeff,
+                       std::clamp(SineEase(zoom_coeff), 0.0f, 1.0f));
+
   glm::vec3 zoom_vec = glm::vec3(UnitVectorAtAngle(energy * 2) *
                                      std::sin(energy * 0.3f) * trunc_zoom_coeff,
                                  0) *
                            trunc_zoom_coeff +
                        Directions::kIntoScreen;
-  LOG(INFO) << "trunc_zoom_coeff = "
-            << absl::StrFormat("%4.4f", trunc_zoom_coeff)
-            << " zoom_vec = " << zoom_vec;
   glm::vec3 cube_orient_vec = zoom_vec;
   cube_orient_vec.x /= 2;
   cube_orient_vec.y /= 2;

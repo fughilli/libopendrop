@@ -42,6 +42,7 @@
 #include "backends/imgui_impl_opengl2.h"
 #include "backends/imgui_impl_sdl.h"
 #include "cleanup.h"
+#include "debug/signal_scope.h"
 #include "gl_interface.h"
 #include "gl_texture_manager.h"
 #include "imgui.h"
@@ -370,6 +371,7 @@ extern "C" int main(int argc, char *argv[]) {
         ImGui::End();
 
         ImGui::Begin("Foo2", nullptr, 0);
+        ImPlot::SetNextAxisLimits(ImAxis_Y1, -1.0f, 1.0f);
         if (ImPlot::BeginPlot("samples")) {
           auto &processor = open_drop_controller->audio_processor();
           interleaved_samples.resize(processor.buffer_size() *
@@ -379,6 +381,7 @@ extern "C" int main(int argc, char *argv[]) {
                            interleaved_samples.size());
           ImPlot::EndPlot();
         }
+        SignalScope::Plot();
         ImGui::End();
 
         ImGui::Render();

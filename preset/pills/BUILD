@@ -8,6 +8,7 @@ cc_library(
     hdrs = ["pills.h"],
     linkstatic = 1,
     deps = [
+        "//debug:signal_scope",
         ":alpaca",
         ":alpaca_outline",
         ":composite",

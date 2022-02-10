@@ -23,19 +23,19 @@ T SafeDivide(T a, T b) {
 }
 
 template <typename T>
-constexpr T BoundToRange(T arg, T low, T high) {
-  if (arg < low) return low;
-  if (arg > high) return high;
-  return arg;
-}
-
-template <typename T>
 T WrapToRange(T arg, T low, T high) {
   if constexpr (std::is_floating_point<T>::value) {
-    return std::remainder(arg - low, high - low) + low;
-  }
-  else {
-    return (arg - low) % (high - low) + low;
+    T rem = std::fmod(arg - low, high - low);
+    if (rem < 0) {
+      return high + rem;
+    }
+    return rem + low;
+  } else {
+    T rem = (arg - low) % (high - low);
+    if (rem < 0) {
+      return rem + high;
+    }
+    return rem + low;
   }
 }
 

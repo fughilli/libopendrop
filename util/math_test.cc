@@ -49,5 +49,25 @@ TEST(MathTest, MapValueProducesExpectedValue) {
   EXPECT_NEAR((MapValue<float, false>(4, 2, 6, -10, -20)), -15, kEpsilon);
 }
 
+TEST(MathTest, WrapToRangeProducesExpectedValue) {
+  EXPECT_NEAR(WrapToRange<float>(-0.4f, 0.0f, 1.0f), 0.6f, kEpsilon);
+  EXPECT_NEAR(WrapToRange<float>(0.0f, 0.0f, 1.0f), 0.0f, kEpsilon);
+  EXPECT_NEAR(WrapToRange<float>(0.5f, 0.0f, 1.0f), 0.5f, kEpsilon);
+  EXPECT_NEAR(WrapToRange<float>(0.99f, 0.0f, 1.0f), 0.99f, kEpsilon);
+  EXPECT_NEAR(WrapToRange<float>(1.0f, 0.0f, 1.0f), 0.0f, kEpsilon);
+  EXPECT_NEAR(WrapToRange<float>(1.2f, 0.0f, 1.0f), 0.2f, kEpsilon);
+
+  EXPECT_NEAR(WrapToRange<float>(-4.0f, -2.0f, 3.0f), 1.0f, kEpsilon);
+
+  EXPECT_EQ(WrapToRange<int>(-4, 0, 10), 6);
+  EXPECT_EQ(WrapToRange<int>(0, 0, 10), 0);
+  EXPECT_EQ(WrapToRange<int>(5, 0, 10), 5);
+  EXPECT_EQ(WrapToRange<int>(9, 0, 10), 9);
+  EXPECT_EQ(WrapToRange<int>(10, 0, 10), 0);
+  EXPECT_EQ(WrapToRange<int>(12, 0, 10), 2);
+
+  EXPECT_EQ(WrapToRange<int>(-4, -2, 3), 1);
+}
+
 }  // namespace
 }  // namespace opendrop
