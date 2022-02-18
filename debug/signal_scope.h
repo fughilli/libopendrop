@@ -1,3 +1,6 @@
+#ifndef DEBUG_SIGNAL_SCOPE_H_
+#define DEBUG_SIGNAL_SCOPE_H_
+
 #include "absl/container/flat_hash_map.h"
 #include "absl/strings/string_view.h"
 #include "implot.h"
@@ -12,8 +15,10 @@ class SignalScope {
     auto& ss = instance();
     ImPlot::SetNextAxisToFit(ImAxis_X1);
     ImPlot::SetNextAxisLimits(ImAxis_Y1, -1.0f, 1.0f);
-    if (ImPlot::BeginPlot("signals")) {
+    if (ImPlot::BeginPlot("signals", ImVec2(-1, -1))) {
+      ImPlot::SetupLegend(ImPlotLocation_NorthWest, ImPlotLegendFlags_Outside);
       for (auto& [name, signal] : ss.signals_by_name_) {
+        ImPlot::HideNextItem(true);
         ImPlot::PlotLine(name.c_str(), signal.data(), signal.size());
         std::copy(signal.begin() + 1, signal.end(), signal.begin());
       }
@@ -40,7 +45,7 @@ class SignalScope {
   }
 
  private:
-  static constexpr size_t kDefaultHistorySize = 128;
+  static constexpr size_t kDefaultHistorySize = 1024;
 
   static SignalScope& instance() {
     static SignalScope* instance = nullptr;
@@ -96,3 +101,5 @@ class SignalScope {
   name = SignalScope::PlotSignalWrap(("" #name), (value), (low), (high))
 
 }  // namespace opendrop
+
+#endif  // DEBUG_SIGNAL_SCOPE_H_
