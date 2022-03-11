@@ -16,6 +16,7 @@ cc_library(
         ":model_vertex",
         ":passthrough",
         ":ribbon",
+        "//debug:signal_scope",
         ":warp",
         "//:gl_interface",
         "//:gl_render_target",

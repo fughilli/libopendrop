@@ -34,7 +34,8 @@ void main() {
   // sampled result by a value less than unity such that the energy input by the
   // drawn GL primitives dissipates over time.
   vec4 input_color = texture2D(input, screen_to_tex(screen_uv));
-  vec4 last_color = texture2D(last_frame, texture_uv);
+  vec4 last_color =
+      blur_sample_texture(last_frame, texture_uv, frame_size, 0.5);
   gl_FragColor =
       mix(input_color, mix(vec4(1, 1, 0, 1), last_color, last_color.w),
           1 - input_color.w);

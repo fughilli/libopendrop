@@ -10,14 +10,14 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/mat4x4.hpp>
 
+#include "debug/control_injector.h"
+#include "preset/common/outline_model.h"
 #include "preset/cube_wreath/composite.fsh.h"
-#include "preset/cube_wreath/cube.obj.h"
-#include "preset/cube_wreath/cube_outline.obj.h"
-#include "preset/cube_wreath/model.fsh.h"
 #include "preset/cube_wreath/passthrough_frag.fsh.h"
 #include "preset/cube_wreath/passthrough_vert.vsh.h"
 #include "preset/cube_wreath/warp.fsh.h"
 #include "util/colors.h"
+#include "util/enums.h"
 #include "util/gl_util.h"
 #include "util/logging.h"
 #include "util/math/perspective.h"
@@ -32,26 +32,22 @@ constexpr float kScaleFactor = 2.0f;
 
 CubeWreath::CubeWreath(std::shared_ptr<gl::GlProgram> warp_program,
                        std::shared_ptr<gl::GlProgram> composite_program,
-                       std::shared_ptr<gl::GlProgram> model_program,
                        std::shared_ptr<gl::GlProgram> passthrough_program,
                        std::shared_ptr<gl::GlRenderTarget> model_texture_target,
                        std::shared_ptr<gl::GlRenderTarget> front_render_target,
                        std::shared_ptr<gl::GlRenderTarget> back_render_target,
                        std::shared_ptr<gl::GlRenderTarget> depth_output_target,
+                       std::shared_ptr<OutlineModel> outline_model,
                        std::shared_ptr<gl::GlTextureManager> texture_manager)
     : Preset(texture_manager),
       warp_program_(warp_program),
       composite_program_(composite_program),
-      model_program_(model_program),
       passthrough_program_(passthrough_program),
       model_texture_target_(model_texture_target),
       front_render_target_(front_render_target),
       back_render_target_(back_render_target),
       depth_output_target_(depth_output_target),
-      cube_(cube_obj::Vertices(), cube_obj::Normals(), cube_obj::Uvs(),
-            cube_obj::Triangles()),
-      cube_outline_(cube_outline_obj::Vertices(), cube_outline_obj::Normals(),
-                    cube_outline_obj::Uvs(), cube_outline_obj::Triangles()) {}
+      outline_model_(outline_model) {}
 
 absl::StatusOr<std::shared_ptr<Preset>> CubeWreath::MakeShared(
     std::shared_ptr<gl::GlTextureManager> texture_manager) {
@@ -61,9 +57,6 @@ absl::StatusOr<std::shared_ptr<Preset>> CubeWreath::MakeShared(
   ASSIGN_OR_RETURN(auto composite_program,
                    gl::GlProgram::MakeShared(passthrough_vert_vsh::Code(),
                                              composite_fsh::Code()));
-  ASSIGN_OR_RETURN(auto model_program,
-                   gl::GlProgram::MakeShared(passthrough_vert_vsh::Code(),
-                                             model_fsh::Code()));
   ASSIGN_OR_RETURN(auto passthrough_program,
                    gl::GlProgram::MakeShared(passthrough_vert_vsh::Code(),
                                              passthrough_frag_fsh::Code()));
@@ -74,11 +67,12 @@ absl::StatusOr<std::shared_ptr<Preset>> CubeWreath::MakeShared(
   ASSIGN_OR_RETURN(auto depth_output_target,
                    gl::GlRenderTarget::MakeShared(0, 0, texture_manager,
                                                   {.enable_depth = true}));
+  ASSIGN_OR_RETURN(auto outline_model, OutlineModel::MakeShared());
 
   return std::shared_ptr<CubeWreath>(
-      new CubeWreath(warp_program, composite_program, model_program,
-                     passthrough_program, nullptr, front_render_target,
-                     back_render_target, depth_output_target, texture_manager));
+      new CubeWreath(warp_program, composite_program, passthrough_program,
+                     nullptr, front_render_target, back_render_target,
+                     depth_output_target, outline_model, texture_manager));
 }
 
 void CubeWreath::OnUpdateGeometry() {
@@ -100,24 +94,28 @@ void CubeWreath::OnUpdateGeometry() {
   }
 }
 
-void CubeWreath::DrawCubes(float power, float energy, glm::vec3 zoom_vec) {
-  constexpr static int kNumCubes = 16;
-
-  float cube_scale = std::clamp(0.1 + (cos(energy * 20) + 1) / 15.5, 0.0, 2.0);
+void CubeWreath::DrawCubes(float power, float energy, glm::vec3 zoom_vec,
+                           int num_cubes) {
+  float cube_scale =
+      SIGINJECT("cube_wreath_model_scale",
+                std::clamp(0.1 + (cos(energy * 20) + 1) / 15.5, 0.0, 2.0));
 
   glm::mat3x3 look_rotation = OrientTowards(zoom_vec);
 
   glm::mat4 model_transform;
-  for (int i = 0; i < kNumCubes; ++i) {
+  for (int i = 0; i < num_cubes; ++i) {
     model_transform =
         glm::mat4(look_rotation) *
         glm::rotate(
             glm::mat4(1.0f),
-            static_cast<float>(sin(energy) * 5 + (i * M_PI * 2.0f / kNumCubes)),
+            static_cast<float>(sin(energy) * 5 + (i * M_PI * 2.0f / num_cubes)),
             glm::vec3(0.0f, 0.0f, 1.0f)) *
         glm::translate(
             glm::mat4(1.0f),
-            glm::vec3(0.5f + (sin(energy * 10) + 1) / 5, 0.0f, 0.0f)) *
+            glm::vec3(
+                0.5f +
+                    (SIGINJECT("cube_wreath_radius", sin(energy * 10)) + 1) / 5,
+                0.0f, 0.0f)) *
         glm::mat4x4(cube_scale, 0, 0, 0,  // Row 1
                     0, cube_scale, 0, 0,  // Row 2
                     0, 0, cube_scale, 0,  // Row 3
@@ -126,17 +124,17 @@ void CubeWreath::DrawCubes(float power, float energy, glm::vec3 zoom_vec) {
         glm::rotate(glm::mat4(1.0f), energy * 10, glm::vec3(0.0f, 0.0f, 1.0f)) *
         glm::rotate(glm::mat4(1.0f), energy * 7, glm::vec3(0.0f, 1.0f, 0.0f)) *
         glm::rotate(glm::mat4(1.0f), energy * 15, glm::vec3(1.0f, 0.0f, 0.0f));
-    GlBindUniform(model_program_, "energy", energy);
-    GlBindUniform(model_program_, "model_transform", model_transform);
-    GlBindUniform(model_program_, "black", false);
-    GlBindUniform(model_program_, "light_color_a",
-                  glm::vec4(HsvToRgb(glm::vec3(energy, 1, 1)), 1));
-    GlBindUniform(model_program_, "light_color_b",
-                  glm::vec4(HsvToRgb(glm::vec3(energy + 0.5, 1, 1)), 1));
-    cube_.Draw();
+    glm::vec4 color_a = glm::vec4(HsvToRgb(glm::vec3(energy, 1, 1)), 1);
+    glm::vec4 color_b = glm::vec4(HsvToRgb(glm::vec3(energy + 0.5, 1, 1)), 1);
 
-    GlBindUniform(model_program_, "black", true);
-    cube_outline_.Draw();
+    outline_model_->Draw({
+        .model_transform = model_transform,
+        .color_a = color_a,
+        .color_b = color_b,
+        .render_target = back_render_target_,
+        .alpha = 1,
+        .energy = energy,
+    });
   }
 }
 
@@ -146,47 +144,32 @@ void CubeWreath::OnDrawFrame(
   float energy = state->energy();
   float power = state->power();
 
-  auto buffer_size = samples.size() / 2;
-  vertices_.resize(buffer_size);
-
-  float cos_energy = cos(energy * 10 + power * 10);
-  float sin_energy = sin(energy * 10 + power * 10);
-  float total_scale_factor = kScaleFactor * (0.7 + 0.3 * cos_energy);
-
-  for (int i = 0; i < buffer_size; ++i) {
-    float x_scaled = samples[i * 2] * total_scale_factor;
-    float y_scaled = samples[i * 2 + 1] * total_scale_factor;
-
-    float x_pos = x_scaled * cos_energy - y_scaled * sin_energy;
-    float y_pos = x_scaled * sin_energy + y_scaled * cos_energy;
-
-    vertices_[i] = glm::vec2(x_pos, y_pos);
-  }
+  outline_model_->SelectModel(
+      InterpolateEnum<OutlineModel::ModelToDraw>(std::fmodf(energy, 1.0f)));
 
   glm::vec3 zoom_vec =
-      glm::vec3(UnitVectorAtAngle(energy * 2) * std::sin(energy * 0.3f), 0) +
+      glm::vec3(UnitVectorAtAngle(energy * 2) *
+                    SIGINJECT_OVERRIDE("cube_wreath_zoom_dir_scale",
+                                       std::sin(energy * 0.3f), -1.0f, 1.0f),
+                0) +
       Directions::kIntoScreen;
   glm::vec3 cube_orient_vec = zoom_vec;
   cube_orient_vec.x /= 2;
   cube_orient_vec.y /= 2;
+  float zoom_speed = SIGINJECT_OVERRIDE("cube_wreath_zoom_speed",
+                                        power / 10.0f + 1.2f, 0.9f, 1.5f);
+
+  int num_cubes = SIGINJECT_COUNTER("cube_wreath_num_cubes", 16, 2, 16);
 
   {
     auto depth_output_activation = depth_output_target_->Activate();
-    auto program_activation = model_program_->Activate();
-
-    GlBindUniform(model_program_, "render_target_size",
-                  glm::ivec2(width(), height()));
-    GlBindUniform(model_program_, "alpha", alpha);
-    GlBindRenderTargetTextureToUniform(model_program_, "render_target",
-                                       back_render_target_,
-                                       gl::GlTextureBindingOptions());
 
     glViewport(0, 0, longer_dimension(), longer_dimension());
     glClearColor(0, 0, 0, 0);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glDepthRange(0, 10);
     glEnable(GL_DEPTH_TEST);
-    DrawCubes(power, energy, cube_orient_vec);
+    DrawCubes(power, energy, cube_orient_vec, num_cubes);
     glDisable(GL_DEPTH_TEST);
   }
 
@@ -199,6 +182,7 @@ void CubeWreath::OnDrawFrame(
     GlBindUniform(warp_program_, "power", power);
     GlBindUniform(warp_program_, "energy", energy);
     GlBindUniform(warp_program_, "zoom_vec", zoom_vec);
+    GlBindUniform(warp_program_, "zoom_speed", zoom_speed);
     GlBindUniform(warp_program_, "model_transform", glm::mat4(1.0f));
     auto binding_options = gl::GlTextureBindingOptions();
     binding_options.border_color =

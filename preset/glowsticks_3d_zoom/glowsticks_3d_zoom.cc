@@ -14,6 +14,7 @@
 #include <vector>
 
 #include "absl/types/span.h"
+#include "debug/signal_scope.h"
 #include "preset/glowsticks_3d_zoom/composite.fsh.h"
 #include "preset/glowsticks_3d_zoom/model.fsh.h"
 #include "preset/glowsticks_3d_zoom/model.vsh.h"
@@ -129,9 +130,9 @@ void Glowsticks3dZoom::UpdateArmatureSegmentAngles(
   float power = state->power();
 
   for (int i = 0; i < segment_angles->size(); ++i) {
-    (*segment_angles)[i] +=
-        rotational_rate_coefficients_[i] * SafeDivide(power, average_power) *
-        sin(energy * direction_reversal_coefficients_[i]);
+    (*segment_angles)[i] += rotational_rate_coefficients_[i] *
+                            SafeDivide(power, average_power) *
+                            sin(energy * direction_reversal_coefficients_[i]);
   }
 }
 
@@ -250,8 +251,9 @@ void Glowsticks3dZoom::OnDrawFrame(
     ribbon2_.AppendSegment(segment);
   }
 
-  float zoom_speed = 1.f + average_power * (1.1f + sin(state->bass_energy())) *
-                               state->dt() * 100;
+  float zoom_speed = SIGPLOT(
+      "zoom_speed", 1.f + average_power * (1.1f + sin(state->bass_energy())) *
+                              state->dt() * 10);
 
   zoom_angle_ += sin(std::log(state->bass_energy()) * 3 * state->dt() * 10) *
                  state->bass() * state->dt() * 10;
@@ -298,10 +300,10 @@ void Glowsticks3dZoom::OnDrawFrame(
         warp_program_, "last_frame", front_render_target_,
         gl::GlTextureBindingOptions(
             {.sampling_mode = gl::GlTextureSamplingMode::kClampToBorder,
-             .border_color = glm::vec4(
-                 HsvToRgb({state->bass_energy(), 1,
-                           std::clamp(state->bass() * 1, 0.0f, 1.0f)}),
-                 0.5)}));
+             .border_color =
+                 glm::vec4(HsvToRgb({state->bass_energy(), 1,
+                                     std::clamp(state->bass(), 0.0f, 1.0f)}),
+                           0.5)}));
 
     // Force all fragments to draw with a full-screen rectangle.
     rectangle_.Draw();

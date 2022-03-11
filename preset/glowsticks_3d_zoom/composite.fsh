@@ -30,5 +30,5 @@ void main() {
                   texture2D(render_target, tex_uv + vec2(0., offset.y))) *
                      // TODO: Produce a more interesting effect for the Sobel
                      // filter coefficient
-                     (-0.4 * sin(normalized_energy * 0.05));
+                     (0.1 + 0.2 * sin(normalized_energy * 0.05));
 }

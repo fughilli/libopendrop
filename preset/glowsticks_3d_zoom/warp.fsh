@@ -64,4 +64,5 @@ void main() {
   // sampled result by a value less than unity such that the energy input by the
   // drawn GL primitives dissipates over time.
   gl_FragColor = texture2D(last_frame, texture_uv) * 0.95;
+  gl_FragColor.w = 0.1; //length(gl_FragColor.xyz);
 }

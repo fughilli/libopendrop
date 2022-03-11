@@ -9,21 +9,19 @@ cc_library(
     linkstatic = 1,
     deps = [
         ":composite",
-        ":cube",
-        ":cube_outline",
-        ":model",
-        ":monkey",
         ":passthrough_frag",
         ":passthrough_vert",
-        ":shrek",
         ":warp",
         "//:gl_interface",
         "//:gl_render_target",
+        "//debug:control_injector",
         "//preset",
+        "//preset/common:outline_model",
         "//primitive:model",
         "//primitive:polyline",
         "//primitive:rectangle",
         "//util:colors",
+        "//util:enums",
         "//util:gl_util",
         "//util:logging",
         "//util:status_macros",
@@ -48,32 +46,7 @@ shader_cc_library(
 )
 
 shader_cc_library(
-    name = "model",
-    srcs = ["model.fsh"],
-)
-
-shader_cc_library(
     name = "warp",
     srcs = ["warp.fsh"],
     deps = ["//preset/common:math"],
-)
-
-model_cc_library(
-    name = "cube_outline",
-    srcs = ["cube_outline.obj"],
-)
-
-model_cc_library(
-    name = "cube",
-    srcs = ["cube.obj"],
-)
-
-model_cc_library(
-    name = "monkey",
-    srcs = ["monkey.obj"],
-)
-
-model_cc_library(
-    name = "shrek",
-    srcs = ["shrek.obj"],
 )

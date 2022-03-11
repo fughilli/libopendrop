@@ -8,30 +8,24 @@ cc_library(
     hdrs = ["pills.h"],
     linkstatic = 1,
     deps = [
-        "//debug:signal_scope",
-        ":alpaca",
-        ":alpaca_outline",
         ":composite",
-        ":model",
-        ":monkey",
         ":passthrough_frag",
         ":passthrough_vert",
-        ":pill_center",
-        ":pill_end_bottom",
-        ":pill_end_top",
-        ":pill_shadow",
-        ":shrek",
         ":warp",
         "//:gl_interface",
         "//:gl_render_target",
+        "//debug:control_injector",
+        "//debug:signal_scope",
         "//preset",
+        "//preset/common:outline_model",
         "//primitive:model",
         "//primitive:polyline",
         "//primitive:rectangle",
-        "//util:signals",
         "//util:colors",
+        "//util:enums",
         "//util:gl_util",
         "//util:logging",
+        "//util:signals",
         "//util:status_macros",
         "//util/math:perspective",
         "//util/math:vector",
@@ -54,53 +48,7 @@ shader_cc_library(
 )
 
 shader_cc_library(
-    name = "model",
-    srcs = ["model.fsh"],
-    deps = ["//preset/common:math"],
-)
-
-shader_cc_library(
     name = "warp",
     srcs = ["warp.fsh"],
     deps = ["//preset/common:math"],
-)
-
-model_cc_library(
-    name = "pill_shadow",
-    srcs = ["pill_shadow.obj"],
-)
-
-model_cc_library(
-    name = "pill_center",
-    srcs = ["pill_center.obj"],
-)
-
-model_cc_library(
-    name = "pill_end_top",
-    srcs = ["pill_end_top.obj"],
-)
-
-model_cc_library(
-    name = "pill_end_bottom",
-    srcs = ["pill_end_bottom.obj"],
-)
-
-model_cc_library(
-    name = "monkey",
-    srcs = ["monkey.obj"],
-)
-
-model_cc_library(
-    name = "shrek",
-    srcs = ["shrek.obj"],
-)
-
-model_cc_library(
-    name = "alpaca_outline",
-    srcs = ["alpaca_outline.obj"],
-)
-
-model_cc_library(
-    name = "alpaca",
-    srcs = ["alpaca.obj"],
 )

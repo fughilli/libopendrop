@@ -9,9 +9,9 @@
 #include "gl_render_target.h"
 #include "gl_texture_manager.h"
 #include "preset/preset.h"
-#include "primitive/model.h"
 #include "primitive/polyline.h"
 #include "primitive/rectangle.h"
+#include "preset/common/outline_model.h"
 
 namespace opendrop {
 
@@ -27,12 +27,12 @@ class Pills : public Preset {
  protected:
   Pills(std::shared_ptr<gl::GlProgram> warp_program,
         std::shared_ptr<gl::GlProgram> composite_program,
-        std::shared_ptr<gl::GlProgram> model_program,
         std::shared_ptr<gl::GlProgram> passthrough_program,
         std::shared_ptr<gl::GlRenderTarget> model_texture_target,
         std::shared_ptr<gl::GlRenderTarget> front_render_target,
         std::shared_ptr<gl::GlRenderTarget> back_render_target,
         std::shared_ptr<gl::GlRenderTarget> depth_output_target,
+             std::shared_ptr<OutlineModel> outline_model,
         std::shared_ptr<gl::GlTextureManager> texture_manager);
 
   void OnDrawFrame(
@@ -42,27 +42,21 @@ class Pills : public Preset {
   void OnUpdateGeometry() override;
 
  private:
-  void DrawCubes(float power, float energy, float zoom_coeff,
-                 glm::vec3 zoom_vec);
+  void DrawCubes(float power, float bass, float energy, float dt, float time,
+                 float zoom_coeff, glm::vec3 zoom_vec, int num_cubes);
 
   std::shared_ptr<gl::GlProgram> warp_program_;
   std::shared_ptr<gl::GlProgram> composite_program_;
-  std::shared_ptr<gl::GlProgram> model_program_;
   std::shared_ptr<gl::GlProgram> passthrough_program_;
   std::shared_ptr<gl::GlRenderTarget> model_texture_target_;
   std::shared_ptr<gl::GlRenderTarget> front_render_target_;
   std::shared_ptr<gl::GlRenderTarget> back_render_target_;
   std::shared_ptr<gl::GlRenderTarget> depth_output_target_;
+  std::shared_ptr<OutlineModel> outline_model_;
 
   std::vector<glm::vec2> vertices_;
   Rectangle rectangle_;
   Polyline polyline_;
-  Model pill_end_top_;
-  Model pill_end_bottom_;
-  Model pill_center_;
-  Model pill_shadow_;
-  Model alpaca_;
-  Model alpaca_outline_;
 
   float position_accum_ = 0.0f;
 };
