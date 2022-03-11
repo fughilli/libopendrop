@@ -42,8 +42,6 @@ constexpr int kRibbonSegmentCount = 100;
 // armature.
 constexpr float kMaxAngularStep = 0.04f;
 
-constexpr float kFramerateScale = 60.0f / 300.0f;
-
 // When true, the ribbon width is scaled by the instantaneous audio power,
 // resulting in a waveform of the audio power appearing along the length of the
 // ribbon.
@@ -80,12 +78,12 @@ Glowsticks3dZoom::Glowsticks3dZoom(
       ribbon2_(glm::vec3(), kRibbonSegmentCount),
       flip_y_(false),
       flip_oneshot_(kFlipMinimumInterval) {
-  segment_scales_ = Coefficients::Random<3>(0.1, 0.3);
+  segment_scales_ = Coefficients::Random<3>(0.1, 0.5);
   segment_scales_[2] = 1.0f;
 
   auto base_position_array = Coefficients::Random<2>(-0.2f, 0.2f);
   base_position_ = glm::vec2(base_position_array[0], base_position_array[1]);
-  color_coefficients_ = Coefficients::Random<2>(1, 20);
+  color_coefficients_ = Coefficients::Random<2>(1.0f, 3.0f);
   direction_reversal_coefficients_ = Coefficients::Random<kNumSegments>(5, 20);
   rotational_rate_coefficients_ =
       Coefficients::Random<kNumSegments>(0.1f, 0.3f);
@@ -97,7 +95,7 @@ absl::StatusOr<std::shared_ptr<Preset>> Glowsticks3dZoom::MakeShared(
                                           model_vsh::Code(), warp_fsh::Code()));
   ASSIGN_OR_RETURN(
       auto ribbon_program,
-      gl::GlProgram::MakeShared(passthrough_vsh::Code(), ribbon_fsh::Code()));
+      gl::GlProgram::MakeShared(model_vsh::Code(), ribbon_fsh::Code()));
   ASSIGN_OR_RETURN(auto composite_program,
                    gl::GlProgram::MakeShared(passthrough_vsh::Code(),
                                              composite_fsh::Code()));
@@ -133,7 +131,7 @@ void Glowsticks3dZoom::UpdateArmatureSegmentAngles(
   for (int i = 0; i < segment_angles->size(); ++i) {
     (*segment_angles)[i] +=
         rotational_rate_coefficients_[i] * SafeDivide(power, average_power) *
-        sin(energy * direction_reversal_coefficients_[i]) * kFramerateScale;
+        sin(energy * direction_reversal_coefficients_[i]);
   }
 }
 
@@ -169,27 +167,10 @@ std::pair<glm::vec2, glm::vec2> Glowsticks3dZoom::ComputeRibbonSegment(
 void Glowsticks3dZoom::OnDrawFrame(
     absl::Span<const float> samples, std::shared_ptr<GlobalState> state,
     float alpha, std::shared_ptr<gl::GlRenderTarget> output_render_target) {
-  if (bass_filter_ == nullptr) {
-    // TODO: Refactor into constructor. Plumb GlobalState.
-    constexpr float kCenterFrequency = 300.0f;
-    constexpr float kBandwidth = 50.0f;
-    bass_filter_ = IirBandFilter(50.0f / state->sampling_rate(),
-                                 40.0f / state->sampling_rate(),
-                                 IirBandFilterType::kBandpass);
-    vocal_filter_ = IirBandFilter(kCenterFrequency / state->sampling_rate(),
-                                  kBandwidth / state->sampling_rate(),
-                                  IirBandFilterType::kBandpass);
-  }
-
   float average_power = state->average_power();
   float energy = state->energy();
   float normalized_energy = state->normalized_energy();
   float power = state->power();
-
-  float bass_power = bass_filter_->ComputePower(state->left_channel());
-  float vocal_power = vocal_filter_->ComputePower(state->left_channel());
-  bass_energy_ += bass_power * state->dt();
-  bass_energy_ += vocal_power * state->dt();
 
   std::array<glm::vec2, 4> debug_segment_points;
 
@@ -269,41 +250,19 @@ void Glowsticks3dZoom::OnDrawFrame(
     ribbon2_.AppendSegment(segment);
   }
 
+  float zoom_speed = 1.f + average_power * (1.1f + sin(state->bass_energy())) *
+                               state->dt() * 100;
+
+  zoom_angle_ += sin(std::log(state->bass_energy()) * 3 * state->dt() * 10) *
+                 state->bass() * state->dt() * 10;
+
   {
-    auto back_activation = back_render_target_->Activate();
-
-    warp_program_->Use();
-
-    float zoom_speed =
-        1.f + average_power * (1.1f + sin(bass_energy_)) * kFramerateScale;
-
-    // Draw the waveform.
-    zoom_angle_ += sin(std::log(bass_energy_) * 3 * kFramerateScale) *
-                   bass_power * kFramerateScale;
+    auto front_activation = front_render_target_->Activate();
+    ribbon_program_->Use();
 
     glm::vec3 look_vec_3d(-UnitVectorAtAngle(zoom_angle_) / 2.0f, zoom_speed);
     glm::vec3 axis = glm::cross(glm::vec3(0, 0, 1), look_vec_3d);
     float angle = glm::angle(glm::vec3(0, 0, 1), glm::normalize(look_vec_3d));
-    glm::mat4 rotation = glm::rotate(angle, glm::normalize(axis)) *
-                         glm::rotate(zoom_angle_ * -2, glm::vec3(0, 0, 1));
-
-    GlBindUniform(warp_program_, "last_frame_size",
-                  glm::ivec2(width(), height()));
-    GlBindUniform(warp_program_, "power", bass_power);
-    GlBindUniform(warp_program_, "energy", bass_energy_);
-    GlBindUniform(warp_program_, "zoom_angle", zoom_angle_);
-    GlBindUniform(warp_program_, "zoom_speed", zoom_speed);
-    GlBindUniform(warp_program_, "framerate_scale", kFramerateScale * 5);
-    GlBindUniform(warp_program_, "model_transform", glm::mat4(1.0f));
-    GlBindRenderTargetTextureToUniform(
-        warp_program_, "last_frame", front_render_target_,
-        gl::GlTextureBindingOptions(
-            {.sampling_mode = gl::GlTextureSamplingMode::kClampToBorder,
-             .border_color =
-                 glm::vec4(HsvToRgb({bass_energy_, 1, bass_power}), 1)}));
-
-    // Force all fragments to draw with a full-screen rectangle.
-    rectangle_.Draw();
 
     // Draw the waveform.
     ribbon_.UpdateColor(
@@ -311,13 +270,41 @@ void Glowsticks3dZoom::OnDrawFrame(
     ribbon2_.UpdateColor(
         HsvToRgb(glm::vec3(energy * color_coefficients_[1], 1, 0.5)));
 
-    GlBindUniform(warp_program_, "model_transform", rotation);
+    glm::mat4 rotation = glm::rotate(angle, glm::normalize(axis)) *
+                         glm::rotate(zoom_angle_ * -2, glm::vec3(0, 0, 1));
+    GlBindUniform(ribbon_program_, "model_transform", rotation);
     glEnable(GL_DEPTH_TEST);
     ribbon_.Draw();
     // TODO: Have the second ribbon split off of and rejoin the first ribbon at
     // intervals.
     ribbon2_.Draw();
-    glEnable(GL_DEPTH_TEST);
+    glDisable(GL_DEPTH_TEST);
+  }
+
+  {
+    auto back_activation = back_render_target_->Activate();
+
+    warp_program_->Use();
+
+    GlBindUniform(warp_program_, "last_frame_size",
+                  glm::ivec2(width(), height()));
+    GlBindUniform(warp_program_, "power", state->bass());
+    GlBindUniform(warp_program_, "energy", state->bass_energy());
+    GlBindUniform(warp_program_, "zoom_angle", zoom_angle_);
+    GlBindUniform(warp_program_, "zoom_speed", zoom_speed);
+    GlBindUniform(warp_program_, "framerate_scale", state->dt() * 5);
+    GlBindUniform(warp_program_, "model_transform", glm::mat4(1.0f));
+    GlBindRenderTargetTextureToUniform(
+        warp_program_, "last_frame", front_render_target_,
+        gl::GlTextureBindingOptions(
+            {.sampling_mode = gl::GlTextureSamplingMode::kClampToBorder,
+             .border_color = glm::vec4(
+                 HsvToRgb({state->bass_energy(), 1,
+                           std::clamp(state->bass() * 1, 0.0f, 1.0f)}),
+                 0.5)}));
+
+    // Force all fragments to draw with a full-screen rectangle.
+    rectangle_.Draw();
   }
 
   {
@@ -328,9 +315,9 @@ void Glowsticks3dZoom::OnDrawFrame(
                   glm::ivec2(width(), height()));
     GlBindUniform(composite_program_, "power", power);
     GlBindUniform(composite_program_, "normalized_energy", normalized_energy);
-    GlBindUniform(composite_program_, "alpha", alpha);
+    GlBindUniform(composite_program_, "alpha", 1.0f);
     GlBindRenderTargetTextureToUniform(composite_program_, "render_target",
-                                       back_render_target_,
+                                       front_render_target_,
                                        gl::GlTextureBindingOptions());
 
     const auto square_dimension = std::max(width(), height());

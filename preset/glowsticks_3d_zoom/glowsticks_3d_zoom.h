@@ -75,9 +75,6 @@ class Glowsticks3dZoom : public Preset {
   std::array<InterpolatorIterator<float>, kNumSegments>
       segment_angle_iterators_;
 
-  std::shared_ptr<IirFilter> bass_filter_;
-  std::shared_ptr<IirFilter> vocal_filter_;
-
   Rectangle rectangle_;
   Ribbon<glm::vec3> ribbon_;
   Ribbon<glm::vec3> ribbon2_;
@@ -85,7 +82,6 @@ class Glowsticks3dZoom : public Preset {
   bool flip_y_;
   OneshotIncremental<float> flip_oneshot_;
   float zoom_angle_ = 0;
-  float bass_energy_ = 0;
 };
 
 }  // namespace opendrop
