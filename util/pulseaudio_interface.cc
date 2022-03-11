@@ -148,7 +148,7 @@ void PulseAudioInterface::ContextStateCallback(pa_context *new_context) {
           stream_, PulseAudioInterface::StreamReadCallbackStatic, this);
 
       buffer_attributes.maxlength = -1;
-      buffer_attributes.fragsize = 1;
+      buffer_attributes.fragsize = 2048;
 
       std::cout << "Connecting recording stream" << std::endl;
       if (pa_stream_connect_record(stream_, device_name_.c_str(),
