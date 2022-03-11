@@ -69,5 +69,11 @@ TEST(MathTest, WrapToRangeProducesExpectedValue) {
   EXPECT_EQ(WrapToRange<int>(-4, -2, 3), 1);
 }
 
+TEST(MathTest, SignProducesExpectedValue) {
+  EXPECT_NEAR(Sign<float>(-15.0f), -1, kEpsilon);
+  EXPECT_NEAR(Sign<float>(3.0f), 1, kEpsilon);
+  EXPECT_NEAR(Sign<float>(0.0f), 0, kEpsilon);
+}
+
 }  // namespace
 }  // namespace opendrop

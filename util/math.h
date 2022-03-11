@@ -1,6 +1,7 @@
 #ifndef LIBOPENDROP_UTIL_MATH_H_
 #define LIBOPENDROP_UTIL_MATH_H_
 
+#define _USE_MATH_DEFINES
 #include <cmath>
 
 #include "util/logging.h"
@@ -8,6 +9,7 @@
 namespace opendrop {
 
 constexpr float kEpsilon = 1e-6f;
+constexpr float kPi = M_PI;
 
 template <typename T>
 bool AlmostEqual(T a, T b, T bound = kEpsilon) {
@@ -77,6 +79,13 @@ T MapValueX(A arg, A in_low, A in_high, T out_low, T out_high) {
 template <typename T>
 T Lerp(T low, T high, float alpha) {
   return MapValueX<float, T, true>(alpha, 0.0f, 1.0f, low, high);
+}
+
+template <typename T>
+T Sign(T value) {
+  if (value > 0) return 1;
+  if (value < 0) return -1;
+  return value;
 }
 
 }  // namespace opendrop
