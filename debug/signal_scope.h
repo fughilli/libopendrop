@@ -18,9 +18,11 @@ class SignalScope {
     if (ImPlot::BeginPlot("signals", ImVec2(-1, -1))) {
       ImPlot::SetupLegend(ImPlotLocation_NorthWest, ImPlotLegendFlags_Outside);
       for (auto& [name, signal] : ss.signals_by_name_) {
-        ImPlot::HideNextItem(true);
-        ImPlot::PlotLine(name.c_str(), signal.data(), signal.size());
-        std::copy(signal.begin() + 1, signal.end(), signal.begin());
+        ImPlot::HideNextItem(!signal.draw_by_default);
+        ImPlot::PlotLine(name.c_str(), signal.signal.data(),
+                         signal.signal.size());
+        std::copy(signal.signal.begin() + 1, signal.signal.end(),
+                  signal.signal.begin());
       }
       ImPlot::EndPlot();
     }
@@ -29,6 +31,12 @@ class SignalScope {
   template <typename T>
   static T PlotSignal(absl::string_view name, T value) {
     instance().PlotSignalInternal(name, value);
+    return value;
+  }
+
+  template <typename T>
+  static T PlotSignalOn(absl::string_view name, T value) {
+    instance().PlotSignalInternal(name, value, true);
     return value;
   }
 
@@ -47,6 +55,11 @@ class SignalScope {
  private:
   static constexpr size_t kDefaultHistorySize = 1024;
 
+  struct Signal {
+    std::vector<float> signal;
+    bool draw_by_default = false;
+  };
+
   static SignalScope& instance() {
     static SignalScope* instance = nullptr;
 
@@ -56,26 +69,29 @@ class SignalScope {
     return *instance;
   }
 
-  void PlotSignalInternal(absl::string_view name, float value) {
+  void PlotSignalInternal(absl::string_view name, float value,
+                          bool draw_by_default = false) {
     auto iter = signals_by_name_.find(name);
     if (iter == signals_by_name_.end()) {
       auto iter_and_success = signals_by_name_.try_emplace(
-          name, std::vector<float>(kDefaultHistorySize));
+          name, Signal{.signal = std::vector<float>(kDefaultHistorySize),
+                       .draw_by_default = draw_by_default});
       CHECK(iter_and_success.second);
       auto& signal = iter_and_success.first->second;
-      signal[signal.size() - 1] = value;
+      signal.signal[signal.signal.size() - 1] = value;
       return;
     }
 
     auto& signal = iter->second;
-    signal[signal.size() - 1] = value;
+    signal.signal[signal.signal.size() - 1] = value;
   }
 
-  absl::flat_hash_map<std::string, std::vector<float>> signals_by_name_;
+  absl::flat_hash_map<std::string, Signal> signals_by_name_;
 };
 
 // Plots a signal named `name` of the time history of `value`.
 #define SIGPLOT(name, value) SignalScope::PlotSignal((name), (value))
+#define SIGPLOT_ON(name, value) SignalScope::PlotSignalOn((name), (value))
 
 #define XSTR(X) #X
 #define STR(X) XSTR(X)
