@@ -121,6 +121,12 @@ case $source_type in
       sed -n "s/\s\+Name.*\(alsa_input.*analog\-stereo$\)/\1/p" | head -n 1)
     ;;
 
+  'scarlett')
+    SOURCE=$(pactl list sources |
+      sed -n "s/\s\+Name.*\(alsa_input.*Scarlett.*analog\-stereo$\)/\1/p" |
+      head -n 1)
+    ;;
+
   '')
     SOURCE=""
     ;;
@@ -152,8 +158,8 @@ case $compiler_config in
     compiler_args="--config=pi"
     ;;
 
-  '')
-    ;;
+  '') ;;
+
 esac
 
 if [[ $enable_debug == 1 ]]; then
