@@ -1,6 +1,9 @@
 #ifndef GLOBAL_STATE_H_
 #define GLOBAL_STATE_H_
 
+#include <array>
+#include <vector>
+
 #include "absl/types/span.h"
 #include "util/accumulator.h"
 #include "util/filter.h"
@@ -13,8 +16,7 @@ class GlobalState {
     int sampling_rate;
   };
 
-  GlobalState(Options options)
-      : options_(std::move(options)), initialized_(false) {}
+  GlobalState(Options options);
 
   // Updates the global state. `samples` is a const view of the current buffer
   // of audio samples, and `dt` is the elapsed time, in seconds, since the last
@@ -33,10 +35,30 @@ class GlobalState {
 
   int sampling_rate() const { return options_.sampling_rate; }
 
-  absl::Span<const float> left_channel() { return left_channel_; }
-  absl::Span<const float> right_channel() { return right_channel_; }
+  absl::Span<const float> left_channel() { return channels_[0]; }
+  absl::Span<const float> right_channel() { return channels_[1]; }
+
+  float bass_left() const { return channel_bands_[0][0]; }
+  float bass_right() const { return channel_bands_[1][0]; }
+  float mid_left() const { return channel_bands_[0][1]; }
+  float mid_right() const { return channel_bands_[1][1]; }
+  float treble_left() const { return channel_bands_[0][2]; }
+  float treble_right() const { return channel_bands_[1][2]; }
+
+  float bass() const { return bass_left() + bass_right(); }
+  float mid() const { return mid_left() + mid_right(); }
+  float treble() const { return treble_left() + treble_right(); }
 
  private:
+  static constexpr int kNumChannels = 2;
+  static constexpr int kNumFilterBands = 3;
+  using FilterCoeffs = std::tuple<float, float, IirBandFilterType>;
+  static constexpr std::array<FilterCoeffs, kNumFilterBands> kFilterBandCoeffs= {
+      FilterCoeffs{20, 300, IirBandFilterType::kBandpass},
+      FilterCoeffs{300, 4000, IirBandFilterType::kBandpass},
+      FilterCoeffs{4000, 15000, IirBandFilterType::kBandpass},
+  };
+
   // Decay factor for updating the average power. Average power is computed by a
   // first-order low-pass filter of the current signal power.
   float kPowerUpdateAlpha = 0.99f;
@@ -82,8 +104,11 @@ class GlobalState {
   // Storage for global properties.
   Properties properties_;
 
-  std::vector<float> left_channel_;
-  std::vector<float> right_channel_;
+  std::array<std::vector<float>, kNumChannels> channels_ = {};
+  std::array<std::array<std::shared_ptr<IirFilter>, kNumFilterBands>,
+             kNumChannels>
+      channel_band_filters_ = {};
+  std::array<std::array<float, kNumFilterBands>, kNumChannels> channel_bands_;
 };
 
 }  // namespace opendrop
