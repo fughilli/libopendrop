@@ -49,14 +49,28 @@ class GlobalState {
   float mid() const { return mid_left() + mid_right(); }
   float treble() const { return treble_left() + treble_right(); }
 
+  float bass_left_energy() const { return channel_bands_energy_[0][0]; }
+  float bass_right_energy() const { return channel_bands_energy_[1][0]; }
+  float mid_left_energy() const { return channel_bands_energy_[0][1]; }
+  float mid_right_energy() const { return channel_bands_energy_[1][1]; }
+  float treble_left_energy() const { return channel_bands_energy_[0][2]; }
+  float treble_right_energy() const { return channel_bands_energy_[1][2]; }
+
+  float bass_energy() const { return bass_left_energy() + bass_right_energy(); }
+  float mid_energy() const { return mid_left_energy() + mid_right_energy(); }
+  float treble_energy() const {
+    return treble_left_energy() + treble_right_energy();
+  }
+
  private:
   static constexpr int kNumChannels = 2;
   static constexpr int kNumFilterBands = 3;
   using FilterCoeffs = std::tuple<float, float, IirBandFilterType>;
-  static constexpr std::array<FilterCoeffs, kNumFilterBands> kFilterBandCoeffs= {
-      FilterCoeffs{20, 300, IirBandFilterType::kBandpass},
-      FilterCoeffs{300, 4000, IirBandFilterType::kBandpass},
-      FilterCoeffs{4000, 15000, IirBandFilterType::kBandpass},
+  static constexpr std::array<FilterCoeffs, kNumFilterBands> kFilterBandCoeffs =
+      {
+          FilterCoeffs{20, 300, IirBandFilterType::kBandpass},
+          FilterCoeffs{300, 4000, IirBandFilterType::kBandpass},
+          FilterCoeffs{4000, 15000, IirBandFilterType::kBandpass},
   };
 
   // Decay factor for updating the average power. Average power is computed by a
@@ -108,7 +122,10 @@ class GlobalState {
   std::array<std::array<std::shared_ptr<IirFilter>, kNumFilterBands>,
              kNumChannels>
       channel_band_filters_ = {};
-  std::array<std::array<float, kNumFilterBands>, kNumChannels> channel_bands_;
+  std::array<std::array<float, kNumFilterBands>, kNumChannels> channel_bands_ =
+      {};
+  std::array<std::array<float, kNumFilterBands>, kNumChannels>
+      channel_bands_energy_ = {};
 };
 
 }  // namespace opendrop

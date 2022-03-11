@@ -20,8 +20,7 @@ GlobalState::GlobalState(GlobalState::Options options)
     : options_(std::move(options)), initialized_(false) {
   for (int channel = 0; channel < kNumChannels; ++channel) {
     for (int band = 0; band < kNumFilterBands; ++band) {
-      const auto [low_freq, high_freq, filter_type] =
-          kFilterBandCoeffs[band];
+      const auto [low_freq, high_freq, filter_type] = kFilterBandCoeffs[band];
       const float center_freq = (low_freq + high_freq) / 2;
       const float bandwidth = std::abs(high_freq - low_freq);
       channel_band_filters_[channel][band] = IirBandFilter(
@@ -55,9 +54,12 @@ void GlobalState::Update(absl::Span<const float> samples, float dt) {
 
   for (int channel = 0; channel < kNumChannels; ++channel) {
     for (int band = 0; band < kNumFilterBands; ++band) {
-      channel_bands_[channel][band] =
-          channel_band_filters_[channel][band]->ComputePower(
-              channels_[channel]);
+      float value = channel_band_filters_[channel][band]->ComputePower(
+          channels_[channel]);
+      if (std::isnan(value)) continue;
+      channel_bands_[channel][band] = value;
+      channel_bands_energy_[channel][band] +=
+          channel_bands_[channel][band] * dt;
     }
   }
 
