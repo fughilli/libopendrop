@@ -31,6 +31,9 @@ function usage() {
   echoerr "    \tcross-compilation configuration targeting armhf on raspberry "
   echoerr "    \tpi."
   echoerr ""
+  echoerr "-i  \tRun libopendrop using ibazel, which automatically rebuilds and"
+  echoerr "    \truns the application whenever you modify a source file."
+  echoerr ""
   echoerr "-z  \tOnly build the binary, but do not run it."
   echoerr ""
   echoerr "-t  \tRun all tests."
@@ -40,8 +43,9 @@ enable_debug=0
 run_binary=0
 run_tests=0
 enable_valgrind=0
-compiler_config="gcc"
+compiler_config=""
 build_only=0
+run_with_ibazel=0
 
 passthrough_args=()
 
@@ -84,6 +88,10 @@ while [[ ! -z "$@" ]]; do
 
     '-t')
       run_tests=1
+      ;;
+
+    '-i')
+      run_with_ibazel=1
       ;;
 
     *)
@@ -143,6 +151,9 @@ case $compiler_config in
   'pi')
     compiler_args="--config=pi"
     ;;
+
+  '')
+    ;;
 esac
 
 if [[ $enable_debug == 1 ]]; then
@@ -177,6 +188,12 @@ else
   valgrind_command=""
 fi
 
+if [[ $run_with_ibazel == 1 ]]; then
+  bazel_executable=ibazel
+else
+  bazel_executable=bazelisk
+fi
+
 if [[ $run_binary == 1 ]]; then
   $valgrind_command ../bazel-bin/libopendrop/main $options \
     ${passthrough_args[@]}
@@ -193,7 +210,7 @@ else
     target="//..."
     trailing_args=""
   fi
-  bazelisk $bazel_command $target $compiler_args \
+  $bazel_executable $bazel_command $target $compiler_args \
     --copt=-I/usr/include/SDL2 \
     $debug_options \
     $trailing_args \
