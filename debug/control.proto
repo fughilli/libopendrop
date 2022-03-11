@@ -1,0 +1,17 @@
+syntax = "proto2";
+
+message Button {
+  enum State {
+    PRESSED = 0;
+    RELEASED = 1;
+  }
+
+  optional int32 channel = 1;
+  optional float velocity = 2;
+  optional State state = 3;
+}
+
+message Control {
+  map<string, float> control = 1;
+  repeated Button buttons = 2;
+}
