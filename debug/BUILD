@@ -13,6 +13,7 @@ cc_library(
     hdrs = ["control_injector.h"],
     deps = [
         ":control_cc_proto",
+        ":control_state_cc_proto",
         ":proto_port",
         "//util:logging",
         "//util:math",
@@ -32,6 +33,16 @@ cc_library(
         "@com_google_absl//absl/strings",
         "@implot",
     ],
+)
+
+proto_library(
+    name = "control_state_proto",
+    srcs = ["control_state.proto"],
+)
+
+cc_proto_library(
+    name = "control_state_cc_proto",
+    deps = [":control_state_proto"],
 )
 
 proto_library(

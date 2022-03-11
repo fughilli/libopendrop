@@ -1,0 +1,31 @@
+syntax = "proto2";
+
+package opendrop.proto;
+
+message Signal {
+  optional float low = 1;
+  optional float high = 2;
+}
+
+message Counter {
+  optional int32 low = 1;
+  optional int32 high = 2;
+  optional int32 value = 3;
+}
+
+message ControlState {
+  optional bool enable_injection = 1;
+
+  repeated int32 buttons = 2;
+
+  // signal name -> control name
+  map<string, string> control_mappings = 3;
+  // signal name -> Signal
+  map<string, Signal> signals_by_name = 4;
+  // counter name -> button
+  map<string, int32> button_mappings = 5;
+  // counter name -> Counter
+  map<string, Counter> counters_by_name = 6;
+  // control name -> control value
+  map<string, float> controls_by_name = 7;
+}

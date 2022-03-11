@@ -1,6 +1,7 @@
 #ifndef DEBUG_CONTROL_INJECTOR_H_
 #define DEBUG_CONTROL_INJECTOR_H_
 
+#include <fstream>
 #include <limits>
 #include <set>
 #include <vector>
@@ -9,7 +10,9 @@
 #include "absl/strings/str_format.h"
 #include "absl/strings/string_view.h"
 #include "debug/control.pb.h"
+#include "debug/control_state.pb.h"
 #include "debug/proto_port.h"
+#include "google/protobuf/text_format.h"
 #include "implot.h"
 #include "util/logging.h"
 #include "util/math.h"
@@ -67,29 +70,53 @@ class ControlInjector {
     return instance().InjectSignalInternal(name, value, low, high);
   }
 
+  static void SetStatePath(std::string path) { instance().state_path_ = path; }
+
+  static void Save() {
+    if (instance().state_path_ == "") return;
+    std::ofstream output_proto(instance().state_path_.c_str());
+    if (!output_proto.good()) return;
+    std::string formatted;
+    google::protobuf::TextFormat::PrintToString(instance().SaveToProto(),
+                                                &formatted);
+    output_proto << formatted;
+  }
+
+  static void Load() {
+    if (instance().state_path_ == "") return;
+    std::ifstream input_proto(instance().state_path_.c_str());
+    if (!input_proto.good()) return;
+
+    proto::ControlState control_state;
+    std::stringstream buffer;
+    buffer << input_proto.rdbuf();
+    google::protobuf::TextFormat::ParseFromString(buffer.str(), &control_state);
+    instance().LoadFromProto(control_state);
+  }
+
  private:
   static constexpr size_t kDefaultHistorySize = 1024;
 
   struct Signal {
-    float min = std::numeric_limits<float>::max();
-    float max = std::numeric_limits<float>::lowest();
+    float low = std::numeric_limits<float>::max();
+    float high = std::numeric_limits<float>::lowest();
 
     void UpdateLimits(float value) {
-      if (value < min) min = value;
-      if (value > max) max = value;
+      if (value < low) low = value;
+      if (value > high) high = value;
     }
 
     void UpdateLimits(float low, float high) {
-      min = low;
-      max = high;
+      this->low = low;
+      this->high = high;
     }
 
-    float Inject(float control) { return Lerp(min, max, control); }
+    float Inject(float control) { return Lerp(low, high, control); }
   };
 
   struct Counter {
-    int min;
-    int max;
+    int low;
+    int high;
 
     int value;
     bool triggered;
@@ -98,8 +125,8 @@ class ControlInjector {
       triggered = true;
       ++value;
 
-      if (value > max) {
-        value = min;
+      if (value > high) {
+        value = low;
       }
     }
 
@@ -119,6 +146,78 @@ class ControlInjector {
 
     instance = new ControlInjector();
     return *instance;
+  }
+
+  // Saving/restoring config.
+  proto::ControlState SaveToProto() {
+    proto::ControlState control_state{};
+
+    // Populate buttons_.
+    for (int button : buttons_) control_state.add_buttons(button);
+
+    // Populate mappings.
+    for (auto& [signal_name, control_name] : control_mappings_)
+      (*control_state.mutable_control_mappings())[signal_name] = control_name;
+
+    for (auto& [signal_name, signal] : signals_by_name_) {
+      proto::Signal proto_signal{};
+      proto_signal.set_low(signal.low);
+      proto_signal.set_high(signal.high);
+      (*control_state.mutable_signals_by_name())[signal_name] = proto_signal;
+    }
+
+    for (auto& [counter_name, button] : button_mappings_)
+      (*control_state.mutable_button_mappings())[counter_name] = button;
+
+    for (auto& [counter_name, counter] : counters_by_name_) {
+      proto::Counter proto_counter{};
+      proto_counter.set_low(counter.low);
+      proto_counter.set_high(counter.high);
+      proto_counter.set_value(counter.value);
+      (*control_state.mutable_counters_by_name())[counter_name] = proto_counter;
+    }
+
+    for (auto& [control_name, control_value] : controls_by_name_)
+      (*control_state.mutable_controls_by_name())[control_name] = control_value;
+
+    return control_state;
+  }
+
+  void LoadFromProto(const proto::ControlState& control_state) {
+    // Populate buttons_.
+    buttons_.clear();
+    for (int button : control_state.buttons()) buttons_.insert(button);
+
+    buttons_as_strings_.clear();
+    buttons_as_ints_.clear();
+    for (int button : buttons_) {
+      buttons_as_ints_.push_back(button);
+      buttons_as_strings_.push_back(absl::StrFormat("%d", button));
+    }
+
+    // Populate mappings.
+    control_mappings_.clear();
+    for (auto& [signal_name, control_name] : control_state.control_mappings())
+      control_mappings_[signal_name] = control_name;
+
+    signals_by_name_.clear();
+    for (auto& [signal_name, signal] : control_state.signals_by_name())
+      signals_by_name_[signal_name] = {.low = signal.low(),
+                                       .high = signal.high()};
+
+    button_mappings_.clear();
+    for (auto& [counter_name, button] : control_state.button_mappings())
+      button_mappings_[counter_name] = button;
+
+    counters_by_name_.clear();
+    for (auto& [counter_name, counter] : control_state.counters_by_name())
+      counters_by_name_[counter_name] = {.low = counter.low(),
+                                         .high = counter.high(),
+                                         .value = counter.value()};
+
+    controls_by_name_.clear();
+    for (auto& [control_name, control_value] : control_state.controls_by_name())
+      controls_by_name_[control_name] = control_value;
   }
 
   void MaybeUpdateButtons(int button) {
@@ -160,6 +259,7 @@ class ControlInjector {
       controls.push_back(control_name.c_str());
 
     ImGui::Checkbox("Signal Inject Enable?", &enable_injection_);
+    if (ImGui::Button("Save")) Save();
 
     for (auto& [signal_name, signal_value] : signals_by_name_) {
       int selection = -1;
@@ -211,7 +311,7 @@ class ControlInjector {
     auto iter = counters_by_name_.find(name);
     if (iter == counters_by_name_.end()) {
       auto iter_and_success = counters_by_name_.try_emplace(
-          name, Counter{.min = low, .max = high, .value = value});
+          name, Counter{.low = low, .high = high, .value = value});
       CHECK(iter_and_success.second);
       return value;
     }
@@ -288,6 +388,8 @@ class ControlInjector {
   absl::flat_hash_map<std::string, int> button_mappings_{};
   absl::flat_hash_map<std::string, Counter> counters_by_name_{};
   absl::flat_hash_map<std::string, float> controls_by_name_{};
+
+  std::string state_path_ = "";
 
   ProtoPort<Control> control_port_;
 };

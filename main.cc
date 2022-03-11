@@ -42,6 +42,7 @@
 #include "backends/imgui_impl_opengl2.h"
 #include "backends/imgui_impl_sdl.h"
 #include "cleanup.h"
+#include "debug/control_injector.h"
 #include "debug/signal_scope.h"
 #include "gl_interface.h"
 #include "gl_texture_manager.h"
@@ -91,6 +92,8 @@ ABSL_FLAG(int, max_presets, 2,
           "Maximum number of presets on the screen at a time.");
 ABSL_FLAG(int, sampling_rate, 44100,
           "Sampling rate to use with the input source, in Hz.");
+ABSL_FLAG(std::string, control_state, "",
+          "Path to a .textproto of a ControlState to save to/load from");
 
 namespace opendrop {
 
@@ -166,6 +169,9 @@ extern "C" int main(int argc, char *argv[]) {
   absl::ParseCommandLine(argc, argv);
 
   absl::InstallFailureSignalHandler(absl::FailureSignalHandlerOptions());
+
+  ControlInjector::SetStatePath(absl::GetFlag(FLAGS_control_state));
+  ControlInjector::Load();
 
   {
     if (SDL_Init(SDL_INIT_VIDEO) < 0) {
