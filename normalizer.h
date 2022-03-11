@@ -2,6 +2,7 @@
 #define LIBOPENDROP_NORMALIZER_H_
 
 #include "absl/types/span.h"
+#include "debug/signal_scope.h"
 #include "util/logging.h"
 
 namespace opendrop {
@@ -33,6 +34,8 @@ class Normalizer {
       max_value = std::max(max_value, std::abs(sample));
     }
 
+    SIGPLOT("normalizer.max_value", max_value);
+
     if (instant_upscale_ && max_value > normalization_divisor_) {
       normalization_divisor_ = max_value;
     } else {
@@ -40,6 +43,8 @@ class Normalizer {
       normalization_divisor_ = normalization_divisor_ * alpha_compensated +
                                max_value * (1.0f - alpha_compensated);
     }
+
+    SIGPLOT("normalizer.normalization_divisor_", normalization_divisor_);
 
     float normalization_factor = 1.0f / std::max(normalization_divisor_, 0.01f);
     for (int i = 0; i < samples.size(); ++i) {

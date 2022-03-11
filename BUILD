@@ -187,6 +187,7 @@ cc_library(
     name = "normalizer",
     hdrs = ["normalizer.h"],
     deps = [
+        "//debug:signal_scope",
         "//util:logging",
         "@com_google_absl//absl/types:span",
     ],
