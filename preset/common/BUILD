@@ -17,6 +17,9 @@ cc_library(
         ":alpaca_outline",
         ":cube",
         ":cube_outline",
+        ":eyeball_ball",
+        ":eyeball_iris",
+        ":eyeball_pupil",
         ":lo_x",
         ":model",
         ":monkey",
@@ -117,6 +120,24 @@ model_cc_library(
     name = "cube",
     scale = 0.707107,
     srcs = ["cube.obj"],
+)
+
+model_cc_library(
+    name = "eyeball_pupil",
+    srcs = ["eyeball_pupil.obj"],
+    scale = 0.707107,
+)
+
+model_cc_library(
+    name = "eyeball_iris",
+    srcs = ["eyeball_iris.obj"],
+    scale = 0.707107,
+)
+
+model_cc_library(
+    name = "eyeball_ball",
+    srcs = ["eyeball_ball.obj"],
+    scale = 0.707107,
 )
 
 model_cc_library(

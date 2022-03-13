@@ -20,7 +20,8 @@ class OutlineModel {
     kStar = 2,
     kCube = 3,
     kLoX = 4,
-    kDenseLastValue = kLoX,
+    kEyeball = 5,
+    kDenseLastValue = kEyeball,
   };
 
   struct Params {
@@ -56,6 +57,9 @@ class OutlineModel {
   Model cube_;
   Model cube_outline_;
   Model lo_x_;
+  Model eyeball_pupil_;
+  Model eyeball_iris_;
+  Model eyeball_ball_;
 
   ModelToDraw model_to_draw_ = {};
 };

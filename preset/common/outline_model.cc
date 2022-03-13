@@ -11,6 +11,9 @@
 #include "preset/common/alpaca_outline.obj.h"
 #include "preset/common/cube.obj.h"
 #include "preset/common/cube_outline.obj.h"
+#include "preset/common/eyeball_ball.obj.h"
+#include "preset/common/eyeball_iris.obj.h"
+#include "preset/common/eyeball_pupil.obj.h"
 #include "preset/common/lo_x.obj.h"
 #include "preset/common/model.fsh.h"
 #include "preset/common/passthrough_vert.vsh.h"
@@ -51,7 +54,14 @@ OutlineModel::OutlineModel(std::shared_ptr<gl::GlProgram> model_program)
       cube_outline_(cube_outline_obj::Vertices(), cube_outline_obj::Normals(),
                     cube_outline_obj::Uvs(), cube_outline_obj::Triangles()),
       lo_x_(lo_x_obj::Vertices(), lo_x_obj::Normals(), lo_x_obj::Uvs(),
-            lo_x_obj::Triangles())
+            lo_x_obj::Triangles()),
+      eyeball_pupil_(eyeball_pupil_obj::Vertices(),
+                     eyeball_pupil_obj::Normals(), eyeball_pupil_obj::Uvs(),
+                     eyeball_pupil_obj::Triangles()),
+      eyeball_iris_(eyeball_iris_obj::Vertices(), eyeball_iris_obj::Normals(),
+                    eyeball_iris_obj::Uvs(), eyeball_iris_obj::Triangles()),
+      eyeball_ball_(eyeball_ball_obj::Vertices(), eyeball_ball_obj::Normals(),
+                    eyeball_ball_obj::Uvs(), eyeball_ball_obj::Triangles())
 
 {}
 
@@ -141,6 +151,30 @@ void OutlineModel::Draw(const Params& params) {
                     glm::mix(params.color_b, params.color_a, 0.7f));
       GlBindUniform(model_program_, "light_color_b", params.color_a);
       lo_x_.Draw();
+      break;
+    case kEyeball:
+      glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+      glLineWidth(50);
+      GlBindUniform(model_program_, "black", true);
+      GlBindUniform(model_program_, "max_negative_z", true);
+      eyeball_pupil_.Draw();
+      eyeball_iris_.Draw();
+      eyeball_ball_.Draw();
+      glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+      GlBindUniform(model_program_, "max_negative_z", false);
+      GlBindUniform(model_program_, "black", true);
+      eyeball_pupil_.Draw();
+      GlBindUniform(model_program_, "black", false);
+      GlBindUniform(model_program_, "light_color_a", params.color_a);
+      GlBindUniform(model_program_, "light_color_b", params.color_b);
+      eyeball_iris_.Draw();
+      GlBindUniform(
+          model_program_, "light_color_a",
+          glm::mix(params.color_a, glm::vec4(1.0f, 1.0f, 1.0f, 1.0f), 0.7f));
+      GlBindUniform(
+          model_program_, "light_color_b",
+          glm::mix(params.color_b, glm::vec4(1.0f, 1.0f, 1.0f, 1.0f), 0.7f));
+      eyeball_ball_.Draw();
       break;
   }
 }
