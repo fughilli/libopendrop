@@ -67,7 +67,8 @@ class ControlInjector {
   template <typename T>
   static T InjectSignalOverride(absl::string_view name, T value, T low,
                                 T high) {
-    return instance().InjectSignalInternal(name, value, low, high);
+    return static_cast<T>(
+        instance().InjectSignalInternal(name, value, low, high));
   }
 
   static void SetStatePath(std::string path) { instance().state_path_ = path; }

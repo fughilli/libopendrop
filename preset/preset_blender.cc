@@ -212,4 +212,10 @@ int PresetBlender::QueryPresetCount(std::string_view name) {
   return count;
 }
 
+void PresetBlender::TransitionOutAll() {
+  for (PresetActivation& activation : preset_activations_) {
+    activation.TriggerTransitionOut();
+  }
+}
+
 }  // namespace opendrop

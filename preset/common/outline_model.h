@@ -30,6 +30,7 @@ class OutlineModel {
     std::shared_ptr<gl::GlRenderTarget> render_target;
     float alpha;
     float energy;
+    float blend_coeff;
   };
 
   static absl::StatusOr<std::shared_ptr<OutlineModel>> MakeShared();

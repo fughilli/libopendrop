@@ -8,10 +8,10 @@
 #include "gl_interface.h"
 #include "gl_render_target.h"
 #include "gl_texture_manager.h"
+#include "preset/common/outline_model.h"
 #include "preset/preset.h"
 #include "primitive/polyline.h"
 #include "primitive/rectangle.h"
-#include "preset/common/outline_model.h"
 
 namespace opendrop {
 
@@ -32,7 +32,7 @@ class Pills : public Preset {
         std::shared_ptr<gl::GlRenderTarget> front_render_target,
         std::shared_ptr<gl::GlRenderTarget> back_render_target,
         std::shared_ptr<gl::GlRenderTarget> depth_output_target,
-             std::shared_ptr<OutlineModel> outline_model,
+        std::shared_ptr<OutlineModel> outline_model,
         std::shared_ptr<gl::GlTextureManager> texture_manager);
 
   void OnDrawFrame(
@@ -59,6 +59,9 @@ class Pills : public Preset {
   Polyline polyline_;
 
   float position_accum_ = 0.0f;
+  float background_hue_ = 0;
+  
+  bool texture_trigger_ = false;
 };
 
 }  // namespace opendrop

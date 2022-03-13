@@ -25,10 +25,11 @@ void main() {
   //
   // Combine the samples with kernel [1., -0.2, -0.2] such that edges are mildly
   // accentuated.
-  gl_FragColor = gl_Color + texture2D(render_target, tex_uv) * 1. +
+  gl_FragColor = gl_Color + texture2D(render_target, tex_uv) * 1.2 +
                  (texture2D(render_target, tex_uv + vec2(offset.x, 0.)) +
                   texture2D(render_target, tex_uv + vec2(0., offset.y))) *
-                     // TODO: Produce a more interesting effect for the Sobel
-                     // filter coefficient
-                     (0.1 + 0.2 * sin(normalized_energy * 0.05));
+                     -0.1
+      // TODO: Produce a more interesting effect for the Sobel
+      // filter coefficient
+      ;
 }

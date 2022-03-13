@@ -97,8 +97,10 @@ void CubeWreath::OnUpdateGeometry() {
 void CubeWreath::DrawCubes(float power, float energy, glm::vec3 zoom_vec,
                            int num_cubes) {
   float cube_scale =
-      SIGINJECT("cube_wreath_model_scale",
-                std::clamp(0.1 + (cos(energy * 20) + 1) / 15.5, 0.0, 2.0));
+      SIGINJECT_OVERRIDE("cube_wreath_model_scale",
+                         static_cast<float>(std::clamp(
+                             0.1 + (cos(energy * 20) + 1) / 15.5, 0.0, 2.0)),
+                         0.05f, 0.4f);
 
   glm::mat3x3 look_rotation = OrientTowards(zoom_vec);
 
@@ -112,10 +114,10 @@ void CubeWreath::DrawCubes(float power, float energy, glm::vec3 zoom_vec,
             glm::vec3(0.0f, 0.0f, 1.0f)) *
         glm::translate(
             glm::mat4(1.0f),
-            glm::vec3(
-                0.5f +
-                    (SIGINJECT("cube_wreath_radius", sin(energy * 10)) + 1) / 5,
-                0.0f, 0.0f)) *
+            glm::vec3(SIGINJECT_OVERRIDE("cube_wreath_radius",
+                                         0.5f + (sin(energy * 10) + 1) / 5,
+                                         0.0f, 1.0f),
+                      0.0f, 0.0f)) *
         glm::mat4x4(cube_scale, 0, 0, 0,  // Row 1
                     0, cube_scale, 0, 0,  // Row 2
                     0, 0, cube_scale, 0,  // Row 3
@@ -127,6 +129,10 @@ void CubeWreath::DrawCubes(float power, float energy, glm::vec3 zoom_vec,
     glm::vec4 color_a = glm::vec4(HsvToRgb(glm::vec3(energy, 1, 1)), 1);
     glm::vec4 color_b = glm::vec4(HsvToRgb(glm::vec3(energy + 0.5, 1, 1)), 1);
 
+    if (SIGINJECT_TRIGGER("cube_wreath_texture_enable")) {
+      texture_trigger_ = !texture_trigger_;
+    }
+
     outline_model_->Draw({
         .model_transform = model_transform,
         .color_a = color_a,
@@ -134,6 +140,7 @@ void CubeWreath::DrawCubes(float power, float energy, glm::vec3 zoom_vec,
         .render_target = back_render_target_,
         .alpha = 1,
         .energy = energy,
+        .blend_coeff = texture_trigger_ ? 0.3f : 0.0f,
     });
   }
 }
@@ -159,7 +166,7 @@ void CubeWreath::OnDrawFrame(
   float zoom_speed = SIGINJECT_OVERRIDE("cube_wreath_zoom_speed",
                                         power / 10.0f + 1.2f, 0.9f, 1.5f);
 
-  int num_cubes = SIGINJECT_COUNTER("cube_wreath_num_cubes", 16, 2, 16);
+  int num_cubes = SIGINJECT_OVERRIDE("cube_wreath_num_cubes", 16, 1, 32);
 
   {
     auto depth_output_activation = depth_output_target_->Activate();
@@ -185,8 +192,15 @@ void CubeWreath::OnDrawFrame(
     GlBindUniform(warp_program_, "zoom_speed", zoom_speed);
     GlBindUniform(warp_program_, "model_transform", glm::mat4(1.0f));
     auto binding_options = gl::GlTextureBindingOptions();
-    binding_options.border_color =
-        glm::vec4(HsvToRgb(glm::vec3(energy * 0.1, 1, 1)), 1);
+
+    background_hue_ +=
+        power *
+        SIGINJECT_OVERRIDE("cube_wreath_border_hue_coeff", 0.1f, 0.0f, 3.0f);
+    binding_options.border_color = glm::vec4(
+        HsvToRgb(glm::vec3(background_hue_, 1,
+                           SIGINJECT_OVERRIDE("cube_wreath_border_value_coeff",
+                                              1.0f, 0.0f, 1.0f))),
+        1);
     binding_options.sampling_mode = gl::GlTextureSamplingMode::kClampToBorder;
     GlBindRenderTargetTextureToUniform(warp_program_, "last_frame",
                                        back_render_target_, binding_options);

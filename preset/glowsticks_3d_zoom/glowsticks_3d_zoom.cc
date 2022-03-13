@@ -14,6 +14,7 @@
 #include <vector>
 
 #include "absl/types/span.h"
+#include "debug/control_injector.h"
 #include "debug/signal_scope.h"
 #include "preset/glowsticks_3d_zoom/composite.fsh.h"
 #include "preset/glowsticks_3d_zoom/model.fsh.h"
@@ -251,12 +252,16 @@ void Glowsticks3dZoom::OnDrawFrame(
     ribbon2_.AppendSegment(segment);
   }
 
-  float zoom_speed = SIGPLOT(
-      "zoom_speed", 1.f + average_power * (1.1f + sin(state->bass_energy())) *
-                              state->dt() * 10);
+  float zoom_speed =
+      SIGPLOT("zoom_speed",
+              SIGINJECT_OVERRIDE("glowsticks_zoom_speed",
+                                 1.f + average_power *
+                                           (1.1f + sin(state->bass_energy())) *
+                                           state->dt() * 10,
+                                 0.95f, 1.15f));
 
-  zoom_angle_ += sin(std::log(state->bass_energy()) * 3 * state->dt() * 10) *
-                 state->bass() * state->dt() * 10;
+  zoom_angle_ += sin(state->bass_energy() * state->dt() * 10) * state->bass() *
+                 state->dt() * 10;
 
   {
     auto front_activation = front_render_target_->Activate();
@@ -300,10 +305,17 @@ void Glowsticks3dZoom::OnDrawFrame(
         warp_program_, "last_frame", front_render_target_,
         gl::GlTextureBindingOptions(
             {.sampling_mode = gl::GlTextureSamplingMode::kClampToBorder,
-             .border_color =
-                 glm::vec4(HsvToRgb({state->bass_energy(), 1,
-                                     std::clamp(state->bass(), 0.0f, 1.0f)}),
-                           0.5)}));
+             .border_color = glm::vec4(
+                 HsvToRgb({state->bass_energy() *
+                               SIGINJECT_OVERRIDE("glowsticks_border_hue_coeff",
+                                                  2.0f, 0.0f, 10.0f),
+                           1,
+                           std::clamp(state->bass() *
+                                          SIGINJECT_OVERRIDE(
+                                              "glowsticks_border_value_coeff",
+                                              2.0f, 0.0f, 10.0f),
+                                      0.0f, 1.0f)}),
+                 0.5)}));
 
     // Force all fragments to draw with a full-screen rectangle.
     rectangle_.Draw();

@@ -107,11 +107,14 @@ std::tuple<int, float> CountAndScale(float arg, int max_count) {
 }
 
 void Pills::DrawCubes(float power, float bass, float energy, float dt,
-                      float time, float zoom_coeff, glm::vec3 zoom_vec, int num_cubes) {
-  float cube_scale = SIGINJECT(
+                      float time, float zoom_coeff, glm::vec3 zoom_vec,
+                      int num_cubes) {
+  float cube_scale = SIGINJECT_OVERRIDE(
       "pills_model_scale",
-      std::clamp(0.1 + (cos(energy * 20) + 1) / 15.5, 0.0, 2.0) * 0.3 +
-          bass / 5);
+      static_cast<float>(
+          std::clamp(0.1 + (cos(energy * 20) + 1) / 15.5, 0.0, 2.0) * 0.3 +
+          bass / 5),
+      0.05f, 0.4f);
 
   glm::mat3x3 look_rotation = OrientTowards(zoom_vec);
 
@@ -169,6 +172,10 @@ void Pills::DrawCubes(float power, float bass, float energy, float dt,
     const glm::vec4 color_b =
         glm::vec4(HsvToRgb(glm::vec3(energy + 0.5, 1, 1)), 1);
 
+    if (SIGINJECT_TRIGGER("pills_texture_enable")) {
+      texture_trigger_ = !texture_trigger_;
+    }
+
     outline_model_->Draw({
         .model_transform = model_transform,
         .color_a = color_a,
@@ -176,6 +183,7 @@ void Pills::DrawCubes(float power, float bass, float energy, float dt,
         .render_target = back_render_target_,
         .alpha = 1,
         .energy = energy,
+        .blend_coeff = texture_trigger_ ? 0.3f : 0.0f,
     });
   }
 }
@@ -202,7 +210,7 @@ void Pills::OnDrawFrame(
   float SIGPLOT_ASSIGN(trunc_zoom_coeff,
                        std::clamp(SineEase(zoom_coeff), 0.0f, 1.0f));
 
-  int num_cubes = SIGINJECT_COUNTER("pills_num_cubes", 16, 2, 16);
+  int num_cubes = SIGINJECT_OVERRIDE("pills_num_cubes", 16, 1, 32);
 
   glm::vec3 zoom_vec = glm::vec3(UnitVectorAtAngle(energy * 2) *
                                      std::sin(energy * 0.3f) * trunc_zoom_coeff,
@@ -248,8 +256,13 @@ void Pills::OnDrawFrame(
     GlBindUniform(warp_program_, "zoom_vec", zoom_vec);
     GlBindUniform(warp_program_, "model_transform", glm::mat4(1.0f));
     auto binding_options = gl::GlTextureBindingOptions();
-    binding_options.border_color =
-        glm::vec4(HsvToRgb(glm::vec3(energy * 0.1, 1, 1)), 1);
+    background_hue_ +=
+        power * SIGINJECT_OVERRIDE("pills_border_hue_coeff", 0.1f, 0.0f, 3.0f);
+    binding_options.border_color = glm::vec4(
+        HsvToRgb(glm::vec3(
+            background_hue_, 1,
+            SIGINJECT_OVERRIDE("pills_border_value_coeff", 1.0f, 0.0f, 1.0f))),
+        1);
     binding_options.sampling_mode = gl::GlTextureSamplingMode::kClampToBorder;
     GlBindRenderTargetTextureToUniform(warp_program_, "last_frame",
                                        back_render_target_, binding_options);

@@ -75,7 +75,7 @@ class PresetBlender {
     }
     activation.preset()->UpdateGeometry(width_, height_);
     activation.render_target()->UpdateGeometry(width_, height_);
-    preset_activations_.push_front(std::move(activation));
+    preset_activations_.emplace_back(std::move(activation));
   }
 
   // Draws a single frame of blended preset output.
@@ -88,6 +88,8 @@ class PresetBlender {
   size_t NumPresets() const { return preset_activations_.size(); }
 
   int QueryPresetCount(std::string_view name);
+
+  void TransitionOutAll();
 
  private:
   void Update(float dt);

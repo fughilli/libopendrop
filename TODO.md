@@ -20,3 +20,9 @@
 - Implement common subexpression eliminiation for filter pipelines (construct
   processing pipeline for a preset, reuse if another preset refers to it).
 - Normalize global state signal accumulation by framerate.
+
+- Fix audio buffer synchronization behavior. Mark the previous buffer contents
+  as "consumed" at the end of frame processing, but don't actually remove the
+  samples until the next interrupt to ensure that for high refresh rate displays
+  we don't get an empty buffer (DrawFrame() happens twice with no audio
+  interrupt).

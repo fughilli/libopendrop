@@ -87,7 +87,7 @@ class Runner:
             control.control[k] = v
         control.buttons.extend(self.buttons)
         self.buttons = []
-        print(control)
+        # print(control)
         self.socket.sendto(control.SerializeToString(), self.server_tuple)
 
     def initialize_device(self):
@@ -108,17 +108,19 @@ class Runner:
 
         while not self.should_exit:
             msg = inport.receive()
+            if msg.type == 'reset':
+                continue
             if msg.type.startswith('note'):
                 button = Button()
-                button.channel = msg.note
+                button.channel = msg.channel * 1000 + msg.note
                 button.state = (Button.State.PRESSED if msg.type == 'note_on'
                                 else Button.State.RELEASED)
                 button.velocity = msg.velocity
                 self.buttons.append(button)
             else:
                 self.maybe_hash_value(msg)
-            print(
-                [self.control_values[key] for key in self.sorted_control_keys])
+            # print(
+            #     [self.control_values[key] for key in self.sorted_control_keys])
             self.send_control()
         print("Exiting")
 

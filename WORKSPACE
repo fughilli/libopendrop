@@ -15,6 +15,7 @@ git_repository(
     name = "com_google_protobuf",
     commit = "70b02861f8e8ba711efd187188dfb930db7bcaba",
     patch_args = ["-p1"],
+    patches = ["@//:additional_deps.patch"],
     remote = "https://github.com/protocolbuffers/protobuf",
     shallow_since = "1598416407 -0700",
 )

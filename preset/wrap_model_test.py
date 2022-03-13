@@ -191,6 +191,15 @@ class TestWrapModel(unittest.TestCase):
         self.assertEqual(wrap_model.CollapseIndices(*input_tuple),
                          expected_tuple)
 
+    @parameterized.parameterized.expand([
+        ('noscale', [(0.0, 0.0, 0.0), (1.0, 1.0, 1.0)], [(0.0, 0.0, 0.0),
+                                                         (1.0, 1.0, 1.0)]),
+    ])
+    def test_collapsed_indices_parameterized(self, name, input_vertex_list,
+                                             expected_vertex_list):
+        self.assertEqual(wrap_model.NormalizeVertices(input_vertex_list),
+                         expected_vertex_list)
+
     def test_collapse_indices(self):
         # UV-textured tetrahedron.
         # Four points.

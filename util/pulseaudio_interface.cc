@@ -57,25 +57,28 @@ void PulseAudioInterface::StreamReadCallback(pa_stream *new_stream,
                                              size_t length) {
   MarkSucceeded();
   const void *data;
-  if (pa_stream_peek(new_stream, &data, &length) < 0) {
-    std::cerr << "Failed to read from stream" << std::endl;
-    MarkFailed();
-    return;
-  }
+  while (true) {
+    if (pa_stream_peek(new_stream, &data, &length) < 0) {
+      std::cerr << "Failed to read from stream" << std::endl;
+      MarkFailed();
+      return;
+    }
 
-  if (length == 0) {
-    return;
-  }
+    if (length == 0 || data == nullptr) {
+      //std::cerr << "Finished" << std::endl;
+      return;
+    }
 
-  if (kVerboseLogging) {
-    std::cout << "Read " << length << " bytes from stream" << std::endl;
-  }
+    if (kVerboseLogging) {
+      std::cout << "Read " << length << " bytes from stream" << std::endl;
+    }
 
-  sample_callback_(absl::Span<const float>(
-      reinterpret_cast<const float *>(data), length / sizeof(float)));
+    sample_callback_(absl::Span<const float>(
+        reinterpret_cast<const float *>(data), length / sizeof(float)));
 
-  if (pa_stream_drop(new_stream) != 0) {
-    std::cerr << "Failed to drop frame from stream" << std::endl;
+    if (pa_stream_drop(new_stream) != 0) {
+      std::cerr << "Failed to drop frame from stream" << std::endl;
+    }
   }
 }
 
@@ -120,7 +123,7 @@ void PulseAudioInterface::ContextStateCallback(pa_context *new_context) {
     return;
   }
 
-  pa_buffer_attr buffer_attributes = {0};
+  pa_buffer_attr buffer_attributes{};
   const pa_sample_spec *actual_sample_spec_ptr = nullptr;
 
   switch (pa_context_get_state(new_context)) {

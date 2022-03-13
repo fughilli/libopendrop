@@ -17,6 +17,7 @@ cc_library(
         ":passthrough",
         ":ribbon",
         "//debug:signal_scope",
+        "//debug:control_injector",
         ":warp",
         "//:gl_interface",
         "//:gl_render_target",

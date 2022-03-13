@@ -56,6 +56,9 @@ class CubeWreath : public Preset {
   std::vector<glm::vec2> vertices_;
   Rectangle rectangle_;
   Polyline polyline_;
+
+  float background_hue_ = 0;
+  bool texture_trigger_ = false;
 };
 
 }  // namespace opendrop

@@ -12,12 +12,12 @@
 // Preset includes
 #include "preset/alien_rorschach/alien_rorschach.h"
 #include "preset/cube_boom/cube_boom.h"
-#include "preset/pills/pills.h"
 #include "preset/cube_wreath/cube_wreath.h"
 #include "preset/eye_roll/eye_roll.h"
 #include "preset/glowsticks_3d/glowsticks_3d.h"
 #include "preset/glowsticks_3d_zoom/glowsticks_3d_zoom.h"
 #include "preset/kaleidoscope/kaleidoscope.h"
+#include "preset/pills/pills.h"
 #include "preset/rotary_transporter/rotary_transporter.h"
 #include "preset/shape_bounce/shape_bounce.h"
 #include "preset/simple_preset/simple_preset.h"
@@ -86,8 +86,8 @@ absl::StatusOr<std::shared_ptr<opendrop::Preset>> GetRandomPreset(
                        template GetRandomPresetHelper<Presets...>(
                            random_index, std::forward<Args>(args)...));
 
-  LOG(INFO) << "Returning preset with index " << random_index << " and name "
-            << return_preset->name();
+  LOG(DEBUG) << "Returning preset with index " << random_index << " and name "
+             << return_preset->name();
 
   return return_preset;
 }
@@ -95,12 +95,12 @@ absl::StatusOr<std::shared_ptr<opendrop::Preset>> GetRandomPreset(
 template <typename... Args>
 absl::StatusOr<std::shared_ptr<opendrop::Preset>> GetRandomPresetFromList(
     Args&&... args) {
-  return GetRandomPreset</*opendrop::ShapeBounce, opendrop::Kaleidoscope,
-                         opendrop::SimplePreset, opendrop::AlienRorschach,
-                         opendrop::TemplatePreset, opendrop::Glowsticks3d,
-                         opendrop::Glowsticks3dZoom,
-                         opendrop::RotaryTransporter, opendrop::CubeBoom,
-                         opendrop::EyeRoll,*/ opendrop::Pills>(
+  return GetRandomPreset<
+      /*opendrop::ShapeBounce, opendrop::Kaleidoscope, opendrop::SimplePreset,
+      opendrop::AlienRorschach, opendrop::TemplatePreset,
+      opendrop::Glowsticks3d, opendrop::Glowsticks3dZoom,
+      opendrop::RotaryTransporter, opendrop::CubeBoom, opendrop::EyeRoll,*/
+      opendrop::CubeWreath, opendrop::Pills, opendrop::Glowsticks3dZoom>(
       std::forward<Args>(args)...);
 }
 

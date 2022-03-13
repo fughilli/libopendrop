@@ -21,7 +21,7 @@ namespace {
 // Decay coefficient for the audio sample normalizer. This value should be
 // sufficiently close to 1 that quieter parts of songs do not cause the
 // normalization factor to decay significantly.
-constexpr float kNormalizerAlpha = 0.95f;
+constexpr float kNormalizerAlpha = 0.99f;
 
 // Whether or not to immediately increase the audio normalization coefficient
 // when a higher maximum value is detected.
@@ -70,21 +70,21 @@ void OpenDropController::UpdateGeometry(int width, int height) {
 }
 
 void OpenDropController::DrawFrame(float dt) {
-  static std::vector<float> samples_interleaved;
-  samples_interleaved.resize(audio_processor().buffer_size() *
-                             audio_processor().channels_per_sample());
-  if (!audio_processor().GetSamples(absl::Span<float>(samples_interleaved))) {
+  samples_interleaved_.resize(0x10000 * audio_processor().channels_per_sample());
+  auto samples_view = absl::Span<float>(samples_interleaved_);
+  if (!audio_processor().GetSamples(samples_view)) {
     LOG(ERROR) << "Failed to get samples";
     return;
   }
 
-  normalizer_->Normalize(absl::Span<const float>(samples_interleaved), dt,
-                         absl::Span<float>(samples_interleaved));
-  global_state_->Update(absl::Span<const float>(samples_interleaved), dt);
+  samples_view_ = samples_view;
+
+  normalizer_->Normalize(samples_view, dt, samples_view);
+  global_state_->Update(samples_view, dt);
 
   if (preset_blender_) {
-    preset_blender_->DrawFrame(absl::Span<const float>(samples_interleaved),
-                               global_state_, output_render_target_);
+    preset_blender_->DrawFrame(samples_view, global_state_,
+                               output_render_target_);
     if (options_.draw_output_to_quad) {
       blit_program_->Use();
       gl::GlBindRenderTargetTextureToUniform(blit_program_, "source_texture",

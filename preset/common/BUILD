@@ -49,65 +49,79 @@ shader_cc_library(
 
 model_cc_library(
     name = "pill_shadow",
+    scale = 0.4,
     srcs = ["pill_shadow.obj"],
 )
 
 model_cc_library(
     name = "pill_center",
+    scale = 0.4,
     srcs = ["pill_center.obj"],
 )
 
 model_cc_library(
     name = "pill_end_top",
+    scale = 0.4,
     srcs = ["pill_end_top.obj"],
 )
 
 model_cc_library(
     name = "pill_end_bottom",
+    scale = 0.4,
     srcs = ["pill_end_bottom.obj"],
 )
 
 model_cc_library(
     name = "monkey",
+    normalize = True,
     srcs = ["monkey.obj"],
 )
 
 model_cc_library(
     name = "shrek",
+    normalize = True,
     srcs = ["shrek.obj"],
 )
 
 model_cc_library(
     name = "alpaca_outline",
+    scale = 0.450851,
     srcs = ["alpaca_outline.obj"],
 )
 
 model_cc_library(
     name = "alpaca",
+    scale = 0.450851,
     srcs = ["alpaca.obj"],
 )
 
 model_cc_library(
     name = "star_outline",
+    scale = 0.547779,
     srcs = ["star_outline.obj"],
 )
 
 model_cc_library(
     name = "star",
+    scale = 0.547779,
     srcs = ["star.obj"],
 )
 
 model_cc_library(
     name = "cube_outline",
+    scale = 0.707107,
     srcs = ["cube_outline.obj"],
 )
 
 model_cc_library(
     name = "cube",
+    scale = 0.707107,
     srcs = ["cube.obj"],
 )
 
 model_cc_library(
     name = "lo_x",
+    #scale = 1.101379,
+    normalize = True,
     srcs = ["lo_x.obj"],
 )

@@ -74,6 +74,7 @@ void OutlineModel::Draw(const Params& params) {
                                      gl::GlTextureBindingOptions());
 
   GlBindUniform(model_program_, "energy", params.energy);
+  GlBindUniform(model_program_, "blend_coeff", params.blend_coeff);
   GlBindUniform(model_program_, "model_transform", params.model_transform);
 
   model_to_draw_ = SIGINJECT_ENUM("model_to_draw", kCube);  

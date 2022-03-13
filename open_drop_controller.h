@@ -37,6 +37,10 @@ class OpenDropController : public OpenDropControllerInterface {
     return output_render_target_;
   }
 
+  absl::Span<const float> GetCurrentFrameSamples() const {
+    return samples_view_;
+  }
+
  private:
   const Options options_;
 
@@ -47,6 +51,9 @@ class OpenDropController : public OpenDropControllerInterface {
   std::shared_ptr<Normalizer> normalizer_;
   std::shared_ptr<gl::GlRenderTarget> output_render_target_;
   std::shared_ptr<gl::GlProgram> blit_program_;
+
+  std::vector<float> samples_interleaved_;
+  absl::Span<const float> samples_view_{};
 };
 
 }  // namespace opendrop

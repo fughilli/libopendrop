@@ -9,3 +9,8 @@ build:clang --compiler=clang
 test:clang --compiler=clang
 build:clang --crosstool_top=@rpi_bazel//tools/cc_toolchain:toolchain
 test:clang --crosstool_top=@rpi_bazel//tools/cc_toolchain:toolchain
+
+build --compiler=clang
+test --compiler=clang
+build --crosstool_top=@rpi_bazel//tools/cc_toolchain:toolchain
+test --crosstool_top=@rpi_bazel//tools/cc_toolchain:toolchain

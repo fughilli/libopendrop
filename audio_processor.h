@@ -33,7 +33,7 @@ class AudioProcessor {
   void AddPcmSamples(PcmFormat format, absl::Span<const float> samples);
 
   // Copies the current sample buffer into `out_samples`.
-  bool GetSamples(absl::Span<float> out_samples);
+  bool GetSamples(absl::Span<float>& out_samples);
 
   ptrdiff_t buffer_size() const { return buffer_size_; }
   int channels_per_sample() const { return kChannelsPerSample; }

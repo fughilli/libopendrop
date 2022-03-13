@@ -1,12 +1,16 @@
 import hashlib
 import re
 import os
+import numpy
 from typing import Text, Any, List, Tuple
 
 from absl import app
 from absl import flags
 
 flags.DEFINE_string("object_filename", None, "Input OBJ-format model file")
+flags.DEFINE_boolean("normalize", False,
+                     "Whether or not to normalize vertices")
+flags.DEFINE_float("scale", None, "Scale to apply to model")
 flags.DEFINE_string(
     "outputs", None,
     "Output header and source filenames, separated by a space")
@@ -147,6 +151,7 @@ def FormatInitializer(initializer: Any) -> Text:
         str: (lambda: "\"{}\"".format(initializer)),
         int: (lambda: str(initializer)),
         float: (lambda: "{}f".format(initializer)),
+        numpy.float64: (lambda: "{}f".format(initializer)),
         list: (lambda: FormatInitializerList(initializer)),
         tuple: (lambda: FormatInitializerTuple(initializer)),
     }[type(initializer)]()
@@ -304,6 +309,40 @@ def CollapseIndices(vertex_list: List[Vertex], normal_list: List[Normal],
             collapsed_face_list)
 
 
+def NormalizeVertices(vertex_list: List[Vertex]) -> List[Vertex]:
+    max_vertex: Vertex = vertex_list[0]
+    min_vertex: Vertex = vertex_list[0]
+
+    for vertex in vertex_list[1:]:
+        max_vertex = tuple(max(a, b) for a, b in zip(max_vertex, vertex))
+        min_vertex = tuple(min(a, b) for a, b in zip(min_vertex, vertex))
+
+    diagonal: float = numpy.linalg.norm((min_vertex, max_vertex))
+
+    # Normalize so that the diagonal is the same length as that of a unit cube.
+    unit_cube_diag = 3**0.5
+
+    scale_coeff = unit_cube_diag / diagonal
+
+    print(f"Scale coefficient: {scale_coeff:f}")
+
+    new_vertex_list: List[Vertex] = []
+    for vertex in vertex_list:
+        new_vertex_list.append(
+            tuple((numpy.array(vertex) * scale_coeff).astype(float)))
+
+    return new_vertex_list
+
+
+def ScaleVertices(vertex_list: List[Vertex], scale: float) -> List[Vertex]:
+    new_vertex_list: List[Vertex] = []
+    for vertex in vertex_list:
+        new_vertex_list.append(
+            tuple((numpy.array(vertex) * scale).astype(float)))
+
+    return new_vertex_list
+
+
 def LoadCollapsedModel(object_text: Text) -> CollapsedModelData:
     vertex_list, normal_list, uv_list, face_list = ParseObjectText(object_text)
 
@@ -347,6 +386,11 @@ def main(argv):
 
     (collapsed_vertices, collapsed_normals, collapsed_uvs,
      collapsed_faces) = (LoadCollapsedModel(object_text))
+
+    if FLAGS.normalize:
+        collapsed_vertices = NormalizeVertices(collapsed_vertices)
+    if FLAGS.scale is not None:
+        collapsed_vertices = ScaleVertices(collapsed_vertices, FLAGS.scale)
 
     # Make the indices zero-indexed for loading into the GPU.
     collapsed_faces = MakeIndicesZeroIndexed(collapsed_faces)

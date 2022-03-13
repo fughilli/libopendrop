@@ -72,7 +72,7 @@ void Kaleidoscope::OnUpdateGeometry() {
 void Kaleidoscope::OnDrawFrame(
     absl::Span<const float> samples, std::shared_ptr<GlobalState> state,
     float alpha, std::shared_ptr<gl::GlRenderTarget> output_render_target) {
-  float energy = state->energy();
+  float energy = state->energy() / 10;
   float power = state->power();
   float average_power = state->average_power();
   float normalized_power = SafeDivide(power, average_power);

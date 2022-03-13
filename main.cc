@@ -74,7 +74,7 @@ ABSL_FLAG(int, window_y, -1,
           "override is applied.");
 ABSL_FLAG(int, late_frames_to_skip_preset, 100,
           "Number of late frames required to skip preset");
-ABSL_FLAG(bool, auto_transition, true,
+ABSL_FLAG(bool, auto_transition, false,
           "Whether or not to transition presets automatically as a function of "
           "the audio input.");
 ABSL_FLAG(float, transition_threshold, 2.0f,
@@ -111,21 +111,22 @@ constexpr int kAudioBufferSize = 256;
 constexpr int kMinimumDelayUs = 2000;
 
 void NextPreset(OpenDropController *controller,
-                std::shared_ptr<gl::GlTextureManager> texture_manager) {
+                std::shared_ptr<gl::GlTextureManager> texture_manager,
+                bool force = false) {
   static RateLimiter<float> solo_rate_limiter{
       absl::GetFlag(FLAGS_solo_cooldown_period)};
   // How many times to attempt to find a preset to add before giving up.
   constexpr int kAttempts = 3;
   int max_presets = absl::GetFlag(FLAGS_max_presets);
-  if (max_presets > 0) {
-    if (controller->preset_blender()->NumPresets() >= max_presets) {
-      return;
-    }
-  }
+  // if (!force && max_presets > 0) {
+  //   if (controller->preset_blender()->NumPresets() >= max_presets) {
+  //     return;
+  //   }
+  // }
   // TODO: Refactor such that preset geometry is configured after attaching to
   // the preset blender.
-  float duration = Coefficients::Random<1>(20.0f, 100.0f)[0];
-  float ramp_duration = Coefficients::Random<1>(1.0f, 5.0f)[0];
+  float duration = 10;  // Coefficients::Random<1>(5.0f, 10.0f)[0];
+  float ramp_duration = Coefficients::Random<1>(1.0f, 2.0f)[0];
   auto status_or_render_target =
       gl::GlRenderTarget::MakeShared(0, 0, texture_manager);
   if (!status_or_render_target.ok()) {
@@ -152,13 +153,14 @@ void NextPreset(OpenDropController *controller,
     return;
   }
 
-  if (status_or_preset.value()->should_solo() &&
+  if (!force && status_or_preset.value()->should_solo() &&
       !solo_rate_limiter.Permitted(controller->global_state().t())) {
     LOG(INFO) << "Blocking preset " << status_or_preset.value()->name()
               << " to keep it from hogging the screen.";
     return;
   }
 
+  if (force) controller->preset_blender()->TransitionOutAll();
   controller->preset_blender()->AddPreset(
       *status_or_preset, *status_or_render_target, duration + ramp_duration * 2,
       ramp_duration);
@@ -304,7 +306,7 @@ extern "C" int main(int argc, char *argv[]) {
                   LOG(INFO) << "Next";
                   NextPreset(dynamic_cast<OpenDropController *>(
                                  open_drop_controller.get()),
-                             texture_manager);
+                             texture_manager, false);
                   break;
                 case SDLK_p:
                   LOG(INFO) << "Previous";
@@ -330,13 +332,21 @@ extern "C" int main(int argc, char *argv[]) {
           }
         }
 
+        if (SIGINJECT_TRIGGER("next_preset")) {
+          NextPreset(
+              dynamic_cast<OpenDropController *>(open_drop_controller.get()),
+              texture_manager, false);
+        }
+
         glClear(GL_COLOR_BUFFER_BIT);
 
         ImGui_ImplOpenGL2_NewFrame();
         ImGui_ImplSDL2_NewFrame();
         ImGui::NewFrame();
 
-        ImGui::Begin("Foo", nullptr, 0);
+        ImGui::Begin(
+            "OpenDrop Visualizer View", nullptr,
+            ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoScrollbar);
         ImVec2 wsize = ImGui::GetWindowSize();
         open_drop_controller->UpdateGeometry(wsize.x, wsize.y);
 
@@ -376,17 +386,17 @@ extern "C" int main(int argc, char *argv[]) {
 
         ImGui::End();
 
-        ImGui::Begin("Foo2", nullptr, 0);
+        ImGui::Begin("OpenDrop Signals Viewer", nullptr, 0);
         ImPlot::SetNextAxisLimits(ImAxis_Y1, -1.0f, 1.0f);
         if (ImPlot::BeginPlot("samples")) {
           auto &processor = open_drop_controller->audio_processor();
-          interleaved_samples.resize(processor.buffer_size() *
-                                     processor.channels_per_sample());
-          processor.GetSamples(absl::Span<float>(interleaved_samples));
-          ImPlot::PlotLine("Interleaved Samples", interleaved_samples.data(),
-                           interleaved_samples.size());
+          interleaved_samples.resize(0x10000 * processor.channels_per_sample());
+          auto samples_view = open_drop_controller->GetCurrentFrameSamples();
+          ImPlot::PlotLine("Interleaved Samples", samples_view.data(),
+                           samples_view.size());
           ImPlot::EndPlot();
         }
+        ControlInjector::Inject();
         SignalScope::Plot();
         ImGui::End();
 

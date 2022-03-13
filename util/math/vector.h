@@ -3,6 +3,7 @@
 
 #include <glm/glm.hpp>
 #include <glm/mat4x4.hpp>
+#include <tuple>
 
 namespace opendrop {
 
@@ -21,6 +22,34 @@ glm::mat4 RingTransform(glm::vec3 normal, float radius,
 // Generates a transform that takes an object to a position
 glm::mat4 LineTransform(glm::vec3 start_position, glm::vec3 end_position,
                         float position_along_line);
+glm::mat4 LineTransform(glm::vec3 axis, float line_length,
+                        float position_along_line);
+
+// Extracts the scale, rotation, and translation components of a transform.
+std::tuple<glm::mat4, glm::mat4, glm::mat4> ExtractTransformComponents(
+    glm::mat4 t);
+
+// Assembles a transformation matrix from components.
+glm::mat4 AssembleTransform(float scale, glm::mat4 rotation,
+                            glm::mat4 translation);
+glm::mat4 AssembleTransform(glm::mat4 scale, glm::mat4 rotation,
+                            glm::mat4 translation);
+
+// Mixes two transforms by linearly interpolating between their components.
+//
+// The scale is linearly interpolated.
+// The rotation is SLERP'd (spherically linearly interpolated).
+// The translation is linearly interpolated.
+glm::mat4 TransformMix(glm::mat4 t1, glm::mat4 t2, float coeff);
+
+// Computes an evenly distributed position from an index and a count.
+float EvenDistribution(int index, int count);
+
+// Computes a position coefficient for a number of clusters, `n_clusters`, whose
+// sizes are scaled by `cluster_scale`. When `cluster_scale` is 1.0f, this is
+// equivalent to EvenDistribution().
+float ClusterDistribution(int index, int count, int n_clusters,
+                          float cluster_scale, float* out_cluster_coeff);
 
 }  // namespace opendrop
 
