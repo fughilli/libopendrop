@@ -12,7 +12,6 @@ cc_library(
     srcs = ["outline_model.cc"],
     hdrs = ["outline_model.h"],
     deps = [
-      "//debug:control_injector",
         ":alpaca",
         ":alpaca_outline",
         ":cube",
@@ -33,6 +32,7 @@ cc_library(
         ":star_outline",
         "//:gl_interface",
         "//:gl_render_target",
+        "//debug:control_injector",
         "//primitive:model",
         "//util:gl_util",
         "//util:status_macros",
@@ -52,74 +52,74 @@ shader_cc_library(
 
 model_cc_library(
     name = "pill_shadow",
-    scale = 0.4,
     srcs = ["pill_shadow.obj"],
+    scale = 0.4,
 )
 
 model_cc_library(
     name = "pill_center",
-    scale = 0.4,
     srcs = ["pill_center.obj"],
+    scale = 0.4,
 )
 
 model_cc_library(
     name = "pill_end_top",
-    scale = 0.4,
     srcs = ["pill_end_top.obj"],
+    scale = 0.4,
 )
 
 model_cc_library(
     name = "pill_end_bottom",
-    scale = 0.4,
     srcs = ["pill_end_bottom.obj"],
+    scale = 0.4,
 )
 
 model_cc_library(
     name = "monkey",
-    normalize = True,
     srcs = ["monkey.obj"],
+    normalize = True,
 )
 
 model_cc_library(
     name = "shrek",
-    normalize = True,
     srcs = ["shrek.obj"],
+    normalize = True,
 )
 
 model_cc_library(
     name = "alpaca_outline",
-    scale = 0.450851,
     srcs = ["alpaca_outline.obj"],
+    scale = 0.450851,
 )
 
 model_cc_library(
     name = "alpaca",
-    scale = 0.450851,
     srcs = ["alpaca.obj"],
+    scale = 0.450851,
 )
 
 model_cc_library(
     name = "star_outline",
-    scale = 0.547779,
     srcs = ["star_outline.obj"],
+    scale = 0.547779,
 )
 
 model_cc_library(
     name = "star",
-    scale = 0.547779,
     srcs = ["star.obj"],
+    scale = 0.547779,
 )
 
 model_cc_library(
     name = "cube_outline",
-    scale = 0.707107,
     srcs = ["cube_outline.obj"],
+    scale = 0.707107,
 )
 
 model_cc_library(
     name = "cube",
-    scale = 0.707107,
     srcs = ["cube.obj"],
+    scale = 0.707107,
 )
 
 model_cc_library(
@@ -142,7 +142,6 @@ model_cc_library(
 
 model_cc_library(
     name = "lo_x",
-    #scale = 1.101379,
-    normalize = True,
     srcs = ["lo_x.obj"],
+    normalize = True,
 )
