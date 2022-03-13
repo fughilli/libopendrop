@@ -149,6 +149,8 @@ void CubeWreath::DrawCubes(float power, float energy, glm::vec3 zoom_vec,
         .alpha = 1,
         .energy = energy,
         .blend_coeff = texture_trigger_ ? 0.3f : 0.0f,
+        .model_to_draw = InterpolateEnum<OutlineModel::ModelToDraw>(
+            std::fmodf(energy, 1.0f)),
     });
   }
 }
@@ -158,9 +160,6 @@ void CubeWreath::OnDrawFrame(
     float alpha, std::shared_ptr<gl::GlRenderTarget> output_render_target) {
   float energy = state->energy();
   float power = state->power();
-
-  outline_model_->SelectModel(
-      InterpolateEnum<OutlineModel::ModelToDraw>(std::fmodf(energy, 1.0f)));
 
   glm::vec3 zoom_vec =
       glm::vec3(UnitVectorAtAngle(energy * 2) *

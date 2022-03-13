@@ -192,6 +192,8 @@ void Pills::DrawCubes(float power, float bass, float energy, float dt,
         .alpha = 1,
         .energy = energy,
         .blend_coeff = texture_trigger_ ? 0.3f : 0.0f,
+        .model_to_draw = InterpolateEnum<OutlineModel::ModelToDraw>(
+            std::fmodf(energy, 1.0f)),
     });
   }
 }
@@ -207,9 +209,6 @@ void Pills::OnDrawFrame(
                             1.0f);
   energy *= 0.1;
   float SIGPLOT_ASSIGN(power, state->power());
-
-  outline_model_->SelectModel(
-      InterpolateEnum<OutlineModel::ModelToDraw>(std::fmodf(energy, 1.0f)));
 
   float SIGPLOT_ASSIGN(
       zoom_coeff,

@@ -7,6 +7,7 @@
 
 #include <glm/mat4x4.hpp>
 
+#include "debug/control_injector.h"
 #include "preset/common/alpaca.obj.h"
 #include "preset/common/alpaca_outline.obj.h"
 #include "preset/common/cube.obj.h"
@@ -25,7 +26,6 @@
 #include "preset/common/star_outline.obj.h"
 #include "util/gl_util.h"
 #include "util/status_macros.h"
-#include "debug/control_injector.h"
 
 namespace opendrop {
 
@@ -87,9 +87,7 @@ void OutlineModel::Draw(const Params& params) {
   GlBindUniform(model_program_, "blend_coeff", params.blend_coeff);
   GlBindUniform(model_program_, "model_transform", params.model_transform);
 
-  model_to_draw_ = SIGINJECT_ENUM("model_to_draw", kCube);  
-
-  switch (model_to_draw_) {
+  switch (SIGINJECT_ENUM("model_to_draw", params.model_to_draw)) {
     case kCube:
       GlBindUniform(model_program_, "black", true);
       cube_outline_.Draw();

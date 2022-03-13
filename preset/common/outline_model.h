@@ -7,7 +7,6 @@
 
 #include "gl_interface.h"
 #include "gl_render_target.h"
-
 #include "primitive/model.h"
 
 namespace opendrop {
@@ -32,13 +31,12 @@ class OutlineModel {
     float alpha;
     float energy;
     float blend_coeff;
+    ModelToDraw model_to_draw;
   };
 
   static absl::StatusOr<std::shared_ptr<OutlineModel>> MakeShared();
 
   void Draw(const Params& params);
-
-  void SelectModel(ModelToDraw model) { model_to_draw_ = model; }
 
  protected:
   OutlineModel(std::shared_ptr<gl::GlProgram> model_program);
@@ -60,8 +58,6 @@ class OutlineModel {
   Model eyeball_pupil_;
   Model eyeball_iris_;
   Model eyeball_ball_;
-
-  ModelToDraw model_to_draw_ = {};
 };
 
 }  // namespace opendrop
