@@ -94,18 +94,16 @@ void OutlineModel::Draw(const Params& params) {
       GlBindUniform(model_program_, "black", true);
       cube_outline_.Draw();
       GlBindUniform(model_program_, "black", false);
-      GlBindUniform(model_program_, "light_color_a",
-                    glm::mix(params.color_b, params.color_a, 0.7f));
-      GlBindUniform(model_program_, "light_color_b", params.color_a);
+      GlBindUniform(model_program_, "light_color_a", params.color_a);
+      GlBindUniform(model_program_, "light_color_b", params.color_b);
       cube_.Draw();
       break;
     case kStar:
       GlBindUniform(model_program_, "black", true);
       star_outline_.Draw();
       GlBindUniform(model_program_, "black", false);
-      GlBindUniform(model_program_, "light_color_a",
-                    glm::mix(params.color_b, params.color_a, 0.7f));
-      GlBindUniform(model_program_, "light_color_b", params.color_a);
+      GlBindUniform(model_program_, "light_color_a", params.color_a);
+      GlBindUniform(model_program_, "light_color_b", params.color_b);
       star_.Draw();
       break;
     case kAlpaca:
@@ -114,9 +112,8 @@ void OutlineModel::Draw(const Params& params) {
       alpaca_outline_.Draw();
       GlBindUniform(model_program_, "black", false);
       GlBindUniform(model_program_, "max_negative_z", false);
-      GlBindUniform(model_program_, "light_color_a",
-                    glm::mix(params.color_b, params.color_a, 0.7f));
-      GlBindUniform(model_program_, "light_color_b", params.color_a);
+      GlBindUniform(model_program_, "light_color_a", params.color_a);
+      GlBindUniform(model_program_, "light_color_b", params.color_b);
       alpaca_.Draw();
       break;
     case kPill:
@@ -147,9 +144,8 @@ void OutlineModel::Draw(const Params& params) {
       GlBindUniform(model_program_, "max_negative_z", false);
       GlBindUniform(model_program_, "black", false);
       glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-      GlBindUniform(model_program_, "light_color_a",
-                    glm::mix(params.color_b, params.color_a, 0.7f));
-      GlBindUniform(model_program_, "light_color_b", params.color_a);
+      GlBindUniform(model_program_, "light_color_a", params.color_a);
+      GlBindUniform(model_program_, "light_color_b", params.color_b);
       lo_x_.Draw();
       break;
     case kEyeball:
