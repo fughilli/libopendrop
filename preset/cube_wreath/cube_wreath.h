@@ -59,6 +59,8 @@ class CubeWreath : public Preset {
 
   float background_hue_ = 0;
   bool texture_trigger_ = false;
+
+  float rot_arg_ = 0.0f;
 };
 
 }  // namespace opendrop

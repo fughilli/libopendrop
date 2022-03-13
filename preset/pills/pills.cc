@@ -116,6 +116,11 @@ void Pills::DrawCubes(float power, float bass, float energy, float dt,
           bass / 5),
       0.05f, 0.4f);
 
+  float rot_speed_coeff =
+      SIGINJECT_OVERRIDE("pills_rot_speed_coeff", 1.0f, 0.0f, 5.0f);
+
+  rot_arg_ += rot_speed_coeff * dt;
+
   glm::mat3x3 look_rotation = OrientTowards(zoom_vec);
 
   float SIGPLOT_ASSIGN(locate_mix_coeff,
@@ -165,9 +170,12 @@ void Pills::DrawCubes(float power, float bass, float energy, float dt,
                     0, 0, cube_scale * 0.7, 0,  // Row 3
                     0, 0, 0, 1                  // Row 4
                     ) *
-        glm::rotate(glm::mat4(1.0f), time * 1.0f, glm::vec3(0.0f, 0.0f, 1.0f)) *
-        glm::rotate(glm::mat4(1.0f), time * 0.7f, glm::vec3(0.0f, 1.0f, 0.0f)) *
-        glm::rotate(glm::mat4(1.0f), time * 1.5f, glm::vec3(1.0f, 0.0f, 0.0f));
+        glm::rotate(glm::mat4(1.0f), rot_arg_ * 1.0f,
+                    glm::vec3(0.0f, 0.0f, 1.0f)) *
+        glm::rotate(glm::mat4(1.0f), rot_arg_ * 0.7f,
+                    glm::vec3(0.0f, 1.0f, 0.0f)) *
+        glm::rotate(glm::mat4(1.0f), rot_arg_ * 1.5f,
+                    glm::vec3(1.0f, 0.0f, 0.0f));
     const glm::vec4 color_a = glm::vec4(HsvToRgb(glm::vec3(energy, 1, 1)), 1);
     const glm::vec4 color_b =
         glm::vec4(HsvToRgb(glm::vec3(energy + 0.5, 1, 1)), 1);

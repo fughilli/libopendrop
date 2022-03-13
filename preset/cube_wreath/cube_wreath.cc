@@ -102,6 +102,11 @@ void CubeWreath::DrawCubes(float power, float energy, glm::vec3 zoom_vec,
                              0.1 + (cos(energy * 20) + 1) / 15.5, 0.0, 2.0)),
                          0.05f, 0.4f);
 
+  float rot_speed_coeff =
+      SIGINJECT_OVERRIDE("cube_wreath_rot_speed_coeff", 1.0f, 0.0f, 5.0f);
+
+  rot_arg_ += rot_speed_coeff * power / 50;
+
   glm::mat3x3 look_rotation = OrientTowards(zoom_vec);
 
   glm::mat4 model_transform;
@@ -123,9 +128,12 @@ void CubeWreath::DrawCubes(float power, float energy, glm::vec3 zoom_vec,
                     0, 0, cube_scale, 0,  // Row 3
                     0, 0, 0, 1            // Row 4
                     ) *
-        glm::rotate(glm::mat4(1.0f), energy * 10, glm::vec3(0.0f, 0.0f, 1.0f)) *
-        glm::rotate(glm::mat4(1.0f), energy * 7, glm::vec3(0.0f, 1.0f, 0.0f)) *
-        glm::rotate(glm::mat4(1.0f), energy * 15, glm::vec3(1.0f, 0.0f, 0.0f));
+        glm::rotate(glm::mat4(1.0f), rot_arg_ * 10,
+                    glm::vec3(0.0f, 0.0f, 1.0f)) *
+        glm::rotate(glm::mat4(1.0f), rot_arg_ * 7,
+                    glm::vec3(0.0f, 1.0f, 0.0f)) *
+        glm::rotate(glm::mat4(1.0f), rot_arg_ * 15,
+                    glm::vec3(1.0f, 0.0f, 0.0f));
     glm::vec4 color_a = glm::vec4(HsvToRgb(glm::vec3(energy, 1, 1)), 1);
     glm::vec4 color_b = glm::vec4(HsvToRgb(glm::vec3(energy + 0.5, 1, 1)), 1);
 

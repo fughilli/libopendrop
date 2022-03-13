@@ -60,6 +60,7 @@ class Pills : public Preset {
 
   float position_accum_ = 0.0f;
   float background_hue_ = 0;
+  float rot_arg_ = 0.0f;
   
   bool texture_trigger_ = false;
 };
