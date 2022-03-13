@@ -3,7 +3,6 @@ import socket
 import sys
 import mido
 import threading
-import pprint
 import signal
 import re
 
@@ -13,7 +12,9 @@ from absl import flags
 
 FLAGS = flags.FLAGS
 
-flags.DEFINE_string("input_filter", None, "")
+flags.DEFINE_boolean("list", False, "List available MIDI inputs, and then exit")
+flags.DEFINE_string("input_filter", None, "Regex to filter MIDI inputs by")
+flags.DEFINE_boolean("verbose", False, "")
 
 
 def make_key(msg):
@@ -93,7 +94,6 @@ class Runner:
     def initialize_device(self):
         input_names = mido.get_input_names()
 
-        print("All inputs:", input_names)
 
         input_name = list(
             filter((lambda name: re.match(FLAGS.input_filter, name)),
@@ -129,6 +129,11 @@ runner = Runner()
 
 
 def start():
+    if FLAGS.list:
+        input_listing = '\n'.join(mido.get_input_names())
+        print(f"Available inputs:\n{input_listing:s}")
+        return
+
     print("Runner start")
     runner.start()
 
