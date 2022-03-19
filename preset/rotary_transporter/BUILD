@@ -6,16 +6,11 @@ cc_library(
     name = "rotary_transporter",
     srcs = ["rotary_transporter.cc"],
     hdrs = ["rotary_transporter.h"],
-    copts = [
-        "-DGLM_ENABLE_EXPERIMENTAL",
-    ],
     linkstatic = 1,
     deps = [
         ":composite",
         ":passthrough",
         ":warp",
-        "//util/math:vector",
-        "//util/math:perspective",
         "//:gl_interface",
         "//:gl_render_target",
         "//preset",
@@ -24,10 +19,14 @@ cc_library(
         "//util:coefficients",
         "//util:colors",
         "//util:filter",
+        "//util:gl_helper",
         "//util:gl_util",
+        "//util:glm_helper",
         "//util:logging",
         "//util:math",
         "//util:status_macros",
+        "//util/math:perspective",
+        "//util/math:vector",
     ],
 )
 

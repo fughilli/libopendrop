@@ -1,11 +1,9 @@
 #ifndef UTIL_LOGGING_GLM_HELPERS_H_
 #define UTIL_LOGGING_GLM_HELPERS_H_
 
-#include <glm/vec2.hpp>
-#include <glm/vec3.hpp>
-#include <glm/vec4.hpp>
-#include <glm/mat4x4.hpp>
 #include <iostream>
+
+#include "util/glm_helper.h"
 
 std::ostream& operator<<(std::ostream& os, const glm::vec2& vec);
 std::ostream& operator<<(std::ostream& os, const glm::vec3& vec);

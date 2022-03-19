@@ -1,9 +1,9 @@
 #ifndef PRESETS_CUBE_WREATH_CUBE_WREATH_H_
 #define PRESETS_CUBE_WREATH_CUBE_WREATH_H_
 
-#include <glm/vec2.hpp>
 #include <vector>
 
+#include "util/glm_helper.h"
 #include "absl/status/statusor.h"
 #include "gl_interface.h"
 #include "gl_render_target.h"

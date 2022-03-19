@@ -1,13 +1,11 @@
 #ifndef LIBOPENDROP_UTIL_GL_UTIL_H_
 #define LIBOPENDROP_UTIL_GL_UTIL_H_
 
-#include <glm/mat4x4.hpp>
-#include <glm/vec2.hpp>
-#include <glm/vec4.hpp>
 #include <memory>
 
 #include "gl_interface.h"
 #include "gl_render_target.h"
+#include "util/glm_helper.h"
 
 namespace gl {
 

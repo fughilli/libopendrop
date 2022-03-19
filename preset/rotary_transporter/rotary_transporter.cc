@@ -1,23 +1,16 @@
 #include "preset/rotary_transporter/rotary_transporter.h"
 
-#define _USE_MATH_DEFINES
-#include <cmath>
-#define GL_GLEXT_PROTOTYPES
-#include <GL/gl.h>
-#include <GL/glext.h>
-
 #include <algorithm>
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtx/vector_angle.hpp>
-#include <glm/mat4x4.hpp>
+#include <cmath>
 
 #include "preset/rotary_transporter/composite.fsh.h"
 #include "preset/rotary_transporter/passthrough.vsh.h"
 #include "preset/rotary_transporter/warp.fsh.h"
 #include "util/coefficients.h"
 #include "util/colors.h"
+#include "util/gl_helper.h"
 #include "util/gl_util.h"
+#include "util/glm_helper.h"
 #include "util/logging.h"
 #include "util/math.h"
 #include "util/math/perspective.h"

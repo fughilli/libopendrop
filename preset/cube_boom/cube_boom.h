@@ -1,7 +1,6 @@
 #ifndef PRESETS_CUBE_BOOM_CUBE_BOOM_H_
 #define PRESETS_CUBE_BOOM_CUBE_BOOM_H_
 
-#include <glm/vec2.hpp>
 #include <vector>
 
 #include "absl/status/statusor.h"
@@ -12,6 +11,8 @@
 #include "primitive/model.h"
 #include "primitive/polyline.h"
 #include "primitive/rectangle.h"
+#include "util/gl_helper.h"
+#include "util/glm_helper.h"
 
 namespace opendrop {
 

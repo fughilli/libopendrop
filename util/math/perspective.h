@@ -1,4 +1,7 @@
-#include <glm/glm.hpp>
+#ifndef UTIL_PERSPECTIVE_H_
+#define UTIL_PERSPECTIVE_H_
+
+#include "util/glm_helper.h"
 
 namespace opendrop {
 
@@ -17,3 +20,5 @@ struct Directions {
 glm::mat3x3 OrientTowards(glm::vec3 look_ray);
 
 }  // namespace opendrop
+
+#endif  // UTIL_PERSPECTIVE_H_

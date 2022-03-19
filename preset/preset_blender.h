@@ -1,10 +1,6 @@
 #ifndef LIBOPENDROP_PRESET_PRESET_BLENDER_H_
 #define LIBOPENDROP_PRESET_PRESET_BLENDER_H_
 
-#define GL_GLEXT_PROTOTYPES
-#include <GL/gl.h>
-#include <GL/glext.h>
-
 #include <list>
 #include <memory>
 #include <string_view>

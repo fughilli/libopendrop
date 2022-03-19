@@ -1,15 +1,7 @@
 #include "preset/pills/pills.h"
 
-#include <cmath>
-#define GL_GLEXT_PROTOTYPES
-#include <GL/gl.h>
-#include <GL/glext.h>
-
 #include <algorithm>
-#include <glm/gtc/quaternion.hpp>
-#include <glm/gtc/type_ptr.hpp>
-#include <glm/gtx/quaternion.hpp>
-#include <glm/mat4x4.hpp>
+#include <cmath>
 
 #include "debug/control_injector.h"
 #include "debug/signal_scope.h"
@@ -20,7 +12,9 @@
 #include "preset/pills/warp.fsh.h"
 #include "util/colors.h"
 #include "util/enums.h"
+#include "util/gl_helper.h"
 #include "util/gl_util.h"
+#include "util/glm_helper.h"
 #include "util/logging.h"
 #include "util/math.h"
 #include "util/math/perspective.h"

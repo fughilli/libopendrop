@@ -3,9 +3,8 @@
 #include <array>
 #include <vector>
 
-#define GL_GLEXT_PROTOTYPES
-#include <GL/gl.h>
-#include <GL/glext.h>
+#include "util/gl_helper.h"
+#include "util/glm_helper.h"
 
 namespace opendrop {
 

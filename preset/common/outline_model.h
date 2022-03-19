@@ -1,13 +1,12 @@
 #ifndef PRESET_COMMON_OUTLINE_MODEL_H_
 #define PRESET_COMMON_OUTLINE_MODEL_H_
 
-#include <glm/gtc/type_ptr.hpp>
-#include <glm/mat4x4.hpp>
 #include <memory>
 
 #include "gl_interface.h"
 #include "gl_render_target.h"
 #include "primitive/model.h"
+#include "util/glm_helper.h"
 
 namespace opendrop {
 

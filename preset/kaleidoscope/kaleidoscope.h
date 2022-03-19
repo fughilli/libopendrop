@@ -1,7 +1,6 @@
 #ifndef PRESETS_SIMPLE_PRESET_KALEIDOSCOPE_H_
 #define PRESETS_SIMPLE_PRESET_KALEIDOSCOPE_H_
 
-#include <glm/vec2.hpp>
 #include <vector>
 
 #include "absl/status/statusor.h"
@@ -11,6 +10,8 @@
 #include "preset/preset.h"
 #include "primitive/polyline.h"
 #include "primitive/rectangle.h"
+#include "util/gl_helper.h"
+#include "util/glm_helper.h"
 
 namespace opendrop {
 

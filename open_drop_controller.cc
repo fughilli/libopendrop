@@ -1,10 +1,5 @@
 #include "open_drop_controller.h"
 
-#define GL_GLEXT_PROTOTYPES
-#include <GL/gl.h>
-#include <GL/glext.h>
-
-#define _USE_MATH_DEFINES
 #include <cmath>
 #include <cstdint>
 #include <iostream>
@@ -12,6 +7,7 @@
 #include "blit.fsh.h"
 #include "blit.vsh.h"
 #include "primitive/rectangle.h"
+#include "util/gl_helper.h"
 #include "util/gl_util.h"
 #include "util/logging.h"
 

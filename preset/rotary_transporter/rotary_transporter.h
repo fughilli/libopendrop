@@ -1,7 +1,6 @@
 #ifndef PRESETS_ROTARY_TRANSPORTER_ROTARY_TRANSPORTER_H_
 #define PRESETS_ROTARY_TRANSPORTER_ROTARY_TRANSPORTER_H_
 
-#include <glm/vec2.hpp>
 #include <vector>
 
 #include "absl/status/statusor.h"
@@ -12,6 +11,7 @@
 #include "primitive/polyline.h"
 #include "primitive/rectangle.h"
 #include "util/filter.h"
+#include "util/glm_helper.h"
 
 namespace opendrop {
 

@@ -1,8 +1,9 @@
 #ifndef PRIMITIVES_NGON_H_
 #define PRIMITIVES_NGON_H_
 
-#include <vector>
 #include <stdint.h>
+
+#include <vector>
 
 #include "primitive/primitive.h"
 

@@ -94,6 +94,7 @@ cc_library(
     hdrs = ["gl_interface.h"],
     linkstatic = 1,
     deps = [
+        "//util:gl_helper",
         "//util:logging",
         "@com_google_absl//absl/status:statusor",
         "@com_google_absl//absl/strings",
@@ -120,6 +121,7 @@ cc_library(
     hdrs = ["gl_texture_manager.h"],
     linkstatic = 1,
     deps = [
+        "//util:gl_helper",
         "//util:logging",
         "@com_google_absl//absl/status:statusor",
     ],

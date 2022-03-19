@@ -2,12 +2,11 @@
 #define PRIMITIVES_RIBBON_H_
 
 #include <cstdint>
-#include <glm/vec2.hpp>
-#include <glm/vec3.hpp>
 #include <vector>
 
 #include "absl/types/span.h"
 #include "primitive/primitive.h"
+#include "util/glm_helper.h"
 
 namespace opendrop {
 

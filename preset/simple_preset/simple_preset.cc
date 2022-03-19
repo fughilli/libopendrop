@@ -1,17 +1,13 @@
 #include "preset/simple_preset/simple_preset.h"
 
-#define _USE_MATH_DEFINES
-#include <cmath>
-#define GL_GLEXT_PROTOTYPES
-#include <GL/gl.h>
-#include <GL/glext.h>
-
 #include <algorithm>
+#include <cmath>
 
 #include "preset/simple_preset/composite.fsh.h"
 #include "preset/simple_preset/passthrough.vsh.h"
 #include "preset/simple_preset/warp.fsh.h"
 #include "util/colors.h"
+#include "util/gl_helper.h"
 #include "util/gl_util.h"
 #include "util/logging.h"
 #include "util/math.h"

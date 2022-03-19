@@ -1,11 +1,11 @@
 #ifndef GL_INTERFACE_H_
 #define GL_INTERFACE_H_
 
-#include <glm/glm.hpp>
 #include <memory>
 #include <string>
 
 #include "absl/status/statusor.h"
+#include "util/glm_helper.h"
 
 namespace gl {
 

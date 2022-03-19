@@ -6,9 +6,6 @@ cc_library(
     name = "glowsticks_3d_zoom",
     srcs = ["glowsticks_3d_zoom.cc"],
     hdrs = ["glowsticks_3d_zoom.h"],
-    copts = [
-        "-DGLM_ENABLE_EXPERIMENTAL",
-    ],
     linkstatic = 1,
     deps = [
         ":composite",
@@ -28,7 +25,9 @@ cc_library(
         "//util:accumulator",
         "//util:coefficients",
         "//util:colors",
+        "//util:gl_helper",
         "//util:gl_util",
+        "//util:glm_helper",
         "//util:logging",
         "//util:math",
         "//util:oneshot",

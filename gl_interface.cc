@@ -1,12 +1,9 @@
 #include "gl_interface.h"
 
-#define GL_GLEXT_PROTOTYPES
-#include <GL/gl.h>
-#include <GL/glext.h>
-
 #include <iostream>
 
 #include "absl/strings/str_cat.h"
+#include "util/gl_helper.h"
 #include "util/logging.h"
 
 namespace gl {

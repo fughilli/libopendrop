@@ -27,6 +27,10 @@ cc_library(
     name = "logging_glm_helpers",
     srcs = ["logging_glm_helpers.cc"],
     hdrs = ["logging_glm_helpers.h"],
+    deps = [
+        ":glm_helper",
+        "@com_google_absl//absl/strings:str_format",
+    ],
 )
 
 cc_library(
@@ -34,6 +38,7 @@ cc_library(
     srcs = ["colors.cc"],
     hdrs = ["colors.h"],
     linkstatic = 1,
+    deps = ["//util:glm_helper"],
 )
 
 cc_test(
@@ -53,6 +58,7 @@ cc_library(
     hdrs = ["gl_util.h"],
     linkstatic = 1,
     deps = [
+        ":gl_helper",
         "//:gl_interface",
         "//:gl_render_target",
     ],
@@ -221,4 +227,14 @@ cc_test(
 cc_library(
     name = "enums",
     hdrs = ["enums.h"],
+)
+
+cc_library(
+    name = "gl_helper",
+    hdrs = ["gl_helper.h"],
+)
+
+cc_library(
+    name = "glm_helper",
+    hdrs = ["glm_helper.h"],
 )

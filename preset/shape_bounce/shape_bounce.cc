@@ -1,15 +1,7 @@
 #include "preset/shape_bounce/shape_bounce.h"
 
-#define _USE_MATH_DEFINES
-#include <cmath>
-#define GL_GLEXT_PROTOTYPES
-#include <GL/gl.h>
-#include <GL/glext.h>
-
 #include <algorithm>
-#define GLM_ENABLE_EXPERIMENTAL
-#include <glm/gtx/transform.hpp>
-#include <glm/mat4x4.hpp>
+#include <cmath>
 
 #include "preset/shape_bounce/composite.fsh.h"
 #include "preset/shape_bounce/ngon.fsh.h"
@@ -17,7 +9,9 @@
 #include "preset/shape_bounce/warp.fsh.h"
 #include "util/coefficients.h"
 #include "util/colors.h"
+#include "util/gl_helper.h"
 #include "util/gl_util.h"
+#include "util/glm_helper.h"
 #include "util/logging.h"
 #include "util/math.h"
 #include "util/status_macros.h"

@@ -20,10 +20,12 @@ cc_library(
         "//primitive:rectangle",
         "//util:coefficients",
         "//util:colors",
-        "//util:math",
         "//util:filter",
+        "//util:gl_helper",
         "//util:gl_util",
+        "//util:glm_helper",
         "//util:logging",
+        "//util:math",
         "//util:status_macros",
     ],
 )

@@ -1,11 +1,9 @@
 #ifndef PRIMITIVES_MODEL_H_
 #define PRIMITIVES_MODEL_H_
 
-#include <glm/vec2.hpp>
-#include <glm/vec3.hpp>
-
 #include "absl/types/span.h"
 #include "primitive/primitive.h"
+#include "util/glm_helper.h"
 
 namespace opendrop {
 

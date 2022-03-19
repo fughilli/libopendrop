@@ -1,11 +1,6 @@
 #include "preset/common/outline_model.h"
 
 #include <cmath>
-#define GL_GLEXT_PROTOTYPES
-#include <GL/gl.h>
-#include <GL/glext.h>
-
-#include <glm/mat4x4.hpp>
 
 #include "debug/control_injector.h"
 #include "preset/common/alpaca.obj.h"
@@ -24,7 +19,9 @@
 #include "preset/common/pill_shadow.obj.h"
 #include "preset/common/star.obj.h"
 #include "preset/common/star_outline.obj.h"
+#include "util/gl_helper.h"
 #include "util/gl_util.h"
+#include "util/glm_helper.h"
 #include "util/status_macros.h"
 
 namespace opendrop {

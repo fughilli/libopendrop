@@ -6,9 +6,6 @@ cc_library(
     name = "glowsticks_3d",
     srcs = ["glowsticks_3d.cc"],
     hdrs = ["glowsticks_3d.h"],
-    copts = [
-        "-DGLM_ENABLE_EXPERIMENTAL",
-    ],
     linkstatic = 1,
     deps = [
         ":composite",
@@ -24,7 +21,9 @@ cc_library(
         "//util:accumulator",
         "//util:coefficients",
         "//util:colors",
+        "//util:gl_helper",
         "//util:gl_util",
+        "//util:glm_helper",
         "//util:logging",
         "//util:math",
         "//util:oneshot",

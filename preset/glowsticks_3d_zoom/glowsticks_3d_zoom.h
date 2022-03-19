@@ -2,8 +2,6 @@
 #define PRESETS_GLOWSTICKS_3D_ZOOM_GLOWSTICKS_3D_ZOOM_H_
 
 #include <array>
-#include <glm/vec2.hpp>
-#include <glm/vec3.hpp>
 
 #include "absl/status/statusor.h"
 #include "gl_interface.h"
@@ -14,6 +12,7 @@
 #include "primitive/rectangle.h"
 #include "primitive/ribbon.h"
 #include "util/accumulator.h"
+#include "util/glm_helper.h"
 #include "util/oneshot.h"
 
 namespace opendrop {

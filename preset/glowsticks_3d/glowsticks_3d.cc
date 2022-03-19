@@ -1,12 +1,7 @@
 #include "preset/glowsticks_3d/glowsticks_3d.h"
 
-#define _USE_MATH_DEFINES
-#include <cmath>
-#define GL_GLEXT_PROTOTYPES
-#include <GL/gl.h>
-#include <GL/glext.h>
-
 #include <algorithm>
+#include <cmath>
 #include <vector>
 
 #include "absl/types/span.h"
@@ -16,6 +11,7 @@
 #include "preset/glowsticks_3d/warp.fsh.h"
 #include "util/coefficients.h"
 #include "util/colors.h"
+#include "util/gl_helper.h"
 #include "util/gl_util.h"
 #include "util/logging.h"
 #include "util/math.h"

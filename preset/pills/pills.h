@@ -1,7 +1,6 @@
 #ifndef PRESETS_PILLS_PILLS_H_
 #define PRESETS_PILLS_PILLS_H_
 
-#include <glm/vec2.hpp>
 #include <vector>
 
 #include "absl/status/statusor.h"
@@ -12,6 +11,7 @@
 #include "preset/preset.h"
 #include "primitive/polyline.h"
 #include "primitive/rectangle.h"
+#include "util/glm_helper.h"
 
 namespace opendrop {
 
@@ -61,7 +61,7 @@ class Pills : public Preset {
   float position_accum_ = 0.0f;
   float background_hue_ = 0;
   float rot_arg_ = 0.0f;
-  
+
   bool texture_trigger_ = false;
 };
 

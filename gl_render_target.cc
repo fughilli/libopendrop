@@ -1,11 +1,8 @@
 #include "gl_render_target.h"
 
-#define GL_GLEXT_PROTOTYPES
-#include <GL/gl.h>
-#include <GL/glext.h>
-
 #include <iostream>
 
+#include "util/gl_helper.h"
 #include "util/logging.h"
 #include "util/status_macros.h"
 

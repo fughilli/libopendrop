@@ -1,18 +1,15 @@
 #include "preset/template_preset/template_preset.h"
 
-#define _USE_MATH_DEFINES
-#include <cmath>
-#define GL_GLEXT_PROTOTYPES
-#include <GL/gl.h>
-#include <GL/glext.h>
-
 #include <algorithm>
+#include <cmath>
 
 #include "preset/template_preset/composite.fsh.h"
 #include "preset/template_preset/passthrough.vsh.h"
 #include "preset/template_preset/warp.fsh.h"
 #include "util/colors.h"
+#include "util/gl_helper.h"
 #include "util/gl_util.h"
+#include "util/glm_helper.h"
 #include "util/logging.h"
 #include "util/status_macros.h"
 

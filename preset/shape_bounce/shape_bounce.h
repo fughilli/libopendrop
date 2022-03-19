@@ -1,7 +1,6 @@
 #ifndef PRESETS_SHAPE_BOUNCE_SHAPE_BOUNCE_H_
 #define PRESETS_SHAPE_BOUNCE_SHAPE_BOUNCE_H_
 
-#include <glm/vec2.hpp>
 #include <vector>
 
 #include "absl/status/statusor.h"
@@ -13,6 +12,7 @@
 #include "primitive/polyline.h"
 #include "primitive/rectangle.h"
 #include "util/filter.h"
+#include "util/glm_helper.h"
 
 namespace opendrop {
 
@@ -47,8 +47,8 @@ class ShapeBounce : public Preset {
   Rectangle rectangle_;
   Ngon ngon_;
 
-  glm::vec2 velocity_{0,0};
-  glm::vec2 position_{0,0};
+  glm::vec2 velocity_{0, 0};
+  glm::vec2 position_{0, 0};
 
   std::shared_ptr<IirFilter> bass_filter_;
   std::shared_ptr<HystereticMapFilter> bass_power_filter_;

@@ -1,8 +1,7 @@
 #include "util/colors.h"
 
-#include <glm/geometric.hpp>
-
 #include "googletest/include/gtest/gtest.h"
+#include "util/glm_helper.h"
 
 namespace opendrop {
 namespace {

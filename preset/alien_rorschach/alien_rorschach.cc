@@ -1,17 +1,13 @@
 #include "preset/alien_rorschach/alien_rorschach.h"
 
-#define _USE_MATH_DEFINES
-#include <cmath>
-#define GL_GLEXT_PROTOTYPES
-#include <GL/gl.h>
-#include <GL/glext.h>
-
 #include <algorithm>
+#include <cmath>
 
 #include "preset/alien_rorschach/composite.fsh.h"
 #include "preset/alien_rorschach/passthrough.vsh.h"
 #include "preset/alien_rorschach/warp.fsh.h"
 #include "util/colors.h"
+#include "util/gl_helper.h"
 #include "util/gl_util.h"
 #include "util/logging.h"
 #include "util/math.h"
@@ -104,8 +100,8 @@ void AlienRorschach::OnDrawFrame(
         y_pos += sin(sin(2 * energy) * 5 * energy / 1.25 + power / 100) / 5;
         y_pos += sin(sin(2 * energy) * 5 * energy / 5.23 + 0.5) / 20;
 
-        x_pos += cos(energy * 10 + (j / 4.0 * M_PI * 2)) / 2;
-        y_pos += sin(energy * 10 + (j / 4.0 * M_PI * 2)) / 2;
+        x_pos += cos(energy * 10 + (j / 4.0 * kPi * 2)) / 2;
+        y_pos += sin(energy * 10 + (j / 4.0 * kPi * 2)) / 2;
 
         vertices_[i] = glm::vec2(x_pos, y_pos);
       }

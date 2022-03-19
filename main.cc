@@ -18,9 +18,6 @@
 // along with LED Suit Driver.  If not, see <http://www.gnu.org/licenses/>.
 //
 
-#define _USE_MATH_DEFINES
-#include <GL/gl.h>
-#include <GL/glext.h>
 #include <SDL2/SDL.h>
 
 #include <algorithm>
@@ -53,6 +50,7 @@
 #include "preset/preset_list.h"
 #include "sdl_gl_interface.h"
 #include "util/coefficients.h"
+#include "util/gl_helper.h"
 #include "util/logging.h"
 #include "util/performance_timer.h"
 #include "util/pulseaudio_interface.h"

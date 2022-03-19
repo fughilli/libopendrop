@@ -1,9 +1,9 @@
 #ifndef UTIL_MATH_VECTOR_H_
 #define UTIL_MATH_VECTOR_H_
 
-#include <glm/glm.hpp>
-#include <glm/mat4x4.hpp>
 #include <tuple>
+
+#include "util/glm_helper.h"
 
 namespace opendrop {
 

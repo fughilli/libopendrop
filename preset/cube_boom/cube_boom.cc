@@ -1,14 +1,7 @@
 #include "preset/cube_boom/cube_boom.h"
 
-#define _USE_MATH_DEFINES
-#include <cmath>
-#define GL_GLEXT_PROTOTYPES
-#include <GL/gl.h>
-#include <GL/glext.h>
-
 #include <algorithm>
-#include <glm/gtc/type_ptr.hpp>
-#include <glm/mat4x4.hpp>
+#include <cmath>
 
 #include "preset/cube_boom/composite.fsh.h"
 #include "preset/cube_boom/cube.obj.h"
@@ -18,7 +11,9 @@
 #include "preset/cube_boom/shrek.obj.h"
 #include "preset/cube_boom/warp.fsh.h"
 #include "util/colors.h"
+#include "util/gl_helper.h"
 #include "util/gl_util.h"
+#include "util/glm_helper.h"
 #include "util/logging.h"
 #include "util/status_macros.h"
 

@@ -1,6 +1,5 @@
 #include "util/colors.h"
 
-#define _USE_MATH_DEFINES
 #include <algorithm>
 #include <cmath>
 

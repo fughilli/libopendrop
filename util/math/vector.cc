@@ -1,11 +1,7 @@
 #include <cmath>
-#include <glm/glm.hpp>
-#include <glm/gtc/quaternion.hpp>
-#include <glm/gtc/type_ptr.hpp>
-#include <glm/gtx/quaternion.hpp>
-#include <glm/mat4x4.hpp>
 #include <tuple>
 
+#include "util/glm_helper.h"
 #include "util/logging.h"
 #include "util/math.h"
 #include "util/math/constants.h"

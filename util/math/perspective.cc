@@ -1,7 +1,6 @@
 #include "util/math/perspective.h"
 
-#include <glm/ext/matrix_transform.hpp>
-#include <glm/glm.hpp>
+#include "util/glm_helper.h"
 
 namespace opendrop {
 

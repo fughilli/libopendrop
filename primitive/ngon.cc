@@ -1,11 +1,9 @@
 #include "primitive/ngon.h"
 
-#define GL_GLEXT_PROTOTYPES
-#include <GL/gl.h>
-#include <GL/glext.h>
-
 #include <cmath>
 #include <vector>
+
+#include "util/gl_helper.h"
 
 namespace opendrop {
 

@@ -34,7 +34,9 @@ cc_library(
         "//:gl_render_target",
         "//debug:control_injector",
         "//primitive:model",
+        "//util:gl_helper",
         "//util:gl_util",
+        "//util:glm_helper",
         "//util:status_macros",
     ],
 )

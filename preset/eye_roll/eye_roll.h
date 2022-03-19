@@ -1,7 +1,6 @@
 #ifndef PRESETS_EYE_ROLL_EYE_ROLL_H_
 #define PRESETS_EYE_ROLL_EYE_ROLL_H_
 
-#include <glm/vec2.hpp>
 #include <vector>
 
 #include "absl/status/statusor.h"
@@ -13,6 +12,7 @@
 #include "primitive/polyline.h"
 #include "primitive/rectangle.h"
 #include "util/filter.h"
+#include "util/glm_helper.h"
 #include "util/signals.h"
 
 namespace opendrop {

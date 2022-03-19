@@ -1,9 +1,8 @@
 #ifndef PRIMITIVES_RECTANGLE_H_
 #define PRIMITIVES_RECTANGLE_H_
 
-#include <glm/vec4.hpp>
-
 #include "primitive/primitive.h"
+#include "util/glm_helper.h"
 
 namespace opendrop {
 
