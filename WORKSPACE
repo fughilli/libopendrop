@@ -84,8 +84,7 @@ hedron_compile_commands_setup()
 
 new_git_repository(
     name = "imgui",
-    # branch = "docking",
-    build_file = "@//third_party/imgui:BUILD",
+    build_file = "@//third_party:imgui.BUILD",
     commit = "aa8680009248061c83f3d6722ec53c1a320d872b",
     init_submodules = True,
     remote = "https://github.com/ocornut/imgui",
@@ -94,8 +93,7 @@ new_git_repository(
 
 new_git_repository(
     name = "implot",
-    #branch = "master",
-    build_file = "@//third_party/implot:BUILD",
+    build_file = "@//third_party:implot.BUILD",
     commit = "b47c8bacdbc78bc521691f70666f13924bb522ab",
     init_submodules = True,
     remote = "https://github.com/epezent/implot",
