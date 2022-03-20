@@ -1,6 +1,6 @@
 workspace(name = "libopendrop")
 
-BAZEL_VERSION = "3.1.0"
+BAZEL_VERSION = "4.1.0"
 
 BAZEL_VERSION_SHA = "753434f4fa730266cf5ce21d1fdd425e1e167dd9347ad3e8adc19e8c0d54edca"
 
