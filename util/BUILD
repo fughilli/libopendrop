@@ -221,7 +221,7 @@ cc_test(
         ":udp_server",
         "@com_googletest//:gtest",
         "@com_googletest//:gtest_main",
-    ],
+    ] + CROSS_COMPILATION_DEPS,
 )
 
 cc_library(
