@@ -1,0 +1,291 @@
+buttons: 36
+buttons: 37
+buttons: 38
+buttons: 39
+buttons: 40
+buttons: 41
+buttons: 42
+buttons: 43
+buttons: 48
+buttons: 60
+buttons: 65
+buttons: 72
+buttons: 9036
+buttons: 9041
+buttons: 9042
+buttons: 9043
+control_mappings {
+  key: "cube_wreath_border_hue_coeff"
+  value: "control_change:0:76:0"
+}
+control_mappings {
+  key: "cube_wreath_border_value_coeff"
+  value: "control_change:0:75:0"
+}
+control_mappings {
+  key: "cube_wreath_model_scale"
+  value: "control_change:0:73:0"
+}
+control_mappings {
+  key: "cube_wreath_num_cubes"
+  value: "control_change:0:77:0"
+}
+control_mappings {
+  key: "cube_wreath_radius"
+  value: "control_change:0:72:0"
+}
+control_mappings {
+  key: "cube_wreath_rot_speed_coeff"
+  value: "control_change:0:74:0"
+}
+control_mappings {
+  key: "cube_wreath_zoom_dir_scale"
+  value: "control_change:0:71:0"
+}
+control_mappings {
+  key: "cube_wreath_zoom_speed"
+  value: "control_change:0:70:0"
+}
+control_mappings {
+  key: "glowsticks_border_hue_coeff"
+  value: "control_change:0:76:0"
+}
+control_mappings {
+  key: "glowsticks_border_value_coeff"
+  value: "control_change:0:75:0"
+}
+control_mappings {
+  key: "glowsticks_zoom_speed"
+  value: "control_change:0:70:0"
+}
+control_mappings {
+  key: "pills_border_hue_coeff"
+  value: "control_change:0:76:0"
+}
+control_mappings {
+  key: "pills_border_value_coeff"
+  value: "control_change:0:75:0"
+}
+control_mappings {
+  key: "pills_model_scale"
+  value: "control_change:0:73:0"
+}
+control_mappings {
+  key: "pills_num_cubes"
+  value: "control_change:0:77:0"
+}
+control_mappings {
+  key: "pills_rot_speed_coeff"
+  value: "control_change:0:74:0"
+}
+control_mappings {
+  key: "pills_zoom_coeff"
+  value: "control_change:0:70:0"
+}
+signals_by_name {
+  key: "cube_wreath_border_hue_coeff"
+  value {
+    low: 0
+    high: 3
+  }
+}
+signals_by_name {
+  key: "cube_wreath_border_value_coeff"
+  value {
+    low: 0
+    high: 1
+  }
+}
+signals_by_name {
+  key: "cube_wreath_model_scale"
+  value {
+    low: 0.05
+    high: 0.4
+  }
+}
+signals_by_name {
+  key: "cube_wreath_num_cubes"
+  value {
+    low: 1
+    high: 32
+  }
+}
+signals_by_name {
+  key: "cube_wreath_radius"
+  value {
+    low: 0
+    high: 1
+  }
+}
+signals_by_name {
+  key: "cube_wreath_rot_speed_coeff"
+  value {
+    low: 0
+    high: 5
+  }
+}
+signals_by_name {
+  key: "cube_wreath_zoom_dir_scale"
+  value {
+    low: -1
+    high: 1
+  }
+}
+signals_by_name {
+  key: "cube_wreath_zoom_speed"
+  value {
+    low: 0.9
+    high: 1.5
+  }
+}
+signals_by_name {
+  key: "glowsticks_border_hue_coeff"
+  value {
+    low: 0
+    high: 10
+  }
+}
+signals_by_name {
+  key: "glowsticks_border_value_coeff"
+  value {
+    low: 0
+    high: 10
+  }
+}
+signals_by_name {
+  key: "glowsticks_zoom_speed"
+  value {
+    low: 0.95
+    high: 1.15
+  }
+}
+signals_by_name {
+  key: "pills_border_hue_coeff"
+  value {
+    low: 0
+    high: 3
+  }
+}
+signals_by_name {
+  key: "pills_border_value_coeff"
+  value {
+    low: 0
+    high: 1
+  }
+}
+signals_by_name {
+  key: "pills_model_scale"
+  value {
+    low: 0.05
+    high: 0.4
+  }
+}
+signals_by_name {
+  key: "pills_num_cubes"
+  value {
+    low: 1
+    high: 32
+  }
+}
+signals_by_name {
+  key: "pills_rot_speed_coeff"
+  value {
+    low: 0
+    high: 5
+  }
+}
+signals_by_name {
+  key: "pills_zoom_coeff"
+  value {
+    low: -1
+    high: 1
+  }
+}
+button_mappings {
+  key: "cube_wreath_texture_enable"
+  value: 9036
+}
+button_mappings {
+  key: "model_to_draw"
+  value: 9042
+}
+button_mappings {
+  key: "next_preset"
+  value: 9043
+}
+button_mappings {
+  key: "pills_texture_enable"
+  value: 9036
+}
+counters_by_name {
+  key: "cube_wreath_texture_enable"
+  value {
+    low: 0
+    high: 0
+    value: 0
+  }
+}
+counters_by_name {
+  key: "model_to_draw"
+  value {
+    low: 0
+    high: 5
+    value: 5
+  }
+}
+counters_by_name {
+  key: "next_preset"
+  value {
+    low: 0
+    high: 0
+    value: 0
+  }
+}
+counters_by_name {
+  key: "pills_texture_enable"
+  value {
+    low: 0
+    high: 0
+    value: 0
+  }
+}
+controls_by_name {
+  key: "control_change:0:1:0"
+  value: 0
+}
+controls_by_name {
+  key: "control_change:0:70:0"
+  value: 0.370078743
+}
+controls_by_name {
+  key: "control_change:0:71:0"
+  value: 0.700787425
+}
+controls_by_name {
+  key: "control_change:0:72:0"
+  value: 0
+}
+controls_by_name {
+  key: "control_change:0:73:0"
+  value: 0.535433054
+}
+controls_by_name {
+  key: "control_change:0:74:0"
+  value: 0.275590539
+}
+controls_by_name {
+  key: "control_change:0:75:0"
+  value: 0.96062994
+}
+controls_by_name {
+  key: "control_change:0:76:0"
+  value: 0.330708653
+}
+controls_by_name {
+  key: "control_change:0:77:0"
+  value: 0
+}
+controls_by_name {
+  key: "pitchwheel:0:0:0"
+  value: 0.500030518
+}

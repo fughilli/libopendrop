@@ -1,0 +1,185 @@
+buttons: 3000
+buttons: 3001
+buttons: 4000
+buttons: 4001
+control_mappings {
+  key: "cube_wreath_model_scale"
+  value: "control_change:4:3:0"
+}
+control_mappings {
+  key: "cube_wreath_radius"
+  value: "control_change:4:0:0"
+}
+control_mappings {
+  key: "cube_wreath_zoom_dir_scale"
+  value: "control_change:3:2:0"
+}
+control_mappings {
+  key: "cube_wreath_zoom_speed"
+  value: "control_change:3:0:0"
+}
+signals_by_name {
+  key: "cube_wreath_border_hue_coeff"
+  value {
+    low: 0
+    high: 3
+  }
+}
+signals_by_name {
+  key: "cube_wreath_border_value_coeff"
+  value {
+    low: 0
+    high: 1
+  }
+}
+signals_by_name {
+  key: "cube_wreath_model_scale"
+  value {
+    low: 0.05
+    high: 0.4
+  }
+}
+signals_by_name {
+  key: "cube_wreath_num_cubes"
+  value {
+    low: 1
+    high: 32
+  }
+}
+signals_by_name {
+  key: "cube_wreath_radius"
+  value {
+    low: 0
+    high: 1
+  }
+}
+signals_by_name {
+  key: "cube_wreath_zoom_dir_scale"
+  value {
+    low: -1
+    high: 1
+  }
+}
+signals_by_name {
+  key: "cube_wreath_zoom_speed"
+  value {
+    low: 0.9
+    high: 1.5
+  }
+}
+signals_by_name {
+  key: "glowsticks_border_hue_coeff"
+  value {
+    low: 0
+    high: 10
+  }
+}
+signals_by_name {
+  key: "glowsticks_border_value_coeff"
+  value {
+    low: 0
+    high: 10
+  }
+}
+signals_by_name {
+  key: "glowsticks_zoom_speed"
+  value {
+    low: 0.95
+    high: 1.15
+  }
+}
+signals_by_name {
+  key: "pills_border_hue_coeff"
+  value {
+    low: 0
+    high: 3
+  }
+}
+signals_by_name {
+  key: "pills_border_value_coeff"
+  value {
+    low: 0
+    high: 1
+  }
+}
+signals_by_name {
+  key: "pills_model_scale"
+  value {
+    low: 0.05
+    high: 0.5
+  }
+}
+signals_by_name {
+  key: "pills_num_cubes"
+  value {
+    low: 1
+    high: 32
+  }
+}
+signals_by_name {
+  key: "pills_zoom_coeff"
+  value {
+    low: -1
+    high: 1
+  }
+}
+button_mappings {
+  key: "model_to_draw"
+  value: 4000
+}
+button_mappings {
+  key: "next_preset"
+  value: 3000
+}
+counters_by_name {
+  key: "model_to_draw"
+  value {
+    low: 0
+    high: 4
+    value: 3
+  }
+}
+counters_by_name {
+  key: "next_preset"
+  value {
+    low: 0
+    high: 0
+    value: 0
+  }
+}
+controls_by_name {
+  key: "control_change:3:0:0"
+  value: 0.496063
+}
+controls_by_name {
+  key: "control_change:3:1:0"
+  value: 0.496063
+}
+controls_by_name {
+  key: "control_change:3:2:0"
+  value: 0.728
+}
+controls_by_name {
+  key: "control_change:3:3:0"
+  value: 0.583333313
+}
+controls_by_name {
+  key: "control_change:3:4:0"
+  value: 0.319587618
+}
+controls_by_name {
+  key: "control_change:4:0:0"
+  value: 0.488
+}
+controls_by_name {
+  key: "control_change:4:2:0"
+  value: 0
+}
+controls_by_name {
+  key: "control_change:4:3:0"
+  value: 0.0625
+}
+controls_by_name {
+  key: "control_change:4:4:0"
+  value: 0.5
+}
