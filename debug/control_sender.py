@@ -1,18 +1,20 @@
-from typing import Dict, List, Tuple
+import mido
+import re
+import signal
 import socket
 import sys
-import mido
 import threading
-import signal
-import re
-
-from debug.control_pb2 import Control, Button
+import time
+from typing import Dict, List, Tuple
 
 from absl import flags
 
+from debug.control_pb2 import Control, Button
+
 FLAGS = flags.FLAGS
 
-flags.DEFINE_boolean("list", False, "List available MIDI inputs, and then exit")
+flags.DEFINE_boolean("list", False,
+                     "List available MIDI inputs, and then exit")
 flags.DEFINE_string("input_filter", None, "Regex to filter MIDI inputs by")
 flags.DEFINE_boolean("verbose", False, "")
 
@@ -43,6 +45,7 @@ class Runner:
         self.control_values: Dict[str, float] = {}
         self.sorted_control_keys: List[str] = []
         self.buttons: List[Button] = []
+        self.inport = None
 
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.server_tuple = ('127.0.0.1', 9944)
@@ -80,6 +83,9 @@ class Runner:
 
     def stop(self):
         self.should_exit = True
+        if self.inport is not None:
+            print("Closing port")
+            self.inport.close()
         self.thread.join()
 
     def send_control(self):
@@ -88,12 +94,10 @@ class Runner:
             control.control[k] = v
         control.buttons.extend(self.buttons)
         self.buttons = []
-        # print(control)
         self.socket.sendto(control.SerializeToString(), self.server_tuple)
 
     def initialize_device(self):
         input_names = mido.get_input_names()
-
 
         input_name = list(
             filter((lambda name: re.match(FLAGS.input_filter, name)),
@@ -103,25 +107,28 @@ class Runner:
 
         return mido.open_input(input_name)
 
+    def inport_callback(self, msg):
+        if msg.type == 'reset':
+            return
+        if msg.type.startswith('note'):
+            button = Button()
+            button.channel = msg.channel * 1000 + msg.note
+            button.state = (Button.State.PRESSED if msg.type == 'note_on' else
+                            Button.State.RELEASED)
+            button.velocity = msg.velocity
+            self.buttons.append(button)
+        else:
+            self.maybe_hash_value(msg)
+        self.send_control()
+
     def run(self):
-        inport = self.initialize_device()
+        self.inport = self.initialize_device()
+        self.inport.callback = self.inport_callback
 
         while not self.should_exit:
-            msg = inport.receive()
-            if msg.type == 'reset':
-                continue
-            if msg.type.startswith('note'):
-                button = Button()
-                button.channel = msg.channel * 1000 + msg.note
-                button.state = (Button.State.PRESSED if msg.type == 'note_on'
-                                else Button.State.RELEASED)
-                button.velocity = msg.velocity
-                self.buttons.append(button)
-            else:
-                self.maybe_hash_value(msg)
-            # print(
-            #     [self.control_values[key] for key in self.sorted_control_keys])
-            self.send_control()
+            time.sleep(1)
+
+        self.inport.callback = None
         print("Exiting")
 
 
