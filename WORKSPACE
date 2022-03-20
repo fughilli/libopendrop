@@ -38,6 +38,20 @@ git_repository(
     shallow_since = "1640621124 -0800",
 )
 
+git_repository(
+    name = "platforms",
+    commit = "fbd0d188dac49fbcab3d2876a2113507e6fc68e9",
+    remote = "https://github.com/bazelbuild/platforms",
+    shallow_since = "1644333305 -0500",
+)
+
+git_repository(
+    name = "com_google_re2",
+    commit = "3be7d1b6b486ecd47b0daa58210051e29fb31122",
+    remote = "https://github.com/google/re2",
+    shallow_since = "1647366980 +0000",
+)
+
 http_archive(
     name = "rules_python",
     sha256 = "cd6730ed53a002c56ce4e2f396ba3b3be262fd7cb68339f0377a45e8227fe332",
