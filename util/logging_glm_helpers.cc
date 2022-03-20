@@ -1,6 +1,9 @@
 #include "util/logging_glm_helpers.h"
-#include <sstream>
+
 #include <iomanip>
+#include <sstream>
+
+#include "absl/strings/str_format.h"
 
 std::ostream& operator<<(std::ostream& os, const glm::vec2& vec) {
   os << "<" << vec.x << ", " << vec.y << ">";
@@ -20,9 +23,10 @@ std::ostream& operator<<(std::ostream& os, const glm::vec4& vec) {
 std::ostream& operator<<(std::ostream& os, const glm::mat4& vec) {
   std::stringstream ss;
 
-  ss << std::setw(4) << "|" << vec[0].x << " " << vec[1].x << " " << vec[2].x << " " << vec[3].x << "|" << std::endl;
-  ss << std::setw(4) << "|" << vec[0].y << " " << vec[1].y << " " << vec[2].y << " " << vec[3].y << "|" << std::endl;
-  ss << std::setw(4) << "|" << vec[0].z << " " << vec[1].z << " " << vec[2].z << " " << vec[3].z << "|" << std::endl;
-  ss << std::setw(4) << "|" << vec[0].w << " " << vec[1].w << " " << vec[2].w << " " << vec[3].w << "|" << std::endl;
+  constexpr char kFormatStr[] = "| % 10.4f % 10.4f % 10.4f % 10.4f |\n";
+
+  for (int i = 0; i < 4; ++i)
+    ss << absl::StrFormat(kFormatStr, vec[0][i], vec[1][i], vec[2][i],
+                          vec[3][i]);
   return os << ss.str();
 }

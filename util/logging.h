@@ -23,7 +23,12 @@ enum _LogLevel { DEBUG = 0, INFO = 1, WARNING = 2, ERROR = 3, FATAL = 4 };
 class _Logger {
  public:
   _Logger(_LogLevel level, const char* file, int line)
-      : level_(level), file_(file), line_(line), condition_(true) {}
+      : level_(level),
+        file_(file),
+        line_(line),
+        condition_(true),
+        sink_(&std::cout),
+        error_sink_(&std::cerr) {}
   template <typename T>
   _Logger& operator<<(const T& value) {
     if (!Enabled()) {
@@ -36,6 +41,18 @@ class _Logger {
   // Sets the value of the condition for this logger instance.
   _Logger& SetCondition(bool condition) {
     condition_ = condition;
+    return *this;
+  }
+
+  // Sets the sink for this logger instance.
+  _Logger& SetSink(std::ostream* sink) {
+    sink_ = sink;
+    return *this;
+  }
+
+  // Sets the error/warning level sink for this logger instance.
+  _Logger& SetErrorSink(std::ostream* error_sink) {
+    error_sink_ = error_sink;
     return *this;
   }
 
@@ -106,6 +123,8 @@ class _Logger {
   int line_;
   std::stringstream logline_stream_;
   bool condition_;
+  std::ostream* sink_;
+  std::ostream* error_sink_;
 };
 
 class _DummyLogger {
@@ -134,7 +153,8 @@ class _DummyLogger {
 #define __LOG_FUNCTION_FATAL(level) __LOG_FUNCTION_COMMON(level)
 
 #define LOG(level) (__LOG_FUNCTION_##level(level))
-#define LOG_IF(level, condition) if ((condition)) LOG(level)
+#define LOG_IF(level, condition) \
+  if ((condition)) LOG(level)
 #endif
 
 #define CHECK_NULL(pointer)                      \

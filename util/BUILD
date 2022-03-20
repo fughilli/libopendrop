@@ -33,6 +33,18 @@ cc_library(
     ],
 )
 
+cc_test(
+    name = "logging_glm_helpers_test",
+    srcs = ["logging_glm_helpers_test.cc"],
+    deps = [
+        ":glm_helper",
+        ":logging_glm_helpers",
+        "//util/testing:re2_matchers",
+        "@com_googletest//:gtest",
+        "@com_googletest//:gtest_main",
+    ] + CROSS_COMPILATION_DEPS,
+)
+
 cc_library(
     name = "colors",
     srcs = ["colors.cc"],
