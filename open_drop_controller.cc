@@ -66,7 +66,8 @@ void OpenDropController::UpdateGeometry(int width, int height) {
 }
 
 void OpenDropController::DrawFrame(float dt) {
-  samples_interleaved_.resize(0x10000 * audio_processor().channels_per_sample());
+  samples_interleaved_.resize(0x10000 *
+                              audio_processor().channels_per_sample());
   auto samples_view = absl::Span<float>(samples_interleaved_);
   if (!audio_processor().GetSamples(samples_view)) {
     LOG(ERROR) << "Failed to get samples";

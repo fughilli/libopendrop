@@ -26,11 +26,11 @@ class Glowsticks3dZoom : public Preset {
 
  protected:
   Glowsticks3dZoom(std::shared_ptr<gl::GlProgram> warp_program,
-               std::shared_ptr<gl::GlProgram> ribbon_program,
-               std::shared_ptr<gl::GlProgram> composite_program,
-               std::shared_ptr<gl::GlRenderTarget> front_render_target,
-               std::shared_ptr<gl::GlRenderTarget> back_render_target,
-               std::shared_ptr<gl::GlTextureManager> texture_manager);
+                   std::shared_ptr<gl::GlProgram> ribbon_program,
+                   std::shared_ptr<gl::GlProgram> composite_program,
+                   std::shared_ptr<gl::GlRenderTarget> front_render_target,
+                   std::shared_ptr<gl::GlRenderTarget> back_render_target,
+                   std::shared_ptr<gl::GlTextureManager> texture_manager);
 
   void OnDrawFrame(
       absl::Span<const float> samples, std::shared_ptr<GlobalState> state,

@@ -6,7 +6,7 @@
 #include <string>
 #include <vector>
 
-namespace utils {
+namespace util {
 
 class UdpClient {
  public:
@@ -27,6 +27,6 @@ class UdpClient {
   std::vector<uint8_t> transmit_buffer_;
 };
 
-}  // namespace utils
+}  // namespace util
 
 #endif  // UTIL_UDP_CLIENT_H_

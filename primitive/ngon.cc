@@ -34,7 +34,8 @@ void Ngon::Draw() {
   glDisable(GL_DEPTH_TEST);
   glColor4f(0., 0., 0., 1.);
   glVertexPointer(3, GL_FLOAT, 0, vertices_.data());
-  glDrawElements(GL_TRIANGLE_FAN, indices_.size(), GL_UNSIGNED_INT, indices_.data());
+  glDrawElements(GL_TRIANGLE_FAN, indices_.size(), GL_UNSIGNED_INT,
+                 indices_.data());
   glDisableClientState(GL_VERTEX_ARRAY);
 }
 

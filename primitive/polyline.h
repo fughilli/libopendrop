@@ -14,7 +14,7 @@ namespace opendrop {
 // underlying data exceeds that of the Polyline instance.
 class Polyline : public Primitive {
  public:
-   Polyline();
+  Polyline();
   Polyline(glm::vec3 color, absl::Span<const glm::vec2> vertices, float width);
   void Draw() override;
 

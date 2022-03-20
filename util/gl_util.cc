@@ -70,14 +70,14 @@ void GlBindRenderTargetTextureToUniform(
   }
 #define DEFINE_BIND_UNIFORM_V(v_type, uniform_v_func, value_expr)              \
   void GlBindUniform(std::shared_ptr<GlProgram> program,                       \
-                     std::string uniform_name, v_type value) {                   \
+                     std::string uniform_name, v_type value) {                 \
     uniform_v_func(                                                            \
         glGetUniformLocation(program->program_handle(), uniform_name.c_str()), \
         1, value_expr);                                                        \
   }
 #define DEFINE_BIND_UNIFORM_M(m_type, uniform_m_func, value_expr)              \
   void GlBindUniform(std::shared_ptr<GlProgram> program,                       \
-                     std::string uniform_name, m_type value) {                   \
+                     std::string uniform_name, m_type value) {                 \
     uniform_m_func(                                                            \
         glGetUniformLocation(program->program_handle(), uniform_name.c_str()), \
         1, GL_FALSE, value_expr);                                              \
