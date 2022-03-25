@@ -13,7 +13,7 @@ def _shader_library_impl(ctx):
         fail("shader_library does not support multiple srcs.")
 
     providers = [
-        ShaderInfo(headers = depset(shader_includes)),
+        ShaderInfo(headers = shader_includes),
     ]
 
     if (len(ctx.files.srcs) != 0):
