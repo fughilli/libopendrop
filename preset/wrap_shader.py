@@ -1,10 +1,11 @@
 import hashlib
 import os
 import re
-from typing import Text, List, Tuple
+from typing import List, Text, Tuple
 
 from absl import app
 from absl import flags
+from absl import logging
 
 flags.DEFINE_string("shader_filename", None, "Input shader source file")
 flags.DEFINE_string(
@@ -142,11 +143,8 @@ def ProcessMacros(filename: Text, code_text: Text, env: List[Text]) -> Text:
 
 
 def main(argv):
-    if FLAGS.shader_filename == None:
-        raise ValueError("--shader_filename must be specified")
-
-    print("Absolute path:", os.path.abspath(os.curdir))
-    print("Input:", FLAGS.shader_filename)
+    logging.log(logging.DEBUG, "Absolute path: %s", os.path.abspath(os.curdir))
+    logging.log(logging.DEBUG, "Input: %s", FLAGS.shader_filename)
 
     shader_filename = FLAGS.shader_filename
 
@@ -175,8 +173,11 @@ def main(argv):
                            code_text=code_text,
                            hash_string=hash_string))
 
-    print("Wrote to", source_filename, "and", header_filename)
+    logging.log(logging.DEBUG, "Wrote to %s and %s", source_filename,
+                header_filename)
 
 
 if __name__ == "__main__":
+    logging.set_verbosity(logging.INFO)
+    flags.mark_flag_as_required('shader_filename')
     app.run(main)

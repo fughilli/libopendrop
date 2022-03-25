@@ -2,10 +2,11 @@ import hashlib
 import re
 import os
 import numpy
-from typing import Text, Any, List, Tuple
+from typing import Any, List, Text, Tuple
 
 from absl import app
 from absl import flags
+from absl import logging
 
 flags.DEFINE_string("object_filename", None, "Input OBJ-format model file")
 flags.DEFINE_boolean("normalize", False,
@@ -370,11 +371,8 @@ def MakeIndicesZeroIndexed(
 
 
 def main(argv):
-    if FLAGS.object_filename == None:
-        raise ValueError("--object_filename must be specified")
-
-    print("Absolute path:", os.path.abspath(os.curdir))
-    print("Input:", FLAGS.object_filename)
+    logging.log(logging.DEBUG, "Absolute path: %s", os.path.abspath(os.curdir))
+    logging.log(logging.DEBUG, "Input: %s", FLAGS.object_filename)
 
     object_filename = FLAGS.object_filename
 
@@ -426,8 +424,11 @@ def main(argv):
                            triangles_initializer=triangles_initializer,
                            hash_string=hash_string))
 
-    print("Wrote to", source_filename, "and", header_filename)
+    logging.log(logging.DEBUG, "Wrote to %s and %s", source_filename,
+                header_filename)
 
 
 if __name__ == "__main__":
+    logging.set_verbosity(logging.INFO)
+    flags.mark_flag_as_required('object_filename')
     app.run(main)
