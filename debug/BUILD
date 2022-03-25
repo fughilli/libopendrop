@@ -5,7 +5,7 @@ load("@com_google_protobuf//:protobuf.bzl", "py_proto_library")
 cc_library(
     name = "proto_port",
     hdrs = ["proto_port.h"],
-    deps = ["//util:udp_server"],
+    deps = ["//util/networking:udp_server"],
 )
 
 cc_library(
@@ -15,8 +15,8 @@ cc_library(
         ":control_cc_proto",
         ":control_state_cc_proto",
         ":proto_port",
-        "//util:logging",
-        "//util:math",
+        "//util/logging",
+        "//util/math",
         "@com_google_absl//absl/container:flat_hash_map",
         "@com_google_absl//absl/strings",
         "@implot",
@@ -27,8 +27,8 @@ cc_library(
     name = "signal_scope",
     hdrs = ["signal_scope.h"],
     deps = [
-        "//util:logging",
-        "//util:math",
+        "//util/logging",
+        "//util/math",
         "@com_google_absl//absl/container:flat_hash_map",
         "@com_google_absl//absl/strings",
         "@implot",

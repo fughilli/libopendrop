@@ -4,7 +4,7 @@ cc_library(
     name = "glm_matchers",
     hdrs = ["glm_matchers.h"],
     deps = [
-        "//util:glm_helper",
+        "//third_party:glm_helper",
         "@com_googletest//:gtest",
     ],
 )

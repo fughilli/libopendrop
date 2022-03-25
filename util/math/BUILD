@@ -1,22 +1,28 @@
 load(
-    "//toolchain:cross_compilation.bzl",
+    "//build/toolchain:cross_compilation.bzl",
     CROSS_COMPILATION_DEPS = "DEPS",
 )
 
 package(default_visibility = ["//:__subpackages__"])
 
 cc_library(
+    name = "coefficients",
+    hdrs = ["coefficients.h"],
+    deps = ["//util/logging"],
+)
+
+cc_library(
     name = "constants",
     srcs = ["constants.cc"],
     hdrs = ["constants.h"],
-    deps = ["//util:glm_helper"],
+    deps = ["//third_party:glm_helper"],
 )
 
 cc_library(
     name = "perspective",
     srcs = ["perspective.cc"],
     hdrs = ["perspective.h"],
-    deps = ["//util:glm_helper"],
+    deps = ["//third_party:glm_helper"],
 )
 
 cc_library(
@@ -25,10 +31,10 @@ cc_library(
     hdrs = ["vector.h"],
     deps = [
         ":constants",
-        "//util:glm_helper",
-        "//util:logging",
-        "//util:math",
-        "//util/math:perspective",
+        ":math",
+        ":perspective",
+        "//third_party:glm_helper",
+        "//util/logging",
     ],
 )
 
@@ -40,6 +46,22 @@ cc_test(
         "//util/testing:glm_matchers",
         "@com_googletest//:gtest",
         "@com_googletest//:gtest_main",
-        "//util:glm_helper",
+        "//third_party:glm_helper",
+    ] + CROSS_COMPILATION_DEPS,
+)
+
+cc_library(
+    name = "math",
+    hdrs = ["math.h"],
+    deps = ["//util/logging"],
+)
+
+cc_test(
+    name = "math_test",
+    srcs = ["math_test.cc"],
+    deps = [
+        ":math",
+        "@com_googletest//:gtest",
+        "@com_googletest//:gtest_main",
     ] + CROSS_COMPILATION_DEPS,
 )
