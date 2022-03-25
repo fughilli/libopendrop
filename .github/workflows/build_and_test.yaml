@@ -4,6 +4,9 @@ jobs:
   build_and_test:
     runs-on: ubuntu-latest
     steps:
+    - name: Update installation
+      run: |
+        sudo apt-get update
     - name: Install C++ dependencies
       run: |
         sudo apt-get install -y -qq libpulse-dev libgl-dev libglm-dev libsdl2-dev libncurses5-dev libncurses5
