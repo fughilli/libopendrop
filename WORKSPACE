@@ -113,3 +113,10 @@ new_git_repository(
     remote = "https://github.com/epezent/implot",
     shallow_since = "1643591232 -0800",
 )
+
+git_repository(
+    name = "fix_guards",
+    commit = "0a1142d81740a9f596d795654a2dab602a976ffa",
+    remote = "https://github.com/fughilli/fix_guards",
+    shallow_since = "1648239566 -0700",
+)
