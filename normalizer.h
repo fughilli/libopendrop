@@ -1,5 +1,5 @@
-#ifndef LIBOPENDROP_NORMALIZER_H_
-#define LIBOPENDROP_NORMALIZER_H_
+#ifndef NORMALIZER_H_
+#define NORMALIZER_H_
 
 #include "absl/types/span.h"
 #include "debug/signal_scope.h"
@@ -66,4 +66,4 @@ class Normalizer {
 };
 }  // namespace opendrop
 
-#endif  // LIBOPENDROP_NORMALIZER_H_
+#endif  // NORMALIZER_H_

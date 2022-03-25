@@ -18,8 +18,8 @@
 // along with LED Suit Driver.  If not, see <http://www.gnu.org/licenses/>.
 //
 
-#ifndef PULSEAUDIO_INTERFACE_H_
-#define PULSEAUDIO_INTERFACE_H_
+#ifndef UTIL_PULSEAUDIO_INTERFACE_H_
+#define UTIL_PULSEAUDIO_INTERFACE_H_
 
 #include <pulse/pulseaudio.h>
 

@@ -1,5 +1,5 @@
-#ifndef UTIL_PERSPECTIVE_H_
-#define UTIL_PERSPECTIVE_H_
+#ifndef UTIL_MATH_PERSPECTIVE_H_
+#define UTIL_MATH_PERSPECTIVE_H_
 
 #include "util/glm_helper.h"
 
@@ -21,4 +21,4 @@ glm::mat3x3 OrientTowards(glm::vec3 look_ray);
 
 }  // namespace opendrop
 
-#endif  // UTIL_PERSPECTIVE_H_
+#endif  // UTIL_MATH_PERSPECTIVE_H_

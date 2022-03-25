@@ -1,5 +1,5 @@
-#ifndef PRESETS_CUBE_BOOM_CUBE_BOOM_H_
-#define PRESETS_CUBE_BOOM_CUBE_BOOM_H_
+#ifndef PRESET_CUBE_BOOM_CUBE_BOOM_H_
+#define PRESET_CUBE_BOOM_CUBE_BOOM_H_
 
 #include <vector>
 
@@ -58,4 +58,4 @@ class CubeBoom : public Preset {
 
 }  // namespace opendrop
 
-#endif  // PRESETS_CUBE_BOOM_CUBE_BOOM_H_
+#endif  // PRESET_CUBE_BOOM_CUBE_BOOM_H_

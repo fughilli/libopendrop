@@ -1,5 +1,5 @@
-#ifndef LIBOPENDROP_PRESET_PRESET_BLENDER_H_
-#define LIBOPENDROP_PRESET_PRESET_BLENDER_H_
+#ifndef PRESET_PRESET_BLENDER_H_
+#define PRESET_PRESET_BLENDER_H_
 
 #include <list>
 #include <memory>
@@ -98,4 +98,4 @@ class PresetBlender {
 };
 }  // namespace opendrop
 
-#endif  // LIBOPENDROP_PRESET_PRESET_BLENDER_H_
+#endif  // PRESET_PRESET_BLENDER_H_

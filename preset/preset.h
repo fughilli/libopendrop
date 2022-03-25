@@ -1,5 +1,5 @@
-#ifndef PRESET_H_
-#define PRESET_H_
+#ifndef PRESET_PRESET_H_
+#define PRESET_PRESET_H_
 
 #include <memory>
 #include <mutex>
@@ -85,4 +85,4 @@ class Preset {
 
 }  // namespace opendrop
 
-#endif  // PRESET_H_
+#endif  // PRESET_PRESET_H_

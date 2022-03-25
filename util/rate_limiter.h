@@ -1,5 +1,5 @@
-#ifndef LIBOPENDROP_UTIL_RATE_LIMITER_H_
-#define LIBOPENDROP_UTIL_RATE_LIMITER_H_
+#ifndef UTIL_RATE_LIMITER_H_
+#define UTIL_RATE_LIMITER_H_
 
 #include "util/oneshot.h"
 
@@ -43,4 +43,4 @@ class RateLimiterIncremental {
 
 }  // namespace opendrop
 
-#endif  // LIBOPENDROP_UTIL_RATE_LIMITER_H_
+#endif  // UTIL_RATE_LIMITER_H_

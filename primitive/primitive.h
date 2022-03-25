@@ -1,5 +1,5 @@
-#ifndef PRIMITIVES_PRIMITIVE_H_
-#define PRIMITIVES_PRIMITIVE_H_
+#ifndef PRIMITIVE_PRIMITIVE_H_
+#define PRIMITIVE_PRIMITIVE_H_
 
 namespace opendrop {
 
@@ -11,4 +11,4 @@ class Primitive {
 
 }  // namespace opendrop
 
-#endif  // PRIMITIVES_PRIMITIVE_H_
+#endif  // PRIMITIVE_PRIMITIVE_H_

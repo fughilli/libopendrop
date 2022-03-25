@@ -1,5 +1,5 @@
-#ifndef PRIMITIVES_RECTANGLE_H_
-#define PRIMITIVES_RECTANGLE_H_
+#ifndef PRIMITIVE_RECTANGLE_H_
+#define PRIMITIVE_RECTANGLE_H_
 
 #include "primitive/primitive.h"
 #include "util/glm_helper.h"
@@ -18,4 +18,4 @@ class Rectangle : public Primitive {
 
 }  // namespace opendrop
 
-#endif  // PRIMITIVES_RECTANGLE_H_
+#endif  // PRIMITIVE_RECTANGLE_H_

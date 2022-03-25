@@ -1,5 +1,5 @@
-#ifndef PRESETS_EYE_ROLL_EYE_ROLL_H_
-#define PRESETS_EYE_ROLL_EYE_ROLL_H_
+#ifndef PRESET_EYE_ROLL_EYE_ROLL_H_
+#define PRESET_EYE_ROLL_EYE_ROLL_H_
 
 #include <vector>
 
@@ -80,4 +80,4 @@ class EyeRoll : public Preset {
 
 }  // namespace opendrop
 
-#endif  // PRESETS_EYE_ROLL_EYE_ROLL_H_
+#endif  // PRESET_EYE_ROLL_EYE_ROLL_H_

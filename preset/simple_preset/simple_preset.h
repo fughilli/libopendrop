@@ -1,5 +1,5 @@
-#ifndef PRESETS_SIMPLE_PRESET_SIMPLE_PRESET_H_
-#define PRESETS_SIMPLE_PRESET_SIMPLE_PRESET_H_
+#ifndef PRESET_SIMPLE_PRESET_SIMPLE_PRESET_H_
+#define PRESET_SIMPLE_PRESET_SIMPLE_PRESET_H_
 
 #include <vector>
 
@@ -47,4 +47,4 @@ class SimplePreset : public Preset {
 
 }  // namespace opendrop
 
-#endif  // PRESETS_SIMPLE_PRESET_SIMPLE_PRESET_H_
+#endif  // PRESET_SIMPLE_PRESET_SIMPLE_PRESET_H_

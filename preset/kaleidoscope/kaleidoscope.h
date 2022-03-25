@@ -1,5 +1,5 @@
-#ifndef PRESETS_SIMPLE_PRESET_KALEIDOSCOPE_H_
-#define PRESETS_SIMPLE_PRESET_KALEIDOSCOPE_H_
+#ifndef PRESET_KALEIDOSCOPE_KALEIDOSCOPE_H_
+#define PRESET_KALEIDOSCOPE_KALEIDOSCOPE_H_
 
 #include <vector>
 
@@ -50,4 +50,4 @@ class Kaleidoscope : public Preset {
 
 }  // namespace opendrop
 
-#endif  // PRESETS_SIMPLE_PRESET_KALEIDOSCOPE_H_
+#endif  // PRESET_KALEIDOSCOPE_KALEIDOSCOPE_H_

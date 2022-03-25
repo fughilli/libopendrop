@@ -1,5 +1,5 @@
-#ifndef PRIMITIVES_MODEL_H_
-#define PRIMITIVES_MODEL_H_
+#ifndef PRIMITIVE_MODEL_H_
+#define PRIMITIVE_MODEL_H_
 
 #include "absl/types/span.h"
 #include "primitive/primitive.h"
@@ -30,4 +30,4 @@ class Model : public Primitive {
 
 }  // namespace opendrop
 
-#endif  // PRIMITIVES_MODEL_H_
+#endif  // PRIMITIVE_MODEL_H_

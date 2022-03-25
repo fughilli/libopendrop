@@ -1,5 +1,5 @@
-#ifndef PRIMITIVES_POLYLINE_H_
-#define PRIMITIVES_POLYLINE_H_
+#ifndef PRIMITIVE_POLYLINE_H_
+#define PRIMITIVE_POLYLINE_H_
 
 #include <cstdint>
 #include <vector>
@@ -36,4 +36,4 @@ class Polyline : public Primitive {
 
 }  // namespace opendrop
 
-#endif  // PRIMITIVES_POLYLINE_H_
+#endif  // PRIMITIVE_POLYLINE_H_

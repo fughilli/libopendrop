@@ -1,3 +1,6 @@
+#ifndef UTIL_TESTING_GLM_MATCHERS_H_
+#define UTIL_TESTING_GLM_MATCHERS_H_
+
 #include <ostream>
 #include <sstream>
 #include <string>
@@ -47,3 +50,5 @@ MATCHER_P2(IsNear, other, epsilon, "") {
 
 }  // namespace glm_testing
 }  // namespace opendrop
+
+#endif  // UTIL_TESTING_GLM_MATCHERS_H_

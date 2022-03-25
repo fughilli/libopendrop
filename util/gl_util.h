@@ -1,5 +1,5 @@
-#ifndef LIBOPENDROP_UTIL_GL_UTIL_H_
-#define LIBOPENDROP_UTIL_GL_UTIL_H_
+#ifndef UTIL_GL_UTIL_H_
+#define UTIL_GL_UTIL_H_
 
 #include <memory>
 
@@ -68,4 +68,4 @@ DECLARE_BIND_UNIFORM(glm::mat4);
 
 }  // namespace gl
 
-#endif  // LIBOPENDROP_UTIL_GL_UTIL_H_
+#endif  // UTIL_GL_UTIL_H_

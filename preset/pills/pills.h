@@ -1,5 +1,5 @@
-#ifndef PRESETS_PILLS_PILLS_H_
-#define PRESETS_PILLS_PILLS_H_
+#ifndef PRESET_PILLS_PILLS_H_
+#define PRESET_PILLS_PILLS_H_
 
 #include <vector>
 
@@ -67,4 +67,4 @@ class Pills : public Preset {
 
 }  // namespace opendrop
 
-#endif  // PRESETS_PILLS_PILLS_H_
+#endif  // PRESET_PILLS_PILLS_H_

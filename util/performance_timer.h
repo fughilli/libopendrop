@@ -18,8 +18,8 @@
 // along with LED Suit Driver.  If not, see <http://www.gnu.org/licenses/>.
 //
 
-#ifndef PERFORMANCE_TIMER_H_
-#define PERFORMANCE_TIMER_H_
+#ifndef UTIL_PERFORMANCE_TIMER_H_
+#define UTIL_PERFORMANCE_TIMER_H_
 
 namespace opendrop {
 

@@ -1,3 +1,6 @@
+#ifndef UTIL_TESTING_RE2_MATCHERS_H_
+#define UTIL_TESTING_RE2_MATCHERS_H_
+
 #include "absl/strings/str_format.h"
 #include "googlemock/include/gmock/gmock-matchers.h"
 #include "re2/re2.h"
@@ -14,3 +17,5 @@ MATCHER_P(MatchesRegex, pattern, "") {
 
 }  // namespace re2_testing
 }  // namespace opendrop
+
+#endif  // UTIL_TESTING_RE2_MATCHERS_H_

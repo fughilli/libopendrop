@@ -1,5 +1,5 @@
-#ifndef LIBOPENDROP_TEXTURE_MANAGER_H_
-#define LIBOPENDROP_TEXTURE_MANAGER_H_
+#ifndef GL_TEXTURE_MANAGER_H_
+#define GL_TEXTURE_MANAGER_H_
 
 #include <mutex>
 #include <queue>
@@ -25,4 +25,4 @@ class GlTextureManager {
 
 }  // namespace gl
 
-#endif  // LIBOPENDROP_TEXTURE_MANAGER_H_
+#endif  // GL_TEXTURE_MANAGER_H_

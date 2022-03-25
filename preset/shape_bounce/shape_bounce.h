@@ -1,5 +1,5 @@
-#ifndef PRESETS_SHAPE_BOUNCE_SHAPE_BOUNCE_H_
-#define PRESETS_SHAPE_BOUNCE_SHAPE_BOUNCE_H_
+#ifndef PRESET_SHAPE_BOUNCE_SHAPE_BOUNCE_H_
+#define PRESET_SHAPE_BOUNCE_SHAPE_BOUNCE_H_
 
 #include <vector>
 
@@ -56,4 +56,4 @@ class ShapeBounce : public Preset {
 
 }  // namespace opendrop
 
-#endif  // PRESETS_SHAPE_BOUNCE_SHAPE_BOUNCE_H_
+#endif  // PRESET_SHAPE_BOUNCE_SHAPE_BOUNCE_H_

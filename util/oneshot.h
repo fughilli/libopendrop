@@ -1,5 +1,5 @@
-#ifndef LIBOPENDROP_UTIL_ONESHOT_H_
-#define LIBOPENDROP_UTIL_ONESHOT_H_
+#ifndef UTIL_ONESHOT_H_
+#define UTIL_ONESHOT_H_
 
 namespace opendrop {
 
@@ -82,4 +82,4 @@ class OneshotIncremental {
 
 }  // namespace opendrop
 
-#endif  // LIBOPENDROP_UTIL_ONESHOT_H_
+#endif  // UTIL_ONESHOT_H_

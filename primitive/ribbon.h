@@ -1,5 +1,5 @@
-#ifndef PRIMITIVES_RIBBON_H_
-#define PRIMITIVES_RIBBON_H_
+#ifndef PRIMITIVE_RIBBON_H_
+#define PRIMITIVE_RIBBON_H_
 
 #include <cstdint>
 #include <vector>
@@ -66,4 +66,4 @@ class Ribbon : Primitive {
 
 #include "primitive/ribbon.cc"
 
-#endif  // PRIMITIVES_RIBBON_H_
+#endif  // PRIMITIVE_RIBBON_H_

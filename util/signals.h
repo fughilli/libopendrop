@@ -1,5 +1,5 @@
-#ifndef LIBOPENDROP_UTIL_SIGNALS_H_
-#define LIBOPENDROP_UTIL_SIGNALS_H_
+#ifndef UTIL_SIGNALS_H_
+#define UTIL_SIGNALS_H_
 
 #include <algorithm>
 #include <cmath>
@@ -84,4 +84,4 @@ class RampTweener {
 
 }  // namespace opendrop
 
-#endif  // LIBOPENDROP_UTIL_SIGNALS_H_
+#endif  // UTIL_SIGNALS_H_

@@ -1,5 +1,5 @@
-#ifndef UTIL_ENUM_H_
-#define UTIL_ENUM_H_
+#ifndef UTIL_ENUMS_H_
+#define UTIL_ENUMS_H_
 
 #include <cmath>
 
@@ -10,4 +10,4 @@ E InterpolateEnum(float x) {
                       static_cast<int>(E::kDenseLastValue)));
 }
 
-#endif  // UTIL_ENUM_H_
+#endif  // UTIL_ENUMS_H_

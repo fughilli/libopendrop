@@ -1,5 +1,5 @@
-#ifndef PRIMITIVES_NGON_H_
-#define PRIMITIVES_NGON_H_
+#ifndef PRIMITIVE_NGON_H_
+#define PRIMITIVE_NGON_H_
 
 #include <stdint.h>
 
@@ -21,4 +21,4 @@ class Ngon : public Primitive {
 
 }  // namespace opendrop
 
-#endif  // PRIMITIVES_NGON_H_
+#endif  // PRIMITIVE_NGON_H_

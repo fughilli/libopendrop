@@ -1,5 +1,5 @@
-#ifndef PRESETS_CUBE_WREATH_CUBE_WREATH_H_
-#define PRESETS_CUBE_WREATH_CUBE_WREATH_H_
+#ifndef PRESET_CUBE_WREATH_CUBE_WREATH_H_
+#define PRESET_CUBE_WREATH_CUBE_WREATH_H_
 
 #include <vector>
 
@@ -65,4 +65,4 @@ class CubeWreath : public Preset {
 
 }  // namespace opendrop
 
-#endif  // PRESETS_CUBE_WREATH_CUBE_WREATH_H_
+#endif  // PRESET_CUBE_WREATH_CUBE_WREATH_H_

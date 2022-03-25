@@ -1,5 +1,5 @@
-#ifndef PRESETS_GLOWSTICKS_3D_GLOWSTICKS_3D_H_
-#define PRESETS_GLOWSTICKS_3D_GLOWSTICKS_3D_H_
+#ifndef PRESET_GLOWSTICKS_3D_GLOWSTICKS_3D_H_
+#define PRESET_GLOWSTICKS_3D_GLOWSTICKS_3D_H_
 
 #include <array>
 
@@ -85,4 +85,4 @@ class Glowsticks3d : public Preset {
 
 }  // namespace opendrop
 
-#endif  // PRESETS_GLOWSTICKS_3D_GLOWSTICKS_3D_H_
+#endif  // PRESET_GLOWSTICKS_3D_GLOWSTICKS_3D_H_
