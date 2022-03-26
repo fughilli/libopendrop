@@ -248,9 +248,7 @@ void Glowsticks3dZoom::OnDrawFrame(
   float zoom_speed =
       SIGPLOT("zoom_speed",
               SIGINJECT_OVERRIDE("glowsticks_zoom_speed",
-                                 1.f + average_power *
-                                           (1.1f + sin(state->bass_energy())) *
-                                           state->dt() * 10,
+                                 1.05f + state->bass()/10,
                                  0.95f, 1.15f));
 
   zoom_angle_ += sin(state->bass_energy() * state->dt() * 10) * state->bass() *

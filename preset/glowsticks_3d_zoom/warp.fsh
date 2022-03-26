@@ -55,8 +55,7 @@ void main() {
   // Rotate the texture by a pseudo-random amount that varies by `energy`.
   // Additionally multiply in `power` for the same reason as above.
   texture_uv = rotate(texture_uv, sin_product(100 / 7.334, 10 / 9.225,
-                                              energy * framerate_scale) *
-                                      power * framerate_scale);
+                                              energy * 0.2) * 0.2);
 
   texture_uv = screen_to_tex(texture_uv);
 
