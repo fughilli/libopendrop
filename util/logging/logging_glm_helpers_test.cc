@@ -1,10 +1,10 @@
-#include "util/logging_glm_helpers.h"
+#include "util/logging/logging_glm_helpers.h"
 
 #include <iostream>
 
 #include "absl/strings/str_cat.h"
 #include "googletest/include/gtest/gtest.h"
-#include "util/glm_helper.h"
+#include "third_party/glm_helper.h"
 #include "util/testing/re2_matchers.h"
 
 namespace opendrop {

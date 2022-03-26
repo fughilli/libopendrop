@@ -19,10 +19,10 @@
 #include "preset/common/pill_shadow.obj.h"
 #include "preset/common/star.obj.h"
 #include "preset/common/star_outline.obj.h"
-#include "util/gl_helper.h"
-#include "util/gl_util.h"
-#include "util/glm_helper.h"
-#include "util/status_macros.h"
+#include "third_party/gl_helper.h"
+#include "util/graphics/gl_util.h"
+#include "third_party/glm_helper.h"
+#include "util/status/status_macros.h"
 
 namespace opendrop {
 

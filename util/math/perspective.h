@@ -1,7 +1,7 @@
 #ifndef UTIL_MATH_PERSPECTIVE_H_
 #define UTIL_MATH_PERSPECTIVE_H_
 
-#include "util/glm_helper.h"
+#include "third_party/glm_helper.h"
 
 namespace opendrop {
 

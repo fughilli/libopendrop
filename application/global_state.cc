@@ -1,4 +1,4 @@
-#include "global_state.h"
+#include "application/global_state.h"
 
 #include <array>
 #include <cmath>

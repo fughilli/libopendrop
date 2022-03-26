@@ -1,9 +1,9 @@
-#include "util/udp_server.h"
+#include "util/networking/udp_server.h"
 
 #include <netinet/in.h>
 #include <sys/socket.h>
 
-#include "util/logging.h"
+#include "util/logging/logging.h"
 
 namespace util {
 

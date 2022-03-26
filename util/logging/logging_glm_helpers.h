@@ -3,7 +3,7 @@
 
 #include <iostream>
 
-#include "util/glm_helper.h"
+#include "third_party/glm_helper.h"
 
 std::ostream& operator<<(std::ostream& os, const glm::vec2& vec);
 std::ostream& operator<<(std::ostream& os, const glm::vec3& vec);

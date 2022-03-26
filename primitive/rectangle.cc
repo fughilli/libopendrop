@@ -1,7 +1,7 @@
 #include "primitive/rectangle.h"
 
-#include "util/gl_helper.h"
-#include "util/glm_helper.h"
+#include "third_party/gl_helper.h"
+#include "third_party/glm_helper.h"
 
 namespace opendrop {
 

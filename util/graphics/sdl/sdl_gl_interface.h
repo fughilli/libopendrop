@@ -5,7 +5,7 @@
 
 #include <memory>
 
-#include "gl_interface.h"
+#include "util/graphics/gl_interface.h"
 
 namespace gl {
 

@@ -7,8 +7,8 @@
 
 #include "absl/strings/str_format.h"
 #include "googlemock/include/gmock/gmock-matchers.h"
-#include "util/glm_helper.h"
-#include "util/logging_glm_helpers.h"
+#include "third_party/glm_helper.h"
+#include "util/logging/logging_glm_helpers.h"
 
 // See matcher authorship guide at
 // https://github.com/google/googletest/blob/main/docs/reference/matchers.md#defining-matchers

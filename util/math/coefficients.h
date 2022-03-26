@@ -4,7 +4,7 @@
 #include <array>
 #include <random>
 
-#include "util/logging.h"
+#include "util/logging/logging.h"
 
 namespace opendrop {
 

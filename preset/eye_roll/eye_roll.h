@@ -4,16 +4,16 @@
 #include <vector>
 
 #include "absl/status/statusor.h"
-#include "gl_interface.h"
-#include "gl_render_target.h"
-#include "gl_texture_manager.h"
+#include "util/graphics/gl_interface.h"
+#include "util/graphics/gl_render_target.h"
+#include "util/graphics/gl_texture_manager.h"
 #include "preset/preset.h"
 #include "primitive/ngon.h"
 #include "primitive/polyline.h"
 #include "primitive/rectangle.h"
-#include "util/filter.h"
-#include "util/glm_helper.h"
-#include "util/signals.h"
+#include "util/signal/filter.h"
+#include "third_party/glm_helper.h"
+#include "util/signal/signals.h"
 
 namespace opendrop {
 

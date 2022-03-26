@@ -3,7 +3,7 @@
 
 #include "absl/types/span.h"
 #include "primitive/primitive.h"
-#include "util/glm_helper.h"
+#include "third_party/glm_helper.h"
 
 namespace opendrop {
 

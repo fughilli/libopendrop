@@ -1,7 +1,7 @@
-#include "util/colors.h"
+#include "util/graphics/colors.h"
 
 #include "googletest/include/gtest/gtest.h"
-#include "util/glm_helper.h"
+#include "third_party/glm_helper.h"
 
 namespace opendrop {
 namespace {

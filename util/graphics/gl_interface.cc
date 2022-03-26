@@ -1,10 +1,10 @@
-#include "gl_interface.h"
+#include "util/graphics/gl_interface.h"
 
 #include <iostream>
 
 #include "absl/strings/str_cat.h"
-#include "util/gl_helper.h"
-#include "util/logging.h"
+#include "third_party/gl_helper.h"
+#include "util/logging/logging.h"
 
 namespace gl {
 

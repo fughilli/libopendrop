@@ -1,6 +1,6 @@
 #include "util/math/perspective.h"
 
-#include "util/glm_helper.h"
+#include "third_party/glm_helper.h"
 
 namespace opendrop {
 

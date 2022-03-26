@@ -4,9 +4,9 @@
 #include <algorithm>
 #include <cmath>
 
-#include "util/coefficients.h"
-#include "util/math.h"
-#include "util/oneshot.h"
+#include "util/math/coefficients.h"
+#include "util/math/math.h"
+#include "util/time/oneshot.h"
 
 namespace opendrop {
 

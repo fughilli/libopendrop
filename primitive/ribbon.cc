@@ -1,8 +1,8 @@
 #include "primitive/ribbon.h"
 
-#include "util/gl_helper.h"
-#include "util/glm_helper.h"
-#include "util/logging.h"
+#include "third_party/gl_helper.h"
+#include "third_party/glm_helper.h"
+#include "util/logging/logging.h"
 
 namespace opendrop {
 

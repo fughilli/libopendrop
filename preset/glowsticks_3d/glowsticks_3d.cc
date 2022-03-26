@@ -9,13 +9,13 @@
 #include "preset/glowsticks_3d/passthrough.vsh.h"
 #include "preset/glowsticks_3d/ribbon.fsh.h"
 #include "preset/glowsticks_3d/warp.fsh.h"
-#include "util/coefficients.h"
-#include "util/colors.h"
-#include "util/gl_helper.h"
-#include "util/gl_util.h"
-#include "util/logging.h"
-#include "util/math.h"
-#include "util/status_macros.h"
+#include "util/math/coefficients.h"
+#include "util/graphics/colors.h"
+#include "third_party/gl_helper.h"
+#include "util/graphics/gl_util.h"
+#include "util/logging/logging.h"
+#include "util/math/math.h"
+#include "util/status/status_macros.h"
 
 namespace opendrop {
 

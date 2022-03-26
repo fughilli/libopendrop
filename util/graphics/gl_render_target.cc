@@ -1,10 +1,10 @@
-#include "gl_render_target.h"
+#include "util/graphics/gl_render_target.h"
 
 #include <iostream>
 
-#include "util/gl_helper.h"
-#include "util/logging.h"
-#include "util/status_macros.h"
+#include "third_party/gl_helper.h"
+#include "util/logging/logging.h"
+#include "util/status/status_macros.h"
 
 namespace gl {
 

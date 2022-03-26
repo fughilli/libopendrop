@@ -1,7 +1,7 @@
 #ifndef UTIL_INTERPOLATOR_H_
 #define UTIL_INTERPOLATOR_H_
 
-#include "util/logging.h"
+#include "util/logging/logging.h"
 
 namespace opendrop {
 

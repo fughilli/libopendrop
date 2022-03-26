@@ -3,9 +3,9 @@
 
 #include <memory>
 
-#include "gl_interface.h"
-#include "gl_render_target.h"
-#include "util/glm_helper.h"
+#include "util/graphics/gl_interface.h"
+#include "util/graphics/gl_render_target.h"
+#include "third_party/glm_helper.h"
 
 namespace gl {
 

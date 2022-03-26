@@ -1,8 +1,8 @@
-#include "sdl_gl_interface.h"
+#include "util/graphics/sdl/sdl_gl_interface.h"
 
 #include <iostream>
 
-#include "util/logging.h"
+#include "util/logging/logging.h"
 
 namespace gl {
 

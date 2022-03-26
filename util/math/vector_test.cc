@@ -3,9 +3,9 @@
 #include <iostream>
 
 #include "googletest/include/gtest/gtest.h"
-#include "util/glm_helper.h"
-#include "util/logging.h"
-#include "util/math.h"
+#include "third_party/glm_helper.h"
+#include "util/logging/logging.h"
+#include "util/math/math.h"
 #include "util/testing/glm_matchers.h"
 
 namespace opendrop {

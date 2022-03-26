@@ -18,7 +18,7 @@
 // along with LED Suit Driver.  If not, see <http://www.gnu.org/licenses/>.
 //
 
-#include "pulseaudio_interface.h"
+#include "util/audio/pulseaudio_interface.h"
 
 #include <iostream>
 

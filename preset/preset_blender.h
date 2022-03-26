@@ -9,8 +9,8 @@
 
 #include "preset/preset.h"
 #include "primitive/rectangle.h"
-#include "util/logging.h"
-#include "util/oneshot.h"
+#include "util/logging/logging.h"
+#include "util/time/oneshot.h"
 
 namespace opendrop {
 enum PresetActivationState {

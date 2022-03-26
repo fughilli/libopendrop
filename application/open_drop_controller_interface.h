@@ -5,8 +5,8 @@
 #include <memory>
 
 #include "absl/types/span.h"
-#include "audio_processor.h"
-#include "gl_interface.h"
+#include "util/audio/audio_processor.h"
+#include "util/graphics/gl_interface.h"
 
 namespace opendrop {
 

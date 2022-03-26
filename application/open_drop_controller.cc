@@ -1,4 +1,4 @@
-#include "open_drop_controller.h"
+#include "application/open_drop_controller.h"
 
 #include <cmath>
 #include <cstdint>
@@ -7,9 +7,9 @@
 #include "blit.fsh.h"
 #include "blit.vsh.h"
 #include "primitive/rectangle.h"
-#include "util/gl_helper.h"
-#include "util/gl_util.h"
-#include "util/logging.h"
+#include "third_party/gl_helper.h"
+#include "util/graphics/gl_util.h"
+#include "util/logging/logging.h"
 
 namespace opendrop {
 

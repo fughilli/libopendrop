@@ -9,8 +9,8 @@
 #include "absl/strings/str_format.h"
 #include "absl/time/clock.h"
 #include "absl/time/time.h"
-#include "util/logging_glm_helpers.h"
-#include "util/logging_helpers.h"
+#include "util/logging/logging_glm_helpers.h"
+#include "util/logging/logging_helpers.h"
 
 #if defined(ENABLE_DEBUG_LOGGING)
 constexpr static bool kDebugLoggingEnabled = true;

@@ -3,10 +3,10 @@
 
 #include <memory>
 
-#include "gl_interface.h"
-#include "gl_render_target.h"
+#include "util/graphics/gl_interface.h"
+#include "util/graphics/gl_render_target.h"
 #include "primitive/model.h"
-#include "util/glm_helper.h"
+#include "third_party/glm_helper.h"
 
 namespace opendrop {
 

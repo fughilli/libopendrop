@@ -1,7 +1,7 @@
-#include "gl_texture_manager.h"
+#include "util/graphics/gl_texture_manager.h"
 
-#include "util/gl_helper.h"
-#include "util/logging.h"
+#include "third_party/gl_helper.h"
+#include "util/logging/logging.h"
 
 namespace gl {
 

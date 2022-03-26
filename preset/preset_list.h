@@ -6,8 +6,8 @@
 
 #include "absl/status/statusor.h"
 #include "preset/preset.h"
-#include "util/logging.h"
-#include "util/status_macros.h"
+#include "util/logging/logging.h"
+#include "util/status/status_macros.h"
 
 // Preset includes
 #include "preset/alien_rorschach/alien_rorschach.h"

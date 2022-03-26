@@ -1,4 +1,4 @@
-#include "util/interpolator.h"
+#include "util/signal/interpolator.h"
 
 #include <vector>
 

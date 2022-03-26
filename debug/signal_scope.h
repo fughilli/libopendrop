@@ -4,8 +4,8 @@
 #include "absl/container/flat_hash_map.h"
 #include "absl/strings/string_view.h"
 #include "implot.h"
-#include "util/logging.h"
-#include "util/math.h"
+#include "util/logging/logging.h"
+#include "util/math/math.h"
 
 namespace opendrop {
 

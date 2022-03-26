@@ -1,4 +1,4 @@
-#include "util/accumulator.h"
+#include "util/signal/accumulator.h"
 
 #include "googletest/include/gtest/gtest.h"
 

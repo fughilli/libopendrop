@@ -1,8 +1,8 @@
-#include "util/filter.h"
+#include "util/signal/filter.h"
 
 #include <cmath>
 
-#include "util/math.h"
+#include "util/math/math.h"
 
 namespace opendrop {
 

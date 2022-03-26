@@ -1,6 +1,6 @@
 #include "preset/preset.h"
 
-#include "util/gl_helper.h"
+#include "third_party/gl_helper.h"
 
 namespace opendrop {
 

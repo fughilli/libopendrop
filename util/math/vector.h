@@ -3,7 +3,7 @@
 
 #include <tuple>
 
-#include "util/glm_helper.h"
+#include "third_party/glm_helper.h"
 
 namespace opendrop {
 

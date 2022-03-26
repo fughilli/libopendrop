@@ -14,8 +14,8 @@
 #include "debug/proto_port.h"
 #include "google/protobuf/text_format.h"
 #include "implot.h"
-#include "util/logging.h"
-#include "util/math.h"
+#include "util/logging/logging.h"
+#include "util/math/math.h"
 
 namespace opendrop {
 

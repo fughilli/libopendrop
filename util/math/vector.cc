@@ -1,9 +1,9 @@
 #include <cmath>
 #include <tuple>
 
-#include "util/glm_helper.h"
-#include "util/logging.h"
-#include "util/math.h"
+#include "third_party/glm_helper.h"
+#include "util/logging/logging.h"
+#include "util/math/math.h"
 #include "util/math/constants.h"
 #include "util/math/perspective.h"
 

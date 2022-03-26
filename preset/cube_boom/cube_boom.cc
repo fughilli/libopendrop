@@ -10,12 +10,12 @@
 #include "preset/cube_boom/passthrough.vsh.h"
 #include "preset/cube_boom/shrek.obj.h"
 #include "preset/cube_boom/warp.fsh.h"
-#include "util/colors.h"
-#include "util/gl_helper.h"
-#include "util/gl_util.h"
-#include "util/glm_helper.h"
-#include "util/logging.h"
-#include "util/status_macros.h"
+#include "util/graphics/colors.h"
+#include "third_party/gl_helper.h"
+#include "util/graphics/gl_util.h"
+#include "third_party/glm_helper.h"
+#include "util/logging/logging.h"
+#include "util/status/status_macros.h"
 
 namespace opendrop {
 

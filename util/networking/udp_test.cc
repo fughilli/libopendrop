@@ -4,8 +4,8 @@
 
 #include "googlemock/include/gmock/gmock-matchers.h"
 #include "googletest/include/gtest/gtest.h"
-#include "util/udp_client.h"
-#include "util/udp_server.h"
+#include "util/networking/udp_client.h"
+#include "util/networking/udp_server.h"
 
 namespace util {
 namespace {

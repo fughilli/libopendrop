@@ -5,7 +5,7 @@
 #include <string>
 
 #include "absl/status/statusor.h"
-#include "util/glm_helper.h"
+#include "third_party/glm_helper.h"
 
 namespace gl {
 

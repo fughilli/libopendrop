@@ -5,8 +5,8 @@
 #include <vector>
 
 #include "absl/types/span.h"
-#include "util/accumulator.h"
-#include "util/filter.h"
+#include "util/signal/accumulator.h"
+#include "util/signal/filter.h"
 
 namespace opendrop {
 

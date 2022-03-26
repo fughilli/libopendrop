@@ -4,7 +4,7 @@
 #define _USE_MATH_DEFINES
 #include <cmath>
 
-#include "util/logging.h"
+#include "util/logging/logging.h"
 
 namespace opendrop {
 

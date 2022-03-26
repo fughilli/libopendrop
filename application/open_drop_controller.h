@@ -3,11 +3,11 @@
 
 #include <memory>
 
-#include "gl_interface.h"
-#include "gl_render_target.h"
-#include "global_state.h"
-#include "normalizer.h"
-#include "open_drop_controller_interface.h"
+#include "util/graphics/gl_interface.h"
+#include "util/graphics/gl_render_target.h"
+#include "application/global_state.h"
+#include "util/audio/normalizer.h"
+#include "application/open_drop_controller_interface.h"
 #include "preset/preset.h"
 #include "preset/preset_blender.h"
 
