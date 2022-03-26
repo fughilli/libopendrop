@@ -1,6 +1,6 @@
 import unittest
 import parameterized
-from libopendrop.preset import wrap_shader
+from libopendrop.tools import wrap_shader
 from pyfakefs.fake_filesystem_unittest import patchfs
 
 FILE_A = ("""#ifndef FILE_A

@@ -1,6 +1,6 @@
 import unittest
 import parameterized
-from libopendrop.preset import wrap_model
+from libopendrop.tools import wrap_model
 
 OBJECT_MODEL_TEXT = (r"""
 v 1 2 3
