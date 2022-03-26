@@ -13,12 +13,12 @@
 #include "preset/glowsticks_3d_zoom/passthrough.vsh.h"
 #include "preset/glowsticks_3d_zoom/ribbon.fsh.h"
 #include "preset/glowsticks_3d_zoom/warp.fsh.h"
-#include "util/math/coefficients.h"
-#include "util/graphics/colors.h"
 #include "third_party/gl_helper.h"
-#include "util/graphics/gl_util.h"
 #include "third_party/glm_helper.h"
+#include "util/graphics/colors.h"
+#include "util/graphics/gl_util.h"
 #include "util/logging/logging.h"
+#include "util/math/coefficients.h"
 #include "util/math/math.h"
 #include "util/status/status_macros.h"
 
@@ -248,17 +248,19 @@ void Glowsticks3dZoom::OnDrawFrame(
   float zoom_speed =
       SIGPLOT("zoom_speed",
               SIGINJECT_OVERRIDE("glowsticks_zoom_speed",
-                                 1.05f + state->bass()/10,
-                                 0.95f, 1.15f));
+                                 1.05f + state->bass() / 10, 0.95f, 1.15f));
 
   zoom_angle_ += sin(state->bass_energy() * state->dt() * 10) * state->bass() *
                  state->dt() * 10;
+
+  glm::vec2 zoom_vec =
+      -UnitVectorAtAngle(zoom_angle_) * (1.5f + sin(energy * 3.0f));
 
   {
     auto front_activation = front_render_target_->Activate();
     ribbon_program_->Use();
 
-    glm::vec3 look_vec_3d(-UnitVectorAtAngle(zoom_angle_) / 2.0f, zoom_speed);
+    glm::vec3 look_vec_3d(zoom_vec / 2.0f, zoom_speed);
     glm::vec3 axis = glm::cross(glm::vec3(0, 0, 1), look_vec_3d);
     float angle = glm::angle(glm::vec3(0, 0, 1), glm::normalize(look_vec_3d));
 
@@ -288,7 +290,7 @@ void Glowsticks3dZoom::OnDrawFrame(
                   glm::ivec2(width(), height()));
     GlBindUniform(warp_program_, "power", state->bass());
     GlBindUniform(warp_program_, "energy", state->bass_energy());
-    GlBindUniform(warp_program_, "zoom_angle", zoom_angle_);
+    GlBindUniform(warp_program_, "zoom_vec", zoom_vec);
     GlBindUniform(warp_program_, "zoom_speed", zoom_speed);
     GlBindUniform(warp_program_, "framerate_scale", state->dt() * 5);
     GlBindUniform(warp_program_, "model_transform", glm::mat4(1.0f));
