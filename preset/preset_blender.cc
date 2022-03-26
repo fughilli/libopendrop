@@ -2,8 +2,8 @@
 
 #include <sstream>
 
-#include "blit.fsh.h"
-#include "blit.vsh.h"
+#include "shader/blit.fsh.h"
+#include "shader/blit.vsh.h"
 #include "primitive/rectangle.h"
 #include "third_party/gl_helper.h"
 #include "util/graphics/gl_util.h"

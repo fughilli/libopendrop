@@ -1,4 +1,5 @@
-load("//preset:preset_defs.bzl", "model_cc_library", "shader_cc_library")
+load("//model:model_defs.bzl", "model_cc_library")
+load("//shader:shader_defs.bzl", "shader_cc_library")
 
 package(default_visibility = ["//:__subpackages__"])
 
@@ -12,8 +13,6 @@ cc_library(
         ":passthrough_frag",
         ":passthrough_vert",
         ":warp",
-        "//:gl_interface",
-        "//:gl_render_target",
         "//debug:control_injector",
         "//debug:signal_scope",
         "//preset",
@@ -21,14 +20,16 @@ cc_library(
         "//primitive:model",
         "//primitive:polyline",
         "//primitive:rectangle",
-        "//util:colors",
+        "//util/graphics:colors",
         "//util:enums",
-        "//util:gl_helper",
-        "//util:gl_util",
-        "//util:glm_helper",
-        "//util:logging",
-        "//util:signals",
-        "//util:status_macros",
+        "//third_party:gl_helper",
+        "//util/graphics:gl_util",
+        "//third_party:glm_helper",
+        "//util/logging",
+        "//util/signal:signals",
+        "//util/status:status_macros",
+        "//util/graphics:gl_interface",
+        "//util/graphics:gl_render_target",
         "//util/math:perspective",
         "//util/math:vector",
     ],

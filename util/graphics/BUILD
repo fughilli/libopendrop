@@ -37,14 +37,6 @@ cc_test(
 )
 
 cc_library(
-    name = "sdl_gl_interface",
-    srcs = ["sdl_gl_interface.cc"],
-    hdrs = ["sdl_gl_interface.h"],
-    linkstatic = 1,
-    deps = [":gl_interface"],
-)
-
-cc_library(
     name = "gl_interface",
     srcs = ["gl_interface.cc"],
     hdrs = ["gl_interface.h"],

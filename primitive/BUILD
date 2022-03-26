@@ -11,8 +11,8 @@ cc_library(
     hdrs = ["polyline.h"],
     deps = [
         ":primitive",
-        "//util:gl_helper",
-        "//util:glm_helper",
+        "//third_party:gl_helper",
+        "//third_party:glm_helper",
         "@com_google_absl//absl/types:span",
     ],
 )
@@ -23,8 +23,8 @@ cc_library(
     hdrs = ["rectangle.h"],
     deps = [
         ":primitive",
-        "//util:gl_helper",
-        "//util:glm_helper",
+        "//third_party:gl_helper",
+        "//third_party:glm_helper",
     ],
 )
 
@@ -34,7 +34,7 @@ cc_library(
     hdrs = ["ngon.h"],
     deps = [
         ":primitive",
-        "//util:gl_helper",
+        "//third_party:gl_helper",
     ],
 )
 
@@ -46,9 +46,9 @@ cc_library(
     ],
     deps = [
         ":primitive",
-        "//util:gl_helper",
-        "//util:glm_helper",
-        "//util:logging",
+        "//third_party:gl_helper",
+        "//third_party:glm_helper",
+        "//util/logging",
         "@com_google_absl//absl/types:span",
     ],
 )
@@ -59,8 +59,8 @@ cc_library(
     hdrs = ["model.h"],
     deps = [
         ":primitive",
-        "//util:gl_helper",
-        "//util:glm_helper",
+        "//third_party:gl_helper",
+        "//third_party:glm_helper",
         "@com_google_absl//absl/types:span",
     ],
 )

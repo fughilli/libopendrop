@@ -1,4 +1,4 @@
-load("//preset:preset_defs.bzl", "shader_cc_library")
+load("//shader:shader_defs.bzl", "shader_cc_library")
 
 package(default_visibility = ["//:__subpackages__"])
 
@@ -12,21 +12,21 @@ cc_library(
         ":ngon",
         ":passthrough",
         ":warp",
-        "//:gl_interface",
-        "//:gl_render_target",
         "//preset",
         "//primitive:ngon",
         "//primitive:polyline",
         "//primitive:rectangle",
-        "//util:coefficients",
-        "//util:colors",
-        "//util:filter",
-        "//util:gl_helper",
-        "//util:gl_util",
-        "//util:glm_helper",
-        "//util:logging",
-        "//util:math",
-        "//util:status_macros",
+        "//third_party:gl_helper",
+        "//third_party:glm_helper",
+        "//util/graphics:colors",
+        "//util/graphics:gl_interface",
+        "//util/graphics:gl_render_target",
+        "//util/graphics:gl_util",
+        "//util/logging",
+        "//util/math",
+        "//util/math:coefficients",
+        "//util/signal:filter",
+        "//util/status:status_macros",
     ],
 )
 

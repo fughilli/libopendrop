@@ -21,9 +21,9 @@ cc_library(
     hdrs = ["preset.h"],
     linkstatic = 1,
     deps = [
-        "//:gl_interface",
-        "//:gl_render_target",
-        "//:global_state",
+        "//util/graphics:gl_interface",
+        "//util/graphics:gl_render_target",
+        "//application:global_state",
         "@com_google_absl//absl/types:span",
     ],
 )
@@ -35,7 +35,7 @@ cc_library(
     deps = [
         ":preset",
         "@com_google_absl//absl/status:statusor",
-        "//util:status_macros",
+        "//util/status:status_macros",
     ] + PRESET_DEPS_LIST,
 )
 
@@ -45,11 +45,11 @@ cc_library(
     hdrs = ["preset_blender.h"],
     deps = [
         ":preset",
-        "//:blit_fsh",
-        "//:blit_vsh",
+        "//shader:blit_fsh",
+        "//shader:blit_vsh",
         "//primitive:rectangle",
-        "//util:gl_util",
-        "//util:logging",
-        "//util:oneshot",
+        "//util/graphics:gl_util",
+        "//util/logging",
+        "//util/time:oneshot",
     ],
 )
