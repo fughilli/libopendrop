@@ -1,5 +1,5 @@
-#ifndef UTIL_ACCUMULATOR_H_
-#define UTIL_ACCUMULATOR_H_
+#ifndef UTIL_SIGNAL_ACCUMULATOR_H_
+#define UTIL_SIGNAL_ACCUMULATOR_H_
 
 #include <cmath>
 
@@ -63,4 +63,4 @@ class Accumulator {
 
 }  // namespace opendrop
 
-#endif  // UTIL_ACCUMULATOR_H_
+#endif  // UTIL_SIGNAL_ACCUMULATOR_H_

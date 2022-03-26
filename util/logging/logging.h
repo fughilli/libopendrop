@@ -1,5 +1,5 @@
-#ifndef UTIL_LOGGING_H_
-#define UTIL_LOGGING_H_
+#ifndef UTIL_LOGGING_LOGGING_H_
+#define UTIL_LOGGING_LOGGING_H_
 
 #include <cstdlib>
 #include <iostream>
@@ -163,4 +163,4 @@ class _DummyLogger {
 #define CHECK(expression) \
   (LOG(FATAL).SetCondition(!(expression)) << "CHECK FAIL (" #expression "): ")
 
-#endif  // UTIL_LOGGING_H_
+#endif  // UTIL_LOGGING_LOGGING_H_

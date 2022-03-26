@@ -1,5 +1,5 @@
-#ifndef GL_TEXTURE_MANAGER_H_
-#define GL_TEXTURE_MANAGER_H_
+#ifndef UTIL_GRAPHICS_GL_TEXTURE_MANAGER_H_
+#define UTIL_GRAPHICS_GL_TEXTURE_MANAGER_H_
 
 #include <mutex>
 #include <queue>
@@ -25,4 +25,4 @@ class GlTextureManager {
 
 }  // namespace gl
 
-#endif  // GL_TEXTURE_MANAGER_H_
+#endif  // UTIL_GRAPHICS_GL_TEXTURE_MANAGER_H_

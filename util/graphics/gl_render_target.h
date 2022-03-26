@@ -1,5 +1,5 @@
-#ifndef GL_RENDER_TARGET_H_
-#define GL_RENDER_TARGET_H_
+#ifndef UTIL_GRAPHICS_GL_RENDER_TARGET_H_
+#define UTIL_GRAPHICS_GL_RENDER_TARGET_H_
 
 #include <memory>
 #include <mutex>
@@ -81,4 +81,4 @@ class GlRenderTarget : public std::enable_shared_from_this<GlRenderTarget> {
 
 }  // namespace gl
 
-#endif  // GL_RENDER_TARGET_H_
+#endif  // UTIL_GRAPHICS_GL_RENDER_TARGET_H_

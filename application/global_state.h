@@ -1,5 +1,5 @@
-#ifndef GLOBAL_STATE_H_
-#define GLOBAL_STATE_H_
+#ifndef APPLICATION_GLOBAL_STATE_H_
+#define APPLICATION_GLOBAL_STATE_H_
 
 #include <array>
 #include <vector>
@@ -130,4 +130,4 @@ class GlobalState {
 
 }  // namespace opendrop
 
-#endif  // GLOBAL_STATE_H_
+#endif  // APPLICATION_GLOBAL_STATE_H_

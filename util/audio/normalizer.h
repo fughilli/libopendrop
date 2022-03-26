@@ -1,5 +1,5 @@
-#ifndef NORMALIZER_H_
-#define NORMALIZER_H_
+#ifndef UTIL_AUDIO_NORMALIZER_H_
+#define UTIL_AUDIO_NORMALIZER_H_
 
 #include "absl/types/span.h"
 #include "debug/signal_scope.h"
@@ -66,4 +66,4 @@ class Normalizer {
 };
 }  // namespace opendrop
 
-#endif  // NORMALIZER_H_
+#endif  // UTIL_AUDIO_NORMALIZER_H_

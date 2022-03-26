@@ -1,5 +1,5 @@
-#ifndef CLEANUP_H_
-#define CLEANUP_H_
+#ifndef UTIL_CLEANUP_H_
+#define UTIL_CLEANUP_H_
 
 template <typename Fxn>
 class Cleanup {
@@ -16,4 +16,4 @@ Cleanup<Fxn> MakeCleanup(Fxn cleanup_fxn) {
   return Cleanup(cleanup_fxn);
 }
 
-#endif  // CLEANUP_H_
+#endif  // UTIL_CLEANUP_H_

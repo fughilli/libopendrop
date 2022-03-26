@@ -1,5 +1,5 @@
-#ifndef UTIL_RATE_LIMITER_H_
-#define UTIL_RATE_LIMITER_H_
+#ifndef UTIL_TIME_RATE_LIMITER_H_
+#define UTIL_TIME_RATE_LIMITER_H_
 
 #include "util/time/oneshot.h"
 
@@ -43,4 +43,4 @@ class RateLimiterIncremental {
 
 }  // namespace opendrop
 
-#endif  // UTIL_RATE_LIMITER_H_
+#endif  // UTIL_TIME_RATE_LIMITER_H_

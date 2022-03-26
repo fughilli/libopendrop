@@ -1,5 +1,5 @@
-#ifndef UTIL_GLM_HELPER_H_
-#define UTIL_GLM_HELPER_H_
+#ifndef THIRD_PARTY_GLM_HELPER_H_
+#define THIRD_PARTY_GLM_HELPER_H_
 
 #define GLM_ENABLE_EXPERIMENTAL
 #define GLM_FORCE_SWIZZLE
@@ -17,4 +17,4 @@
 #include <glm/vec3.hpp>
 #include <glm/vector_relational.hpp>
 
-#endif  // UTIL_GLM_HELPER_H_
+#endif  // THIRD_PARTY_GLM_HELPER_H_

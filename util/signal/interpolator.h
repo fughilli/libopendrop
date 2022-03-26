@@ -1,5 +1,5 @@
-#ifndef UTIL_INTERPOLATOR_H_
-#define UTIL_INTERPOLATOR_H_
+#ifndef UTIL_SIGNAL_INTERPOLATOR_H_
+#define UTIL_SIGNAL_INTERPOLATOR_H_
 
 #include "util/logging/logging.h"
 
@@ -153,4 +153,4 @@ class Interpolator {
 
 }  // namespace opendrop
 
-#endif  // UTIL_INTERPOLATOR_H_
+#endif  // UTIL_SIGNAL_INTERPOLATOR_H_

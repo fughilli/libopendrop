@@ -1,5 +1,5 @@
-#ifndef AUDIO_PROCESSOR_H_
-#define AUDIO_PROCESSOR_H_
+#ifndef UTIL_AUDIO_AUDIO_PROCESSOR_H_
+#define UTIL_AUDIO_AUDIO_PROCESSOR_H_
 
 #include <cstddef>
 #include <memory>
@@ -54,4 +54,4 @@ class AudioProcessor {
 
 }  // namespace opendrop
 
-#endif  // AUDIO_PROCESSOR_H_
+#endif  // UTIL_AUDIO_AUDIO_PROCESSOR_H_

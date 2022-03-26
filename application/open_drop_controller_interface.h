@@ -1,5 +1,5 @@
-#ifndef OPEN_DROP_CONTROLLER_INTERFACE_H_
-#define OPEN_DROP_CONTROLLER_INTERFACE_H_
+#ifndef APPLICATION_OPEN_DROP_CONTROLLER_INTERFACE_H_
+#define APPLICATION_OPEN_DROP_CONTROLLER_INTERFACE_H_
 
 #include <cstddef>
 #include <memory>
@@ -52,4 +52,4 @@ class OpenDropControllerInterface {
 
 }  // namespace opendrop
 
-#endif  // OPEN_DROP_CONTROLLER_INTERFACE_H_
+#endif  // APPLICATION_OPEN_DROP_CONTROLLER_INTERFACE_H_

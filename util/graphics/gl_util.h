@@ -1,5 +1,5 @@
-#ifndef UTIL_GL_UTIL_H_
-#define UTIL_GL_UTIL_H_
+#ifndef UTIL_GRAPHICS_GL_UTIL_H_
+#define UTIL_GRAPHICS_GL_UTIL_H_
 
 #include <memory>
 
@@ -68,4 +68,4 @@ DECLARE_BIND_UNIFORM(glm::mat4);
 
 }  // namespace gl
 
-#endif  // UTIL_GL_UTIL_H_
+#endif  // UTIL_GRAPHICS_GL_UTIL_H_

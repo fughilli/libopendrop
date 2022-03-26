@@ -1,5 +1,5 @@
-#ifndef UTIL_STATUS_MACROS_H_
-#define UTIL_STATUS_MACROS_H_
+#ifndef UTIL_STATUS_STATUS_MACROS_H_
+#define UTIL_STATUS_STATUS_MACROS_H_
 
 #include "absl/status/statusor.h"
 
@@ -25,4 +25,4 @@ namespace absl {
 
 }  // namespace absl
 
-#endif  // UTIL_STATUS_MACROS_H_
+#endif  // UTIL_STATUS_STATUS_MACROS_H_

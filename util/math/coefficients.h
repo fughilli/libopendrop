@@ -1,5 +1,5 @@
-#ifndef UTIL_COEFFICIENTS_H_
-#define UTIL_COEFFICIENTS_H_
+#ifndef UTIL_MATH_COEFFICIENTS_H_
+#define UTIL_MATH_COEFFICIENTS_H_
 
 #include <array>
 #include <random>
@@ -30,4 +30,4 @@ class Coefficients {
 
 }  // namespace opendrop
 
-#endif  // UTIL_COEFFICIENTS_H_
+#endif  // UTIL_MATH_COEFFICIENTS_H_

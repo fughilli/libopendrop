@@ -1,5 +1,5 @@
-#ifndef UTIL_MATH_H_
-#define UTIL_MATH_H_
+#ifndef UTIL_MATH_MATH_H_
+#define UTIL_MATH_MATH_H_
 
 #define _USE_MATH_DEFINES
 #include <cmath>
@@ -90,4 +90,4 @@ T Sign(T value) {
 
 }  // namespace opendrop
 
-#endif  // UTIL_MATH_H_
+#endif  // UTIL_MATH_MATH_H_

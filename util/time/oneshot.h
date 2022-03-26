@@ -1,5 +1,5 @@
-#ifndef UTIL_ONESHOT_H_
-#define UTIL_ONESHOT_H_
+#ifndef UTIL_TIME_ONESHOT_H_
+#define UTIL_TIME_ONESHOT_H_
 
 namespace opendrop {
 
@@ -82,4 +82,4 @@ class OneshotIncremental {
 
 }  // namespace opendrop
 
-#endif  // UTIL_ONESHOT_H_
+#endif  // UTIL_TIME_ONESHOT_H_

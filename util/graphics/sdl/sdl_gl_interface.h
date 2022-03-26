@@ -1,5 +1,5 @@
-#ifndef SDL_GL_INTERFACE_H_
-#define SDL_GL_INTERFACE_H_
+#ifndef UTIL_GRAPHICS_SDL_SDL_GL_INTERFACE_H_
+#define UTIL_GRAPHICS_SDL_SDL_GL_INTERFACE_H_
 
 #include <SDL2/SDL.h>
 
@@ -78,4 +78,4 @@ class SdlGlInterface : public GlInterface,
 
 }  // namespace gl
 
-#endif  // SDL_GL_INTERFACE_H_
+#endif  // UTIL_GRAPHICS_SDL_SDL_GL_INTERFACE_H_

@@ -1,5 +1,5 @@
-#ifndef UTIL_FILTER_H_
-#define UTIL_FILTER_H_
+#ifndef UTIL_SIGNAL_FILTER_H_
+#define UTIL_SIGNAL_FILTER_H_
 
 #include <algorithm>
 #include <memory>
@@ -108,4 +108,4 @@ class HystereticMapFilter final : public Filter {
 
 }  // namespace opendrop
 
-#endif  // UTIL_FILTER_H_
+#endif  // UTIL_SIGNAL_FILTER_H_

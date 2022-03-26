@@ -1,5 +1,5 @@
-#ifndef UTIL_UDP_CLIENT_H_
-#define UTIL_UDP_CLIENT_H_
+#ifndef UTIL_NETWORKING_UDP_CLIENT_H_
+#define UTIL_NETWORKING_UDP_CLIENT_H_
 
 #include <stdint.h>
 
@@ -29,4 +29,4 @@ class UdpClient {
 
 }  // namespace util
 
-#endif  // UTIL_UDP_CLIENT_H_
+#endif  // UTIL_NETWORKING_UDP_CLIENT_H_

@@ -1,5 +1,5 @@
-#ifndef UTIL_UDP_SERVER_H_
-#define UTIL_UDP_SERVER_H_
+#ifndef UTIL_NETWORKING_UDP_SERVER_H_
+#define UTIL_NETWORKING_UDP_SERVER_H_
 
 #include <stdint.h>
 
@@ -24,4 +24,4 @@ class UdpServer {
 
 }  // namespace util
 
-#endif  // UTIL_UDP_SERVER_H_
+#endif  // UTIL_NETWORKING_UDP_SERVER_H_

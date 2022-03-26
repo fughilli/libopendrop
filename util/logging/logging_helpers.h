@@ -1,5 +1,5 @@
-#ifndef UTIL_LOGGING_HELPERS_H_
-#define UTIL_LOGGING_HELPERS_H_
+#ifndef UTIL_LOGGING_LOGGING_HELPERS_H_
+#define UTIL_LOGGING_LOGGING_HELPERS_H_
 
 #include <iostream>
 
@@ -18,4 +18,4 @@ std::ostream& operator<<(std::ostream& os, const absl::Span<T>& span) {
   return os;
 }
 
-#endif  // UTIL_LOGGING_HELPERS_H_
+#endif  // UTIL_LOGGING_LOGGING_HELPERS_H_
