@@ -111,6 +111,12 @@ case $source_type in
       sed -n "s/\s\+Name.*\(alsa_output.*monitor$\)/\1/p" | head -n 1)
     ;;
 
+
+  'rbstealth')
+    SOURCE=$(pactl list sources |
+      sed -n "s/\s\+Name.*\(alsa_output.*sofhdadsp__.*$\)/\1/p" | head -n 1)
+    ;;
+
   'hdmi')
     SOURCE=$(pactl list sources |
       sed -n "s/\s\+Name.*\(alsa_output.*hdmi\-.*monitor$\)/\1/p" | head -n 1)
@@ -132,7 +138,7 @@ case $source_type in
     ;;
 
   '?')
-    echo "Supported source types: bluetooth system hdmi microphone"
+    echo "Supported source types: bluetooth system rbstealth hdmi microphone"
     exit 0
     ;;
 
