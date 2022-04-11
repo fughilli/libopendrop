@@ -4,6 +4,8 @@
 const float kPi = 3.141592653589793;
 const float kEpsilon = 1e-6;
 
+vec2 unit_at_angle(float angle) { return vec2(cos(angle), sin(angle)); }
+
 // Rotates a screen UV coordinate around the origin by `angle`.
 vec2 rotate(vec2 screen_uv, float angle) {
   float c = cos(angle);
@@ -12,6 +14,8 @@ vec2 rotate(vec2 screen_uv, float angle) {
   return vec2(c * screen_uv.x - s * screen_uv.y,
               s * screen_uv.x + c * screen_uv.y);
 }
+
+float angle(vec2 vec) { return atan(vec.y, vec.x); }
 
 // Converts a normalized screen coordinate to a normalized texture coordinate.
 vec2 screen_to_tex(vec2 screen_uv) { return (screen_uv + vec2(1., 1.)) * 0.5; }
@@ -80,6 +84,24 @@ vec4 blur_sample_texture(sampler2D tex, vec2 uv, ivec2 tex_size,
   return (texture2D(tex, uv + offset) + texture2D(tex, uv - offset) +
           texture2D(tex, uv + offset) + texture2D(tex, uv - offset)) /
          4.0f;
+}
+
+// Warps a UV coordinate by a kaleidoscopic effect.
+vec2 uv_warp_kaleidoscope(vec2 uv, int num_divisions) {
+  float uv_angle = angle(uv);
+  float magnitude = length(uv);
+
+  float fragment_angle = mod(uv_angle, kPi / num_divisions);
+
+  if (fragment_angle > kPi / (num_divisions * 2)) {
+    fragment_angle = (kPi / num_divisions) - fragment_angle;
+  }
+  return unit_at_angle(fragment_angle) * magnitude;
+}
+
+// Warps a UV coordinate by a spiral-bending effect.
+vec2 uv_warp_spiral(vec2 uv, float aspect_ratio) {
+  return rotate(uv, length(uv) * aspect_ratio);
 }
 
 #endif  // PRESET_COMMON_MATH_SHH_

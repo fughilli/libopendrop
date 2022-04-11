@@ -57,6 +57,7 @@ cc_library(
     deps = [
         ":gl_interface",
         ":gl_texture_manager",
+        "//third_party:glm_helper",
         "//util/logging",
         "//util/status:status_macros",
         "@com_google_absl//absl/status:statusor",

@@ -5,6 +5,7 @@
 #include <mutex>
 
 #include "absl/status/statusor.h"
+#include "third_party/glm_helper.h"
 #include "util/graphics/gl_interface.h"
 #include "util/graphics/gl_texture_manager.h"
 
@@ -58,6 +59,10 @@ class GlRenderTarget : public std::enable_shared_from_this<GlRenderTarget> {
   int height() {
     std::unique_lock<std::mutex> lock(render_target_mu_);
     return height_;
+  }
+  glm::ivec2 size() {
+    std::unique_lock<std::mutex> lock(render_target_mu_);
+    return {width_, height_};
   }
 
   bool swap_texture_unit(GlRenderTarget* other);
