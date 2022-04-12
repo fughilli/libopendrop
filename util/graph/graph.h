@@ -5,6 +5,7 @@
 #include <functional>
 #include <map>
 #include <memory>
+#include <ostream>
 #include <string>
 #include <tuple>
 #include <utility>
@@ -30,6 +31,16 @@ enum class Type {
   kUnitary,
   kMonotonic,
 };
+
+}  // namespace opendrop
+
+std::ostream& operator<<(std::ostream& os,
+                         const std::vector<opendrop::Type>& types) {
+  for (const auto type : types) os << static_cast<int>(type) << ", ";
+  return os;
+}
+
+namespace opendrop {
 
 struct Monotonic {
   float value;
@@ -101,17 +112,29 @@ struct ConversionStorage {
   }
 };
 
+// A conversion is a symbolic representation of a transformation, A -> B.
+// It contains:
+//   + A name.
+//   + An implementation (function `B(*)(A)`).
+//   + A location to store results from the implementation (previous B).
 struct Conversion {
+  // Constructs a std::function() that:
+  //   + Accepts opaque pointers to buffers of A and B.
+  //   + Computes `B = function(A)`.
   template <typename InputTuple, typename OutputTuple>
   static std::function<void(const void*, void*)> ToGenericFunction(
       std::function<OutputTuple(InputTuple)> function) {
     return [function](const void* input, void* output) {
+      // TODO: Determine if this violates strict aliasing rules. My
+      // understanding is that we can use some flag to disable this requirement.
       auto t_output = reinterpret_cast<OutputTuple*>(output);
       const auto t_input = reinterpret_cast<const InputTuple*>(input);
       *t_output = function(*t_input);
     };
   }
 
+  // Determines whether or not this Conversion can produce an output compatible
+  // with the input of `other`.
   bool CanOutputTo(const Conversion& other) {
     return other.input_types == output_types;
   }
@@ -153,48 +176,64 @@ struct Conversion {
   std::shared_ptr<uint8_t> output_storage;
 };
 
-// class ComputeGraph {
-//  public:
-//   template <typename InputTuple, typename OutputTuple>
-//   void DeclareConversion(
-//       std::string name,
-//       std::function<OutputTuple(InputTuple)> conversion_function) {
-//     auto conversion = std::make_shared<Conversion>(name,
-//     conversion_function);
-//
-//     InsertConversion(conversion);
-//   }
-//
-//   void Construct(absl::string_view graph);
-//
-//   template <typename OutputTuple, typename InputTuple>
-//   OutputTuple Evaluate(InputTuple input);
-//
-//  private:
-//   void InsertConversion(std::shared_ptr<Conversion> conversion) {
-//     if (conversions_by_name_.find(conversion->name) !=
-//         conversions_by_name_.end())
-//       LOG(FATAL) << "Duplicate conversion found for name " <<
-//       conversion->name;
-//
-//     conversions_by_name_[conversion->name] = conversion;
-//
-//     if (conversions_by_input_.find(conversion->input_types) ==
-//         conversions_by_input_.end())
-//       conversions_by_input_[conversion->input_types] = {};
-//     if (conversions_by_output_.find(conversion->output_types) ==
-//         conversions_by_output_.end())
-//       conversions_by_output_[conversion->output_types] = {};
-//
-//     conversions_by_input_[conversion->input_types].push_back(conversion);
-//     conversions_by_output_[conversion->output_types].push_back(conversion);
-//   }
-//   using ConversionVector = std::vector<std::shared_ptr<Conversion>>;
-//
-//   std::map<std::string, std::shared_ptr<Conversion>> conversions_by_name_;
-//   std::map<std::vector<Type>, ConversionVector> conversions_by_input_;
-//   std::map<std::vector<Type>, ConversionVector> conversions_by_output_;
-// };
+class ComputeGraph {
+ public:
+  template <typename InputTuple, typename OutputTuple>
+  void DeclareConversion(
+      std::string name,
+      std::function<OutputTuple(InputTuple)> conversion_function) {
+    auto conversion = std::make_shared<Conversion>(name, conversion_function);
+
+    InsertConversion(conversion);
+  }
+
+  void Construct(absl::string_view graph) {
+    conversion_ = conversions_by_name_[std::string(graph)];
+  }
+
+  template <typename... OutputTypes, typename InputTuple>
+  std::tuple<OutputTypes...> Evaluate(InputTuple input,
+                                      std::tuple<OutputTypes...>& output) {
+    if (conversion_->output_types != ConstructTypes<OutputTypes...>())
+      LOG(FATAL) << "Incorrect output type of evaluation";
+    //<< conversion_->output_types;
+    conversion_->Invoke(input);
+    return conversion_->Result<std::tuple<OutputTypes...>>();
+  }
+
+  template <typename OutputTuple, typename InputTuple>
+  OutputTuple Evaluate(InputTuple input) {
+    OutputTuple output;
+    return Evaluate(input, output);
+    return output;
+  }
+
+ private:
+  void InsertConversion(std::shared_ptr<Conversion> conversion) {
+    if (conversions_by_name_.find(conversion->name) !=
+        conversions_by_name_.end())
+      LOG(FATAL) << "Duplicate conversion found for name " << conversion->name;
+
+    conversions_by_name_[conversion->name] = conversion;
+
+    if (conversions_by_input_.find(conversion->input_types) ==
+        conversions_by_input_.end())
+      conversions_by_input_[conversion->input_types] = {};
+    if (conversions_by_output_.find(conversion->output_types) ==
+        conversions_by_output_.end())
+      conversions_by_output_[conversion->output_types] = {};
+
+    conversions_by_input_[conversion->input_types].push_back(conversion);
+    conversions_by_output_[conversion->output_types].push_back(conversion);
+  }
+  using ConversionVector = std::vector<std::shared_ptr<Conversion>>;
+
+  std::shared_ptr<Conversion> conversion_ = {};
+
+  std::map<std::string, std::shared_ptr<Conversion>> conversions_by_name_;
+  std::map<std::vector<Type>, ConversionVector> conversions_by_input_;
+  std::map<std::vector<Type>, ConversionVector> conversions_by_output_;
+};
 
 }  // namespace opendrop
 

@@ -14,6 +14,7 @@ cc_test(
     name = "graph_test",
     srcs = ["graph_test.cc"],
     deps = [
+        "//util/math",
         ":graph",
         "@com_google_absl//absl/strings",
         "@com_googletest//:gtest",

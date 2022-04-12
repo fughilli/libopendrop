@@ -7,6 +7,7 @@
 #include "googlemock/include/gmock/gmock-more-matchers.h"
 #include "googlemock/include/gmock/gmock.h"
 #include "googletest/include/gtest/gtest.h"
+#include "util/math/math.h"
 
 namespace opendrop {
 namespace {
@@ -46,24 +47,24 @@ TEST(GraphTest, CanInvokeConversion) {
               246.246f, 1e-6f);
 }
 
-// TEST(GraphTest, SimpleConversion) {
-//   ComputeGraph graph;
-//   graph.DeclareConversion<std::tuple<Monotonic>, std::tuple<Unitary>>(
-//      "sinusoid", [](std::tuple<Monotonic> in) -> std::tuple<Unitary> {
-//         return std::tuple<Unitary>(
-//             Unitary((1.0f + std::sin(std::get<0>(in))) / 2.0f));
-//        return std::tuple<Unitary>(Unitary(0));
-//      });
-//
-//  // graph.Construct("sinusoid");
-//
-//  // EXPECT_NEAR(
-//  //     graph.Evaluate<std::tuple<Unitary>>(std::make_tuple<Monotonic>(0)),
-//  0);
-//  // EXPECT_NEAR(
-//  //     graph.Evaluate<std::tuple<Unitary>>(std::make_tuple<Monotonic>(kPi /
-//  //     2)), 1);
-//}
+TEST(GraphTest, SimpleConversion) {
+  ComputeGraph graph;
+  graph.DeclareConversion<std::tuple<Monotonic>, std::tuple<Unitary>>(
+      "sinusoid", [](std::tuple<Monotonic> in) -> std::tuple<Unitary> {
+        return std::tuple<Unitary>(
+            Unitary((1.0f + std::sin(std::get<0>(in))) / 2.0f));
+        return std::tuple<Unitary>(Unitary(0));
+      });
+
+  graph.Construct("sinusoid");
+
+  std::tuple<Unitary> out;
+  graph.Evaluate(std::make_tuple<Monotonic>(0), out);
+  EXPECT_NEAR(std::get<0>(out), 0, 1e-6f);
+  EXPECT_NEAR(std::get<0>(graph.Evaluate<std::tuple<Unitary>>(
+                  std::tuple<Monotonic>(kPi / 2))),
+              1.0f, 1e-6f);
+}
 
 }  // namespace
 }  // namespace opendrop
