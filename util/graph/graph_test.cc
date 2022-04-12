@@ -50,7 +50,7 @@ TEST(GraphTest, CanInvokeConversion) {
   auto conversion = std::make_shared<Conversion>("times2", convert_fn);
 
   EXPECT_NEAR(std::get<0>(conversion->Invoke(std::tuple<float>(123.123f))
-                              .Result<std::tuple<float>>()),
+                              .Result<float>()),
               246.246f, 1e-6f);
 }
 
@@ -67,7 +67,7 @@ TEST(GraphTest, SimpleConversion) {
 
   std::tuple<Unitary> out;
   graph.Evaluate(std::make_tuple<Monotonic>(0), out);
-  EXPECT_NEAR(std::get<0>(out), 0, 1e-6f);
+  EXPECT_NEAR(std::get<0>(out), 0.5f, 1e-6f);
   EXPECT_NEAR(std::get<0>(graph.Evaluate<std::tuple<Unitary>>(
                   std::tuple<Monotonic>(kPi / 2))),
               1.0f, 1e-6f);
@@ -100,8 +100,9 @@ TEST(GraphTest, ComplexConversion) {
         return std::tuple<int>(0);
       });
 
-  // std::tuple<Texture> out;
-  // graph.OrganizeAndEvaluate(std::make_tuple<Monotonic>(0), out);
+  std::tuple<Texture> out(0);
+
+  graph.OrganizeAndEvaluate(std::make_tuple<Monotonic>(0), out);
 
   // EXPECT_THAT(std::get<0>(out), TextureIsNear(Texture(0)));
   // EXPECT_THAT(std::get<0>(graph.Evaluate<std::tuple<Unitary>>(

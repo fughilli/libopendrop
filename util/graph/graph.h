@@ -186,6 +186,7 @@ struct Conversion {
 
   template <typename... InputTupleArgs>
   Conversion& Invoke(const std::tuple<InputTupleArgs...>& input) {
+    LOG(INFO) << "Invoking function";
     if (input_types != ConstructTypes<InputTupleArgs...>())
       LOG(FATAL) << "Input types do not match!";
 
@@ -195,8 +196,12 @@ struct Conversion {
     return *this;
   }
 
-  template <typename OutputTuple>
-  OutputTuple Result() {
+  template <typename... OutputTypes>
+  std::tuple<OutputTypes...> Result() {
+    LOG(INFO) << "Fetching result";
+    using OutputTuple = std::tuple<OutputTypes...>;
+    if (output_types != ConstructTypes<OutputTypes...>())
+      LOG(FATAL) << "Output types do not match!";
     OutputTuple result =
         *reinterpret_cast<const OutputTuple*>(output_storage.get());
     return result;
@@ -225,25 +230,27 @@ class ComputeGraph {
     conversion_ = conversions_by_name_[std::string(graph)];
   }
 
-  template <typename... OutputTypes, typename InputTuple>
-  std::tuple<OutputTypes...> Evaluate(InputTuple input,
-                                      std::tuple<OutputTypes...>& output) {
+  template <typename InputTuple, typename... OutputTypes>
+  void Evaluate(InputTuple input, std::tuple<OutputTypes...>& output) {
+    CHECK_NULL(conversion_);
     if (conversion_->output_types != ConstructTypes<OutputTypes...>())
       LOG(FATAL) << "Incorrect output type of evaluation";
-    //<< conversion_->output_types;
+
     conversion_->Invoke(input);
-    return conversion_->Result<std::tuple<OutputTypes...>>();
+    output = conversion_->Result<OutputTypes...>();
   }
 
   template <typename OutputTuple, typename InputTuple>
   OutputTuple Evaluate(InputTuple input) {
+    LOG(INFO) << "Evaluate(InputTuple)";
     OutputTuple output;
-    return Evaluate(input, output);
+    Evaluate(input, output);
     return output;
   }
 
   template <typename OutputTuple, typename InputTuple>
   void OrganizeAndEvaluate(InputTuple input, OutputTuple& output) {
+    Construct("sinusoid");
     Evaluate(input, output);
   }
 
