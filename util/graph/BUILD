@@ -17,8 +17,8 @@ cc_library(
     name = "graph",
     hdrs = ["graph.h"],
     deps = [
-        "//util/logging",
         "//third_party:gl_helper",
+        "//util/logging",
         "@com_google_absl//absl/strings",
     ],
 )
@@ -58,5 +58,6 @@ cc_test(
         "@com_googletest//:gtest_main",
         "//util/logging",
         ":graph_builtins",
+        "//util/testing:graph_matchers",
     ] + CROSS_COMPILATION_DEPS,
 )

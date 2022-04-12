@@ -63,6 +63,11 @@ struct Unitary {
 struct Texture {
   int texture_unit;
 
+  Texture(float x) {}
+  Texture operator-(Texture& other) { return {0}; }
+  // Compute the geometric mean of the amplitude of the raster.
+  float Length() { return 0; }
+
   // static Texture Allocate(gl::GlTextureManager& texture_manager) {
   //   absl::StatusOr<int> texture_unit = texture_manager.Allocate();
   //   CHECK_OK(texture_unit);
@@ -235,6 +240,11 @@ class ComputeGraph {
     OutputTuple output;
     return Evaluate(input, output);
     return output;
+  }
+
+  template <typename OutputTuple, typename InputTuple>
+  void OrganizeAndEvaluate(InputTuple input, OutputTuple& output) {
+    Evaluate(input, output);
   }
 
  private:

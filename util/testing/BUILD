@@ -18,3 +18,12 @@ cc_library(
         "@com_googletest//:gtest",
     ],
 )
+
+cc_library(
+    name = "graph_matchers",
+    hdrs = ["graph_matchers.h"],
+    deps = [
+        "//util/graph",
+        "@com_googletest//:gtest",
+    ],
+)

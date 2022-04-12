@@ -12,9 +12,12 @@
 #include "util/graphics/colors.h"
 #include "util/graphics/gl_util.h"
 #include "util/math/math.h"
+#include "util/testing/graph_matchers.h"
 
 namespace opendrop {
 namespace {
+
+using ::opendrop::graph_testing::TextureIsNear;
 
 TEST(GraphTest, ToTypeTest) {
   EXPECT_EQ(ToType<float>(), Type::kFloatGeneric);
@@ -81,7 +84,7 @@ TEST(GraphTest, ComplexConversion) {
   graph.DeclareConversion<std::tuple<Unitary>, std::tuple<Texture>>(
       "texture_all_one_color",
       [](std::tuple<Unitary> in) -> std::tuple<Texture> {
-        Texture t;
+        Texture t(0);
         {
           auto activation = t.ActivateRenderContext();
           glm::vec4 color =
@@ -99,10 +102,11 @@ TEST(GraphTest, ComplexConversion) {
 
   // std::tuple<Texture> out;
   // graph.OrganizeAndEvaluate(std::make_tuple<Monotonic>(0), out);
-  // EXPECT_NEAR(std::get<0>(out), 0, 1e-6f);
-  // EXPECT_NEAR(std::get<0>(graph.Evaluate<std::tuple<Unitary>>(
+
+  // EXPECT_THAT(std::get<0>(out), TextureIsNear(Texture(0)));
+  // EXPECT_THAT(std::get<0>(graph.Evaluate<std::tuple<Unitary>>(
   //                 std::tuple<Monotonic>(kPi / 2))),
-  //             1.0f, 1e-6f);
+  //             TextureIsNear(Texture(1.0f)));
 }
 
 }  // namespace
