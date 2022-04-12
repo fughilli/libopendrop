@@ -9,9 +9,9 @@ cc_library(
     name = "gl_util",
     srcs = ["gl_util.cc"],
     hdrs = ["gl_util.h"],
-    linkstatic = 1,
     deps = [
         "//third_party:gl_helper",
+        "//third_party:glm_helper",
         "//util/graphics:gl_interface",
         "//util/graphics:gl_render_target",
     ],

@@ -30,6 +30,8 @@ enum class Type {
   kFloatGeneric,
   kUnitary,
   kMonotonic,
+  kTexture,
+  kInteger,
 };
 
 }  // namespace opendrop
@@ -58,9 +60,28 @@ struct Unitary {
   operator float() const { return value; }
 };
 
+struct Texture {
+  int texture_unit;
+
+  // static Texture Allocate(gl::GlTextureManager& texture_manager) {
+  //   absl::StatusOr<int> texture_unit = texture_manager.Allocate();
+  //   CHECK_OK(texture_unit);
+  //   return Texture { .texture_unit = texture_unit.get(); };
+  // }
+  //
+  int ActivateRenderContext() { return 0; }
+};
+
 template <typename T>
 Type ToType();
 
+// #define DECLARE_TYPE_CONVERSION(type) \
+//   template <>                         \
+//   Type ToType<type>() {               \
+//     return Type::k##type;             \
+//   }
+//
+// DECLARE_TYPE_CONVERSION(Unitary);
 template <>
 Type ToType<Unitary>() {
   return Type::kUnitary;
@@ -70,8 +91,16 @@ Type ToType<Monotonic>() {
   return Type::kMonotonic;
 }
 template <>
+Type ToType<int>() {
+  return Type::kInteger;
+}
+template <>
 Type ToType<float>() {
   return Type::kFloatGeneric;
+}
+template <>
+Type ToType<Texture>() {
+  return Type::kTexture;
 }
 
 template <typename First>

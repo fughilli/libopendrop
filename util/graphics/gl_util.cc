@@ -4,8 +4,8 @@
 #include "third_party/glm_helper.h"
 
 namespace gl {
-
 namespace {
+
 // Parses the provided binding options and invokes the corresponding GL
 // functions to configure the active texture as specified.
 void ConfigureBindingOptions(GlTextureBindingOptions binding_options) {
@@ -46,6 +46,11 @@ void ConfigureBindingOptions(GlTextureBindingOptions binding_options) {
   }
 }
 }  // namespace
+
+void GlClear(glm::vec4 color) {
+  glClearColor(color.x, color.y, color.z, color.w);
+  glClear(GL_COLOR_BUFFER_BIT);
+}
 
 void GlBindRenderTargetTextureToUniform(
     std::shared_ptr<GlProgram> program, std::string texture_uniform_name,

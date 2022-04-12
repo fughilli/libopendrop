@@ -39,6 +39,8 @@ struct GlTextureBindingOptions {
   glm::vec4 border_color = glm::vec4(0, 0, 0, 0);
 };
 
+void GlClear(glm::vec4 color);
+
 // Binds the texture backing a gl::GlRenderTarget to a sampler uniform in a
 // gl::GlProgram. Configures the bound texture with the provided binding
 // options.
