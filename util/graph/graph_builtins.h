@@ -1,7 +1,7 @@
 #ifndef UTIL_GRAPH_GRAPH_BUILTINS_H_
 #define UTIL_GRAPH_GRAPH_BUILTINS_H_
 
-#include "util/graph/graph.h"
+#include "util/graph/types/texture.h"
 
 namespace opendrop {
 

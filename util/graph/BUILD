@@ -10,7 +10,10 @@ cc_library(
     name = "graph_builtins",
     srcs = ["graph_builtins.cc"],
     hdrs = ["graph_builtins.h"],
-    deps = [":graph"],
+    deps = [
+        ":graph",
+        "//util/graph/types:texture",
+    ],
 )
 
 cc_library(
@@ -18,6 +21,7 @@ cc_library(
     hdrs = ["graph.h"],
     deps = [
         "//third_party:gl_helper",
+        "//util/graph/types",
         "//util/logging",
         "@com_google_absl//absl/strings",
     ],
@@ -59,5 +63,9 @@ cc_test(
         "//util/logging",
         ":graph_builtins",
         "//util/testing:graph_matchers",
+        "//util/graph/types",
+        "//util/graph/types:monotonic",
+        "//util/graph/types:unitary",
+        "//util/graph/types:texture",
     ] + CROSS_COMPILATION_DEPS,
 )

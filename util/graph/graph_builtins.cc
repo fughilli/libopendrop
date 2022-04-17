@@ -2,7 +2,7 @@
 
 #include "third_party/gl_helper.h"
 #include "third_party/glm_helper.h"
-#include "util/graph/graph.h"
+#include "util/graph/types/texture.h"
 
 namespace opendrop {
 

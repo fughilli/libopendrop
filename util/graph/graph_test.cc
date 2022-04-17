@@ -9,6 +9,10 @@
 #include "googletest/include/gtest/gtest.h"
 #include "third_party/gl_helper.h"
 #include "util/graph/graph_builtins.h"
+#include "util/graph/types/monotonic.h"
+#include "util/graph/types/texture.h"
+#include "util/graph/types/types.h"
+#include "util/graph/types/unitary.h"
 #include "util/graphics/colors.h"
 #include "util/graphics/gl_util.h"
 #include "util/math/math.h"
@@ -18,21 +22,6 @@ namespace opendrop {
 namespace {
 
 using ::opendrop::graph_testing::TextureIsNear;
-
-TEST(GraphTest, ToTypeTest) {
-  EXPECT_EQ(ToType<float>(), Type::kFloatGeneric);
-  EXPECT_EQ(ToType<Unitary>(), Type::kUnitary);
-  EXPECT_EQ(ToType<Monotonic>(), Type::kMonotonic);
-}
-
-TEST(GraphTest, ConstructTypesTest) {
-  EXPECT_THAT(ConstructTypesFromTuple(std::tuple<>()), ::testing::IsEmpty());
-  EXPECT_THAT(ConstructTypesFromTuple(std::tuple<Monotonic, Unitary>()),
-              ::testing::ElementsAre(Type::kMonotonic, Type::kUnitary));
-  EXPECT_THAT(
-      ConstructTypesFromTuple(std::tuple<Unitary, Monotonic, Unitary>()),
-      ::testing::ElementsAre(Type::kUnitary, Type::kMonotonic, Type::kUnitary));
-}
 
 TEST(GraphTest, CanConstructConversion) {
   std::function<std::tuple<float>(std::tuple<float>)> convert_fn =
