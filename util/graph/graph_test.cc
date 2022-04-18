@@ -23,7 +23,7 @@ namespace opendrop {
 namespace {
 
 TEST(GraphTest, SimpleConversion) {
-  ComputeGraph graph;
+  GraphBuilder graph;
   graph.DeclareConversion<std::tuple<Monotonic>, std::tuple<Unitary>>(
       "sinusoid", [](std::tuple<Monotonic> in) -> std::tuple<Unitary> {
         return std::tuple<Unitary>(
@@ -39,7 +39,7 @@ TEST(GraphTest, SimpleConversion) {
 }
 
 TEST(GraphTest, SequenceConversion) {
-  ComputeGraph graph;
+  GraphBuilder graph;
   graph.DeclareConversion<std::tuple<Monotonic>, std::tuple<Unitary>>(
       "sinusoid", [](std::tuple<Monotonic> in) -> std::tuple<Unitary> {
         return std::tuple<Unitary>(

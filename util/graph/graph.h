@@ -20,6 +20,7 @@
 
 namespace opendrop {
 
+// Class used to store a particular graph configuration (and its results).
 class Graph {
  public:
   template <typename... InputTypes>
@@ -76,7 +77,7 @@ std::ostream& operator<<(std::ostream& os, const Graph& graph);
 void PrintStack(const std::list<ConversionSearchRecord>& stack,
                 std::string_view prefix = "");
 
-class ComputeGraph {
+class GraphBuilder {
  public:
   template <typename InputTuple, typename OutputTuple>
   void DeclareConversion(

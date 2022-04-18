@@ -10,8 +10,8 @@
 #include "third_party/glm_helper.h"
 #include "util/graph/graph.h"
 #include "util/graph/types/color.h"
-#include "util/graph/types/texture.h"
 #include "util/graph/types/monotonic.h"
+#include "util/graph/types/texture.h"
 #include "util/graph/types/types.h"
 #include "util/graph/types/unitary.h"
 #include "util/graphics/colors.h"
@@ -36,18 +36,18 @@ GraphPreset::GraphPreset(
       composite_program_(composite_program),
       front_render_target_(front_render_target),
       back_render_target_(back_render_target) {
-  compute_graph_.DeclareConversion<std::tuple<Monotonic>, std::tuple<Unitary>>(
+  graph_builder_.DeclareConversion<std::tuple<Monotonic>, std::tuple<Unitary>>(
       "sinusoid", [](std::tuple<Monotonic> in) -> std::tuple<Unitary> {
         return std::tuple<Unitary>(
             Unitary((1.0f + std::cos(std::get<0>(in))) / 2.0f));
       });
-  compute_graph_.DeclareConversion<std::tuple<Unitary>, std::tuple<Color>>(
+  graph_builder_.DeclareConversion<std::tuple<Unitary>, std::tuple<Color>>(
       "color_wheel", [](std::tuple<Unitary> in) -> std::tuple<Color> {
         glm::vec4 color =
             glm::vec4(HsvToRgb(glm::vec3(std::get<0>(in), 1.0f, 1.0f)), 1.0f);
         return std::tuple<Color>(color);
       });
-  compute_graph_.DeclareConversion<std::tuple<Color>, std::tuple<Texture>>(
+  graph_builder_.DeclareConversion<std::tuple<Color>, std::tuple<Texture>>(
       "single_color_texture",
       [this, texture_manager](std::tuple<Color> in) -> std::tuple<Texture> {
         Texture tex(width(), height(), texture_manager);
@@ -62,7 +62,7 @@ GraphPreset::GraphPreset(
         return tex;
       });
 
-  evaluation_graph_ = compute_graph_.Bridge(ConstructTypes<Monotonic>(),
+  evaluation_graph_ = graph_builder_.Bridge(ConstructTypes<Monotonic>(),
                                             ConstructTypes<Texture>());
 }
 

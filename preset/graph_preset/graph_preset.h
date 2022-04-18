@@ -44,7 +44,7 @@ class GraphPreset : public Preset {
   std::vector<glm::vec2> vertices_;
   Rectangle rectangle_;
   Polyline polyline_;
-  ComputeGraph compute_graph_;
+  GraphBuilder graph_builder_;
   Graph evaluation_graph_;
 };
 
