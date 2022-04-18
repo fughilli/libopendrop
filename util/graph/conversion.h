@@ -39,7 +39,7 @@ struct ConversionStorage {
 //     OutputTuple).
 //   + Computes `B = function(A)`.
 template <typename InputTuple, typename OutputTuple>
-static std::function<void(const void*, void*)> ToGenericFunction(
+static std::function<void(const void*, void*)> ConversionToGenericFunction(
     std::function<OutputTuple(InputTuple)> function) {
   return [function](const void* input, void* output) {
     // TODO: Determine if this violates strict aliasing rules. My
@@ -48,6 +48,22 @@ static std::function<void(const void*, void*)> ToGenericFunction(
     auto t_output = reinterpret_cast<OutputTuple*>(output);
     const auto t_input = reinterpret_cast<const InputTuple*>(input);
     *t_output = function(*t_input);
+  };
+}
+
+// Constructs a std::function() that:
+//   + Accepts opaque pointers to buffers of A and B (where A = void, B =
+//     OutputTuple).
+//   + Computes `B = function()`.
+template <typename OutputTuple>
+static std::function<void(const void*, void*)> ProductionToGenericFunction(
+    std::function<OutputTuple()> function) {
+  return [function](const void*, void* output) {
+    // TODO: Determine if this violates strict aliasing rules. My
+    // understanding is that we can use some flag to disable this
+    // requirement.
+    auto t_output = reinterpret_cast<OutputTuple*>(output);
+    *t_output = function();
   };
 }
 
@@ -72,8 +88,23 @@ struct Conversion {
           convert,
       std::tuple<OutputConstructorArgs...>&& output_constructor_args = {})
       : name(name),
-        convert(ToGenericFunction(convert)),
+        convert(ConversionToGenericFunction(convert)),
         input_types(ConstructTypes<InputTupleArgs...>()),
+        output_types(ConstructTypes<OutputTupleArgs...>()),
+        output_storage(
+            std::apply(ConversionStorage<std::tuple<OutputTupleArgs...>>::
+                           template Allocate<OutputConstructorArgs...>,
+                       output_constructor_args)) {}
+
+  // Constructs a `Conversion` which produces a value of type
+  // std::tuple<OutputTupleArgs...>.
+  template <typename... OutputTupleArgs, typename... OutputConstructorArgs>
+  Conversion(
+      std::string name, std::function<std::tuple<OutputTupleArgs...>()> produce,
+      std::tuple<OutputConstructorArgs...>&& output_constructor_args = {})
+      : name(name),
+        convert(ProductionToGenericFunction(produce)),
+        input_types({}),
         output_types(ConstructTypes<OutputTupleArgs...>()),
         output_storage(
             std::apply(ConversionStorage<std::tuple<OutputTupleArgs...>>::
@@ -88,6 +119,15 @@ struct Conversion {
 
     convert(reinterpret_cast<const void*>(&input),
             reinterpret_cast<void*>(output_storage.get()));
+
+    return *this;
+  }
+
+  Conversion& Invoke() {
+    LOG(DEBUG) << "Invoking function";
+    if (!input_types.empty()) LOG(FATAL) << "Input types do not match!";
+
+    convert(nullptr, reinterpret_cast<void*>(output_storage.get()));
 
     return *this;
   }

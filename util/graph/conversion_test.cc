@@ -34,6 +34,16 @@ TEST(ConversionTest, CanInvokeConversion) {
       246.246f, 1e-6f);
 }
 
+TEST(ConversionTest, ProductionConversion) {
+  std::function<std::tuple<float>()> produce_fn = []() -> std::tuple<float> {
+    return std::make_tuple(123.0f);
+  };
+  Conversion production("production", produce_fn);
+
+  EXPECT_NEAR(std::get<0>(production.Invoke().Result<float>()),
+              123.0f, 1e-6f);
+}
+
 constexpr int kDummyTypeValue = 999;
 
 enum ConstructionState {
@@ -80,12 +90,12 @@ TEST(ConversionTest, OutputTypeConstructorAndDestructorAreInvoked) {
 //
 // TEST(ConversionTest, OutputTypeConstructorIsInvokedWithUserArgs) {
 //   construction_state = ConstructionState::kUnconstructed;
-// 
+//
 //   std::function<std::tuple<RaiiType>(std::tuple<int>)> convert_fn =
 //       [](std::tuple<int> in) -> std::tuple<RaiiType> {
 //     return std::tuple<RaiiType>();
 //   };
-// 
+//
 //   ASSERT_EQ(construction_state, ConstructionState::kUnconstructed);
 //   {
 //     Conversion conversion("raii", convert_fn, std::tuple<int>(456));
