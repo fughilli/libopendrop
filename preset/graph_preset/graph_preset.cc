@@ -10,6 +10,7 @@
 #include "third_party/glm_helper.h"
 #include "util/graph/graph.h"
 #include "util/graph/types/color.h"
+#include "util/graph/types/texture.h"
 #include "util/graph/types/monotonic.h"
 #include "util/graph/types/types.h"
 #include "util/graph/types/unitary.h"
@@ -46,9 +47,23 @@ GraphPreset::GraphPreset(
             glm::vec4(HsvToRgb(glm::vec3(std::get<0>(in), 1.0f, 1.0f)), 1.0f);
         return std::tuple<Color>(color);
       });
+  compute_graph_.DeclareConversion<std::tuple<Color>, std::tuple<Texture>>(
+      "single_color_texture",
+      [this, texture_manager](std::tuple<Color> in) -> std::tuple<Texture> {
+        Texture tex(width(), height(), texture_manager);
+
+        auto activation = tex.RenderTarget()->Activate();
+
+        glm::vec4 color = std::get<0>(in);
+
+        glClearColor(color.r, color.g, color.b, color.a);
+        glClear(GL_COLOR_BUFFER_BIT);
+
+        return tex;
+      });
 
   evaluation_graph_ = compute_graph_.Bridge(ConstructTypes<Monotonic>(),
-                                            ConstructTypes<Color>());
+                                            ConstructTypes<Texture>());
 }
 
 absl::StatusOr<std::shared_ptr<Preset>> GraphPreset::MakeShared(
@@ -83,12 +98,11 @@ void GraphPreset::OnDrawFrame(
     absl::Span<const float> samples, std::shared_ptr<GlobalState> state,
     float alpha, std::shared_ptr<gl::GlRenderTarget> output_render_target) {
   evaluation_graph_.Evaluate(std::tuple<Monotonic>(state->energy()));
-  glm::vec4 color = std::get<0>(evaluation_graph_.Result<Color>());
+  Texture tex = std::get<0>(evaluation_graph_.Result<Texture>());
 
   {
     auto output_activation = output_render_target->Activate();
-    glClearColor(color.r, color.g, color.b, color.a);
-    glClear(GL_COLOR_BUFFER_BIT);
+    Blit(tex);
   }
 }
 

@@ -7,6 +7,8 @@
 
 #include "third_party/glm_helper.h"
 #include "util/graph/types/types.h"
+#include "util/graphics/gl_render_target.h"
+#include "util/graphics/gl_texture_manager.h"
 #include "util/logging/logging.h"
 
 namespace opendrop {
@@ -17,6 +19,13 @@ class Texture {
 
   Texture() : width_(0), height_(0) {}
   Texture(size_t width, size_t height) : width_(width), height_(height) {}
+  Texture(size_t width, size_t height,
+          std::shared_ptr<gl::GlTextureManager> texture_manager)
+      : width_(width), height_(height) {
+    render_target_ = std::move(gl::GlRenderTarget::MakeShared(width_, height_,
+                                                              texture_manager))
+                         .value();
+  }
 
   Texture operator-(const Texture& other) const {
     if (width_ != other.width_ || height_ != other.height_)
@@ -39,6 +48,10 @@ class Texture {
   //
   int ActivateRenderContext() { return 0; }
 
+  std::shared_ptr<gl::GlRenderTarget> RenderTarget() const {
+    return render_target_;
+  }
+
   static Texture SolidColor(glm::vec4 color, size_t width, size_t height) {
     // std::vector<glm::vec4> solid(width * height * 4, 0);
     // glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, width, height, GL_BGRA,
@@ -53,7 +66,10 @@ class Texture {
  private:
   glm::vec4 color_ = {};
   size_t width_, height_;
+  std::shared_ptr<gl::GlRenderTarget> render_target_;
 };
+
+void Blit(const Texture& texture);
 
 std::ostream& operator<<(std::ostream& os, const Texture& texture);
 

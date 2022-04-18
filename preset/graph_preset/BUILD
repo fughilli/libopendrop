@@ -20,6 +20,7 @@ cc_library(
         "//util/graph/types",
         "//util/graph/types:color",
         "//util/graph/types:monotonic",
+        "//util/graph/types:texture",
         "//util/graph/types:unitary",
         "//util/graphics:colors",
         "//util/graphics:gl_interface",
