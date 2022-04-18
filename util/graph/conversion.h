@@ -82,7 +82,7 @@ struct Conversion {
 
   template <typename... InputTupleArgs>
   Conversion& Invoke(const std::tuple<InputTupleArgs...>& input) {
-    LOG(INFO) << "Invoking function";
+    LOG(DEBUG) << "Invoking function";
     if (input_types != ConstructTypes<InputTupleArgs...>())
       LOG(FATAL) << "Input types do not match!";
 
@@ -93,7 +93,7 @@ struct Conversion {
   }
 
   Conversion& InvokeOpaque(const std::shared_ptr<uint8_t>& input) {
-    LOG(INFO) << "Invoking function";
+    LOG(DEBUG) << "Invoking function";
     convert(reinterpret_cast<const void*>(input.get()),
             reinterpret_cast<void*>(output_storage.get()));
 
@@ -103,8 +103,8 @@ struct Conversion {
   std::shared_ptr<uint8_t> ResultOpaque() { return output_storage; }
 
   template <typename... OutputTypes>
-  std::tuple<OutputTypes...>& Result() {
-    LOG(INFO) << "Fetching result";
+  const std::tuple<OutputTypes...>& Result() const {
+    LOG(DEBUG) << "Fetching result";
     using OutputTuple = std::tuple<OutputTypes...>;
     if (output_types != ConstructTypes<OutputTypes...>())
       LOG(FATAL) << "Output types do not match!";
@@ -119,19 +119,9 @@ struct Conversion {
   std::shared_ptr<uint8_t> output_storage;
 };
 
-std::ostream& operator<<(std::ostream& os, const Conversion& conversion) {
-  return os << "Conversion(input_types = " << conversion.input_types
-            << ", output_types = " << conversion.output_types << ")";
-}
+std::ostream& operator<<(std::ostream& os, const Conversion& conversion);
 std::ostream& operator<<(std::ostream& os,
-                         const std::shared_ptr<Conversion>& conversion) {
-  if (conversion == nullptr) {
-    LOG(INFO) << "<nullptr>";
-    return os;
-  }
-  LOG(INFO) << "Formatting shared_ptr<Conversion>";
-  return os << *conversion.get();
-}
+                         const std::shared_ptr<Conversion>& conversion);
 
 }  // namespace opendrop
 

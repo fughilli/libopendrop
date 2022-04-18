@@ -17,6 +17,7 @@ std::ostream& operator<<(std::ostream& os, Type type) {
     CASE(Monotonic);
     CASE(Texture);
     CASE(Integer);
+    CASE(Color);
   }
 #undef CASE
   return os;

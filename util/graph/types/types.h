@@ -13,6 +13,7 @@ enum class Type {
   kMonotonic,
   kTexture,
   kInteger,
+  kColor,
 };
 
 // Returns the `Type` value that corresponds to a given actual type.

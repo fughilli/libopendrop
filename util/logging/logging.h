@@ -135,6 +135,13 @@ class _DummyLogger {
   }
 };
 
+template<typename T>
+std::string ToString(const T& t) {
+  std::stringstream ss;
+  ss << t;
+  return ss.str();
+}
+
 #if defined(DISABLE_LOGGING)
 // Logging is disabled. Redirect all log calls to the dummy logger.
 #define LOG(level) _DummyLogger()

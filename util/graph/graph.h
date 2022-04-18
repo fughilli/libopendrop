@@ -14,24 +14,24 @@
 
 #include "absl/strings/str_format.h"
 #include "absl/strings/string_view.h"
-#include "util/graph/types/types.h"
 #include "util/graph/conversion.h"
+#include "util/graph/types/types.h"
 #include "util/logging/logging.h"
 
 namespace opendrop {
 
 class Graph {
  public:
-  template <typename... InputTypes, typename... OutputTypes>
-  void Evaluate(std::tuple<InputTypes...> input,
-                std::tuple<OutputTypes...>& output) {
+  template <typename... InputTypes>
+  void Evaluate(std::tuple<InputTypes...> input) {
     CHECK_NULL(input_node);
-    if (input_node->input_types != ConstructTypes<InputTypes...>())
-      LOG(FATAL) << "Incorrect output type of evaluation";
+    auto input_types = ConstructTypes<InputTypes...>();
+    if (input_node->input_types != input_types)
+      LOG(FATAL) << absl::StrFormat(
+          "Incorrect input type to Evaluate: passed %s, expected %s",
+          ToString(input_types), ToString(input_node->input_types));
 
     CHECK_NULL(output_node);
-    if (output_node->output_types != ConstructTypes<OutputTypes...>())
-      LOG(FATAL) << "Incorrect output type of evaluation";
 
     if (conversions.size() < 1) LOG(FATAL) << "No conversions in graph";
 
@@ -44,15 +44,11 @@ class Graph {
       auto& conversion = conversions[i];
       last_result = conversion->InvokeOpaque(last_result).ResultOpaque();
     }
-    output = output_node->Result<OutputTypes...>();
   }
 
-  template <typename OutputTuple, typename InputTuple>
-  OutputTuple Evaluate(InputTuple input) {
-    LOG(INFO) << "Evaluate(InputTuple)";
-    OutputTuple output;
-    Evaluate(input, output);
-    return output;
+  template <typename... OutputTypes>
+  const std::tuple<OutputTypes...>& Result() const {
+    return output_node->Result<OutputTypes...>();
   }
 
   std::shared_ptr<Conversion> input_node, output_node;
@@ -69,45 +65,16 @@ std::ostream& operator<<(std::ostream& os, std::shared_ptr<T> value) {
 }
 
 std::ostream& operator<<(std::ostream& os,
-                         const std::list<Conversion>& conversions) {
-  for (auto iter = conversions.begin(); iter != conversions.end(); ++iter) {
-    os << *iter << ", ";
-  }
-  return os;
-}
-
+                         const std::list<Conversion>& conversions);
 std::ostream& operator<<(
     std::ostream& os,
-    const std::list<std::shared_ptr<Conversion>>& conversions) {
-  for (auto iter = conversions.begin(); iter != conversions.end(); ++iter) {
-    os << *iter->get() << ", ";
-  }
-  return os;
-}
-
+    const std::list<std::shared_ptr<Conversion>>& conversions);
 std::ostream& operator<<(
     std::ostream& os,
-    const std::vector<std::shared_ptr<Conversion>>& conversions) {
-  for (auto iter = conversions.begin(); iter != conversions.end(); ++iter) {
-    os << *iter->get() << ", ";
-  }
-  return os;
-}
-
-std::ostream& operator<<(std::ostream& os, const Graph& graph) {
-  return os << "Graph(input_node = " << graph.input_node
-            << ", output_node = " << graph.output_node
-            << ", conversions = " << graph.conversions << ")";
-}
-
+    const std::vector<std::shared_ptr<Conversion>>& conversions);
+std::ostream& operator<<(std::ostream& os, const Graph& graph);
 void PrintStack(const std::list<ConversionSearchRecord>& stack,
-                std::string_view prefix = "") {
-  LOG(INFO) << "Printing stack (" << prefix
-            << "): stack.size() = " << stack.size();
-  for (const auto entry : stack) {
-    LOG(INFO) << prefix << entry.first << " -> " << entry.second;
-  }
-}
+                std::string_view prefix = "");
 
 class ComputeGraph {
  public:
@@ -128,10 +95,12 @@ class ComputeGraph {
     return graph;
   }
 
-  Graph BridgeHelper(const std::vector<Type>& input_types,
-                     const std::vector<Type>& output_types) {
-    LOG(INFO) << "BridgeHelper(input_types = " << input_types
-              << ", output_types = " << output_types << ")";
+  // Constructs a graph that transforms `InputTypes` into `OutputTypes`. If no
+  // such transformation is possible, returns `false`.
+  Graph Bridge(const std::vector<Type>& input_types,
+               const std::vector<Type>& output_types) {
+    LOG(DEBUG) << "Bridge(input_types = " << input_types
+               << ", output_types = " << output_types << ")";
     // Very slow brute-force algorithm:
     //
     // 0. Assign S = input_types
@@ -143,13 +112,13 @@ class ComputeGraph {
     // 4. GOTO 1
     std::list<ConversionSearchRecord> stack{};
 
-    PrintStack(stack, "Before init");
+    PrintStack(stack, "Before init: ");
     PrintStack(stack);
 
     auto first_layer = conversions_by_input_[input_types];
     stack.emplace_back(nullptr,
                        std::list(first_layer.begin(), first_layer.end()));
-    PrintStack(stack, "Before loop");
+    PrintStack(stack, "Before loop: ");
 
     do {
       PrintStack(stack, "Loop entry: ");
@@ -167,7 +136,7 @@ class ComputeGraph {
         graph.input_node = graph.conversions.front();
         graph.output_node = graph.conversions.back();
 
-        LOG(INFO) << "SUCCESS! Graph = " << graph;
+        LOG(DEBUG) << "SUCCESS! Graph = " << graph;
         return graph;
       }
 
@@ -188,22 +157,6 @@ class ComputeGraph {
              stack.back().first->output_types != output_types);
 
     return {};
-  }
-
-  // Constructs a graph that transforms `InputTypes` into `OutputTypes`. If no
-  // such transformation is possible, returns `false`.
-  template <typename... InputTypes, typename... OutputTypes>
-  Graph Bridge(const std::tuple<InputTypes...>&, std::tuple<OutputTypes...>&) {
-    const auto input_types = ConstructTypes<InputTypes...>();
-    const auto output_types = ConstructTypes<OutputTypes...>();
-
-    return BridgeHelper(input_types, output_types);
-  }
-
-  template <typename OutputTuple, typename InputTuple>
-  void OrganizeAndEvaluate(InputTuple input, OutputTuple& output) {
-    Graph graph = Bridge(input, output);
-    graph.Evaluate(input, output);
   }
 
  private:

@@ -17,6 +17,7 @@ class Texture {
 
   Texture() : width_(0), height_(0) {}
   Texture(size_t width, size_t height) : width_(width), height_(height) {}
+
   Texture operator-(const Texture& other) const {
     if (width_ != other.width_ || height_ != other.height_)
       LOG(FATAL) << absl::StrFormat(
@@ -47,14 +48,14 @@ class Texture {
     return tex;
   }
 
+  glm::vec4 Color() const { return color_; }
+
  private:
   glm::vec4 color_ = {};
   size_t width_, height_;
 };
 
-std::ostream& operator<<(std::ostream& os, const Texture& texture) {
-  return os << "Texture(<no info>)";
-}
+std::ostream& operator<<(std::ostream& os, const Texture& texture);
 
 }  // namespace opendrop
 

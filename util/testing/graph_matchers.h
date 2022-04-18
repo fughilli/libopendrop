@@ -2,28 +2,32 @@
 #define UTIL_TESTING_GRAPH_MATCHERS_H_
 
 #include "util/graph/graph.h"
-#include "util/math/math.h"
+#include "util/logging/logging.h"
 
 namespace opendrop {
 namespace graph_testing {
-
-template <typename V>
-std::string GraphPrintToString(const V& v) {
-  std::stringstream ss;
-  ss << v;
-  return ss.str();
-}
 
 MATCHER_P2(TextureIsNear, other, epsilon, "") {
   const auto difference = arg - other;
   const float distance = difference.Length();
 
-  if (distance < kEpsilon) return true;
+  if (distance < epsilon) return true;
 
   *result_listener << absl::StrFormat(
-      "\n%s is within %f of\n%s (%f !< %f)\n(a - b) =\n%s",
-      GraphPrintToString(arg), epsilon, GraphPrintToString(other), distance,
-      epsilon, GraphPrintToString(difference));
+      "\n%s is within %f of\n%s (%f !< %f)\n(a - b) =\n%s", ToString(arg),
+      epsilon, ToString(other), distance, epsilon, ToString(difference));
+  return false;
+}
+
+MATCHER_P2(ColorIsNear, other, epsilon, "") {
+  const auto difference = arg - other;
+  const float distance = difference.Length();
+
+  if (distance < epsilon) return true;
+
+  *result_listener << absl::StrFormat(
+      "\n%s is within %f of\n%s (%f !< %f)\n(a - b) =\n%s", ToString(arg),
+      epsilon, ToString(other), distance, epsilon, ToString(difference));
   return false;
 }
 

@@ -8,9 +8,10 @@
 #include "googlemock/include/gmock/gmock.h"
 #include "googletest/include/gtest/gtest.h"
 #include "third_party/gl_helper.h"
+#include "third_party/glm_helper.h"
 #include "util/graph/graph_builtins.h"
+#include "util/graph/types/color.h"
 #include "util/graph/types/monotonic.h"
-#include "util/graph/types/texture.h"
 #include "util/graph/types/types.h"
 #include "util/graph/types/unitary.h"
 #include "util/graphics/colors.h"
@@ -21,26 +22,20 @@
 namespace opendrop {
 namespace {
 
-using ::opendrop::graph_testing::TextureIsNear;
-
 TEST(GraphTest, SimpleConversion) {
   ComputeGraph graph;
   graph.DeclareConversion<std::tuple<Monotonic>, std::tuple<Unitary>>(
       "sinusoid", [](std::tuple<Monotonic> in) -> std::tuple<Unitary> {
-        LOG(INFO) << "sinusoid invoked with arg " << std::get<0>(in);
         return std::tuple<Unitary>(
             Unitary((1.0f + std::sin(std::get<0>(in))) / 2.0f));
-        return std::tuple<Unitary>(Unitary(0));
       });
 
   Graph g = graph.Construct("sinusoid");
 
-  std::tuple<Unitary> out;
-  g.Evaluate(std::make_tuple<Monotonic>(0), out);
-  EXPECT_NEAR(std::get<0>(out), 0.5f, 1e-6f);
-  EXPECT_NEAR(std::get<0>(g.Evaluate<std::tuple<Unitary>>(
-                  std::tuple<Monotonic>(kPi / 2))),
-              1.0f, 1e-6f);
+  g.Evaluate(std::make_tuple<Monotonic>(0));
+  EXPECT_NEAR(std::get<0>(g.Result<Unitary>()), 0.5f, 1e-6f);
+  g.Evaluate(std::make_tuple<Monotonic>(kPi / 2));
+  EXPECT_NEAR(std::get<0>(g.Result<Unitary>()), 1.0f, 1e-6f);
 }
 
 TEST(GraphTest, SequenceConversion) {
@@ -48,39 +43,26 @@ TEST(GraphTest, SequenceConversion) {
   graph.DeclareConversion<std::tuple<Monotonic>, std::tuple<Unitary>>(
       "sinusoid", [](std::tuple<Monotonic> in) -> std::tuple<Unitary> {
         return std::tuple<Unitary>(
-            Unitary((1.0f + std::sin(std::get<0>(in))) / 2.0f));
-        return std::tuple<Unitary>(Unitary(0));
+            Unitary((1.0f + std::cos(std::get<0>(in))) / 2.0f));
       });
-  graph.DeclareConversion<std::tuple<Unitary>, std::tuple<Texture>>(
-      "texture_all_one_color",
-      [](std::tuple<Unitary> in) -> std::tuple<Texture> {
-        Texture t(10, 10);
-        {
-          auto activation = t.ActivateRenderContext();
-          (void)activation;
-          glm::vec4 color =
-              glm::vec4(HsvToRgb(glm::vec3(std::get<0>(in))), 1.0f);
-          gl::GlClear(color);
-        }
-        return std::make_tuple(t);
+  graph.DeclareConversion<std::tuple<Unitary>, std::tuple<Color>>(
+      "color_wheel", [](std::tuple<Unitary> in) -> std::tuple<Color> {
+        glm::vec4 color =
+            glm::vec4(HsvToRgb(glm::vec3(std::get<0>(in), 1.0f, 1.0f)), 1.0f);
+        return std::tuple<Color>(color);
       });
 
-  graph.DeclareConversion<std::tuple<Texture>, std::tuple<int>>(
-      "texture_to_screen", [](std::tuple<Texture> in) -> std::tuple<int> {
-        DrawTextureToScreen(std::get<0>(in));
-        return std::tuple<int>(0);
-      });
+  Graph g = graph.Bridge(ConstructTypes<Monotonic>(), ConstructTypes<Color>());
+  g.Evaluate(std::make_tuple<Monotonic>(0));
 
-  std::tuple<Texture> out({0, 0});
+  EXPECT_THAT(std::get<0>(g.Result<Color>()),
+              graph_testing::ColorIsNear(
+                  Color(glm::vec4(1.0f, 0.0f, 0.0f, 1.0f)), 0.001f));
 
-  graph.OrganizeAndEvaluate(std::make_tuple<Monotonic>(0), out);
-
-  EXPECT_THAT(std::get<0>(out),
-              graph_testing::TextureIsNear(
-                  Texture::SolidColor(glm::vec4(0), 10, 10), 0.001f));
-  // EXPECT_THAT(std::get<0>(graph.Evaluate<std::tuple<Unitary>>(
-  //                 std::tuple<Monotonic>(kPi / 2))),
-  //             TextureIsNear(Texture(1.0f)));
+  g.Evaluate(std::make_tuple<Monotonic>(kPi / 2.0f));
+  EXPECT_THAT(std::get<0>(g.Result<Color>()),
+              graph_testing::ColorIsNear(
+                  Color(glm::vec4(0.0f, 1.0f, 1.0f, 1.0f)), 0.001f));
 }
 
 }  // namespace

@@ -18,6 +18,7 @@ cc_library(
 
 cc_library(
     name = "conversion",
+    srcs = ["conversion.cc"],
     hdrs = ["conversion.h"],
     deps = [
         "//util/graph/types",
@@ -40,6 +41,7 @@ cc_test(
 
 cc_library(
     name = "graph",
+    srcs = ["graph.cc"],
     hdrs = ["graph.h"],
     deps = [
         ":conversion",
@@ -79,6 +81,7 @@ cc_test(
         "//util/graphics:colors",
         "//util/graphics:gl_util",
         "//third_party:gl_helper",
+        "//third_party:glm_helper",
         ":graph",
         "@com_google_absl//absl/strings",
         "@com_googletest//:gtest",
@@ -89,6 +92,6 @@ cc_test(
         "//util/graph/types",
         "//util/graph/types:monotonic",
         "//util/graph/types:unitary",
-        "//util/graph/types:texture",
+        "//util/graph/types:color",
     ] + CROSS_COMPILATION_DEPS,
 )

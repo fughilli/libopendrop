@@ -80,12 +80,12 @@ TEST(ConversionTest, OutputTypeConstructorAndDestructorAreInvoked) {
 //
 // TEST(ConversionTest, OutputTypeConstructorIsInvokedWithUserArgs) {
 //   construction_state = ConstructionState::kUnconstructed;
-//
+// 
 //   std::function<std::tuple<RaiiType>(std::tuple<int>)> convert_fn =
 //       [](std::tuple<int> in) -> std::tuple<RaiiType> {
 //     return std::tuple<RaiiType>();
 //   };
-//
+// 
 //   ASSERT_EQ(construction_state, ConstructionState::kUnconstructed);
 //   {
 //     Conversion conversion("raii", convert_fn, std::tuple<int>(456));

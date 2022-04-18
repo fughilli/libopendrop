@@ -13,6 +13,7 @@ PRESET_DEPS_LIST = [
     "//preset/eye_roll",
     "//preset/cube_wreath",
     "//preset/pills",
+    "//preset/graph_preset",
 ]
 
 cc_library(
@@ -21,9 +22,9 @@ cc_library(
     hdrs = ["preset.h"],
     linkstatic = 1,
     deps = [
+        "//application:global_state",
         "//util/graphics:gl_interface",
         "//util/graphics:gl_render_target",
-        "//application:global_state",
         "@com_google_absl//absl/types:span",
     ],
 )
@@ -45,9 +46,9 @@ cc_library(
     hdrs = ["preset_blender.h"],
     deps = [
         ":preset",
+        "//primitive:rectangle",
         "//shader:blit_fsh",
         "//shader:blit_vsh",
-        "//primitive:rectangle",
         "//util/graphics:gl_util",
         "//util/logging",
         "//util/time:oneshot",

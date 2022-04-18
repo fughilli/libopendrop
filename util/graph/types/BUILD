@@ -19,6 +19,15 @@ cc_library(
 )
 
 cc_library(
+    name = "color",
+    hdrs = ["color.h"],
+    deps = [
+        ":types",
+        "//third_party:glm_helper",
+    ],
+)
+
+cc_library(
     name = "unitary",
     hdrs = ["unitary.h"],
     deps = [
@@ -29,11 +38,13 @@ cc_library(
 
 cc_library(
     name = "texture",
+    srcs = ["texture.cc"],
     hdrs = ["texture.h"],
     deps = [
         ":types",
         "//third_party:glm_helper",
         "//util/logging",
+        "@com_google_absl//absl/strings:str_format",
     ],
 )
 
