@@ -17,6 +17,30 @@ cc_library(
 )
 
 cc_library(
+    name = "tuple",
+    srcs = ["tuple.cc"],
+    hdrs = ["tuple.h"],
+    deps = [
+        "//util/graph/types",
+        "//util/logging",
+        "@com_google_absl//absl/strings",
+    ],
+)
+
+cc_test(
+    name = "tuple_test",
+    srcs = ["tuple_test.cc"],
+    deps = [
+        ":tuple",
+        "@com_googletest//:gtest",
+        "@com_googletest//:gtest_main",
+        "//util/graph/types",
+        "//util/graph/types:monotonic",
+        "//util/graph/types:unitary",
+    ] + CROSS_COMPILATION_DEPS,
+)
+
+cc_library(
     name = "conversion",
     srcs = ["conversion.cc"],
     hdrs = ["conversion.h"],
