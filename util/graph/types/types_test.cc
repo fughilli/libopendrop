@@ -12,13 +12,13 @@
 namespace opendrop {
 namespace {
 
-TEST(GraphTest, ToTypeTest) {
+TEST(TypesTest, ToTypeTest) {
   EXPECT_EQ(ToType<float>(), Type::kFloatGeneric);
   EXPECT_EQ(ToType<Unitary>(), Type::kUnitary);
   EXPECT_EQ(ToType<Monotonic>(), Type::kMonotonic);
 }
 
-TEST(GraphTest, ConstructTypesTest) {
+TEST(TypesTest, ConstructTypesTest) {
   EXPECT_THAT(ConstructTypesFromTuple(std::tuple<>()), ::testing::IsEmpty());
   EXPECT_THAT(ConstructTypesFromTuple(std::tuple<Monotonic, Unitary>()),
               ::testing::ElementsAre(Type::kMonotonic, Type::kUnitary));

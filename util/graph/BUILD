@@ -17,9 +17,32 @@ cc_library(
 )
 
 cc_library(
+    name = "conversion",
+    hdrs = ["conversion.h"],
+    deps = [
+        "//util/graph/types",
+        "//util/logging",
+    ],
+)
+
+cc_test(
+    name = "conversion_test",
+    srcs = ["conversion_test.cc"],
+    deps = [
+        ":conversion",
+        "@com_googletest//:gtest",
+        "@com_googletest//:gtest_main",
+        "//util/graph/types",
+        "//util/graph/types:monotonic",
+        "//util/graph/types:unitary",
+    ] + CROSS_COMPILATION_DEPS,
+)
+
+cc_library(
     name = "graph",
     hdrs = ["graph.h"],
     deps = [
+        ":conversion",
         "//third_party:gl_helper",
         "//util/graph/types",
         "//util/logging",

@@ -23,27 +23,6 @@ namespace {
 
 using ::opendrop::graph_testing::TextureIsNear;
 
-TEST(GraphTest, CanConstructConversion) {
-  std::function<std::tuple<float>(std::tuple<float>)> convert_fn =
-      [](std::tuple<float> in) -> std::tuple<float> {
-    return std::make_tuple(std::get<0>(in));
-  };
-  auto conversion = std::make_shared<Conversion>("foobar", convert_fn);
-}
-
-TEST(GraphTest, CanInvokeConversion) {
-  std::function<std::tuple<float>(std::tuple<float>)> convert_fn =
-      [](std::tuple<float> in) -> std::tuple<float> {
-    return std::make_tuple(std::get<0>(in) * 2);
-  };
-  auto conversion = std::make_shared<Conversion>("times2", convert_fn);
-
-  EXPECT_NEAR(
-      std::get<0>(
-          conversion->Invoke(std::tuple<float>(123.123f)).Result<float>()),
-      246.246f, 1e-6f);
-}
-
 TEST(GraphTest, SimpleConversion) {
   ComputeGraph graph;
   graph.DeclareConversion<std::tuple<Monotonic>, std::tuple<Unitary>>(
