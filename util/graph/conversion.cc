@@ -8,9 +8,9 @@
 namespace opendrop {
 
 std::ostream& operator<<(std::ostream& os, const Conversion& conversion) {
-  return os << absl::StrFormat(
-             "[%s -> %s]",
-             ToString(conversion.input_types), ToString(conversion.output_types));
+  return os << absl::StrFormat("[%s -> %s]",
+                               ToString(conversion.InputTypes()),
+                               ToString(conversion.OutputTypes()));
 }
 std::ostream& operator<<(std::ostream& os,
                          const std::shared_ptr<Conversion>& conversion) {

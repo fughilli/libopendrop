@@ -15,6 +15,7 @@
 #include "absl/strings/str_format.h"
 #include "absl/strings/string_view.h"
 #include "util/graph/conversion.h"
+#include "util/graph/tuple.h"
 #include "util/graph/types/types.h"
 #include "util/logging/logging.h"
 
@@ -27,10 +28,10 @@ class Graph {
   void Evaluate(std::tuple<InputTypes...> input) {
     CHECK_NULL(input_node);
     auto input_types = ConstructTypes<InputTypes...>();
-    if (input_node->input_types != input_types)
+    if (input_node->InputTypes() != input_types)
       LOG(FATAL) << absl::StrFormat(
           "Incorrect input type to Evaluate: passed %s, expected %s",
-          ToString(input_types), ToString(input_node->input_types));
+          ToString(input_types), ToString(input_node->InputTypes()));
 
     CHECK_NULL(output_node);
 
@@ -40,7 +41,7 @@ class Graph {
       LOG(FATAL) << "Graph incorrectly constructed";
 
     input_node->Invoke(input);
-    std::shared_ptr<uint8_t> last_result = conversions.front()->output_storage;
+    OpaqueTuple last_result = conversions.front()->output_tuple;
     for (int i = 1; i < conversions.size(); ++i) {
       auto& conversion = conversions[i];
       last_result = conversion->InvokeOpaque(last_result).ResultOpaque();
@@ -48,7 +49,7 @@ class Graph {
   }
 
   template <typename... OutputTypes>
-  const std::tuple<OutputTypes...>& Result() const {
+  std::tuple<OutputTypes...> Result() const {
     return output_node->Result<OutputTypes...>();
   }
 
@@ -127,7 +128,7 @@ class GraphBuilder {
 
       // If the topmost conversion at the top of the stack converts to the
       // target types, then construct the graph and return it.
-      if (stack.back().second.back()->output_types == output_types) {
+      if (stack.back().second.back()->OutputTypes() == output_types) {
         Graph graph;
         for (auto entry : stack) {
           if (entry.first == nullptr) continue;
@@ -149,13 +150,13 @@ class GraphBuilder {
 
       auto conversion = stack.back().second.back();
       stack.back().second.pop_back();
-      auto next_conversions = conversions_by_input_[conversion->output_types];
+      auto next_conversions = conversions_by_input_[conversion->OutputTypes()];
       stack.push_back(std::make_tuple(
           conversion,
           std::list(next_conversions.begin(), next_conversions.end())));
 
     } while (stack.back().first == nullptr ||
-             stack.back().first->output_types != output_types);
+             stack.back().first->OutputTypes() != output_types);
 
     return {};
   }
@@ -168,15 +169,15 @@ class GraphBuilder {
 
     conversions_by_name_[conversion->name] = conversion;
 
-    if (conversions_by_input_.find(conversion->input_types) ==
+    if (conversions_by_input_.find(conversion->InputTypes()) ==
         conversions_by_input_.end())
-      conversions_by_input_[conversion->input_types] = {};
-    if (conversions_by_output_.find(conversion->output_types) ==
+      conversions_by_input_[conversion->InputTypes()] = {};
+    if (conversions_by_output_.find(conversion->OutputTypes()) ==
         conversions_by_output_.end())
-      conversions_by_output_[conversion->output_types] = {};
+      conversions_by_output_[conversion->OutputTypes()] = {};
 
-    conversions_by_input_[conversion->input_types].push_back(conversion);
-    conversions_by_output_[conversion->output_types].push_back(conversion);
+    conversions_by_input_[conversion->InputTypes()].push_back(conversion);
+    conversions_by_output_[conversion->OutputTypes()].push_back(conversion);
   }
   using ConversionVector = std::vector<std::shared_ptr<Conversion>>;
 

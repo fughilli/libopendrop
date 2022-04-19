@@ -102,6 +102,26 @@ using:
 
 The compiler for the tests can be changed with `-c` as above.
 
+### Sanitizers
+
+[AddressSanitizer](https://clang.llvm.org/docs/AddressSanitizer.html) and
+[MemorySanitizer](https://clang.llvm.org/docs/MemorySanitizer.html)
+configurations are also available. Pass `--config=msan` or `--config=asan`:
+
+```
+./run_libopendrop.sh -t --config=asan
+```
+
+To get symbolized output from the sanitizers, Clang needs to know where to find
+[`llvm-symbolizer`](https://llvm.org/docs/CommandGuide/llvm-symbolizer.html).
+[On some distributions this binary has a numerical prefix](https://stackoverflow.com/questions/24399485/clang-memory-sanitizer-how-to-make-it-print-source-line-numbers),
+e.g. `llvm-symbolizer-10`. Adding a symlink somewhere on `PATH` with the
+canonical name fixes this:
+
+```
+sudo ln -s /usr/bin/llvm-symbolizer-10 /usr/bin/llvm-symbolizer
+```
+
 ## Preset Authoring
 
 ---

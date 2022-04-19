@@ -6,64 +6,45 @@
 #include <ostream>
 #include <tuple>
 
+#include "util/graph/tuple.h"
 #include "util/graph/types/types.h"
 #include "util/logging/logging.h"
 
 namespace opendrop {
 
-// Deletes an object of type `T` and frees the associated memory.
-template <typename T>
-void DestructAndFree(void* ptr) {
-  delete reinterpret_cast<T*>(ptr);
-}
-
-// Convenience interface for constructing storage for an object of type `T`.
-template <typename T>
-struct ConversionStorage {
-  constexpr static size_t alignment = alignof(T);
-  constexpr static size_t size = sizeof(T);
-
-  // Allocates memory with correct alignment for storing an object of type `T`
-  // and invokes the constructor on it, forwarding any constructor arguments.
-  template <typename... Args>
-  static std::shared_ptr<uint8_t> Allocate(Args&&... args) {
-    uint8_t* memory =
-        reinterpret_cast<uint8_t*>(std::aligned_alloc(alignment, size));
-    new (memory) T(std::forward<Args>(args)...);
-    return std::shared_ptr<uint8_t>(memory, DestructAndFree<T>);
-  }
-};
-
 // Constructs a std::function() that:
-//   + Accepts opaque pointers to buffers of A and B (where A = InputTuple, B =
-//     OutputTuple).
+//   + Accepts `OpaqueTuple`s A and B (where A contains types InputTypes, and B
+//   is assignable from OutputTuple).
 //   + Computes `B = function(A)`.
-template <typename InputTuple, typename OutputTuple>
-static std::function<void(const void*, void*)> ConversionToGenericFunction(
-    std::function<OutputTuple(InputTuple)> function) {
-  return [function](const void* input, void* output) {
+template <typename... InputTypes, typename OutputTuple>
+static std::function<void(OpaqueTuple&, OpaqueTuple&)>
+ConversionToOpaqueFunction(
+    std::function<OutputTuple(std::tuple<InputTypes...>)> function) {
+  return [function](OpaqueTuple& input, OpaqueTuple& output) {
     // TODO: Determine if this violates strict aliasing rules. My
     // understanding is that we can use some flag to disable this
     // requirement.
-    auto t_output = reinterpret_cast<OutputTuple*>(output);
-    const auto t_input = reinterpret_cast<const InputTuple*>(input);
-    *t_output = function(*t_input);
+    output.AssignFrom(function(input.ToRefTuple<InputTypes...>()));
   };
 }
 
 // Constructs a std::function() that:
-//   + Accepts opaque pointers to buffers of A and B (where A = void, B =
-//     OutputTuple).
+//   + Accepts `OpaqueTuple` B (where B is assignable from OutputTuple).
 //   + Computes `B = function()`.
 template <typename OutputTuple>
-static std::function<void(const void*, void*)> ProductionToGenericFunction(
+static std::function<void(OpaqueTuple&)> ProductionToOpaqueFunction(
     std::function<OutputTuple()> function) {
-  return [function](const void*, void* output) {
-    // TODO: Determine if this violates strict aliasing rules. My
-    // understanding is that we can use some flag to disable this
-    // requirement.
-    auto t_output = reinterpret_cast<OutputTuple*>(output);
-    *t_output = function();
+  return [function](OpaqueTuple& output) { output.AssignFrom(function()); };
+}
+
+// Constructs a std::function() that:
+//   + Accepts `OpaqueTuple` A (where A contains types InputTypes).
+//   + Computes `function(A)`.
+template <typename... InputTypes>
+static std::function<void(OpaqueTuple&)> ConsumptionToOpaqueFunction(
+    std::function<void(std::tuple<InputTypes...>)> function) {
+  return [function](OpaqueTuple& input) {
+    function(input.ToRefTuple<InputTypes...>());
   };
 }
 
@@ -76,7 +57,7 @@ struct Conversion {
   // Determines whether or not this Conversion can produce an output
   // compatible with the input of `other`.
   bool CanOutputTo(const Conversion& other) {
-    return other.input_types == output_types;
+    return other.InputTypes() == OutputTypes();
   }
 
   template <typename... InputTupleArgs, typename... OutputTupleArgs,
@@ -88,13 +69,11 @@ struct Conversion {
           convert,
       std::tuple<OutputConstructorArgs...>&& output_constructor_args = {})
       : name(name),
-        convert(ConversionToGenericFunction(convert)),
-        input_types(ConstructTypes<InputTupleArgs...>()),
-        output_types(ConstructTypes<OutputTupleArgs...>()),
-        output_storage(
-            std::apply(ConversionStorage<std::tuple<OutputTupleArgs...>>::
-                           template Allocate<OutputConstructorArgs...>,
-                       output_constructor_args)) {}
+        convert(ConversionToOpaqueFunction(convert)),
+        input_factory(OpaqueTupleFactory::FromTypes<InputTupleArgs...>()),
+        output_factory(OpaqueTupleFactory::FromTypes<OutputTupleArgs...>()),
+        input_tuple(input_factory.Construct()),
+        output_tuple(output_factory.Construct()) {}
 
   // Constructs a `Conversion` which produces a value of type
   // std::tuple<OutputTupleArgs...>.
@@ -103,60 +82,74 @@ struct Conversion {
       std::string name, std::function<std::tuple<OutputTupleArgs...>()> produce,
       std::tuple<OutputConstructorArgs...>&& output_constructor_args = {})
       : name(name),
-        convert(ProductionToGenericFunction(produce)),
-        input_types({}),
-        output_types(ConstructTypes<OutputTupleArgs...>()),
-        output_storage(
-            std::apply(ConversionStorage<std::tuple<OutputTupleArgs...>>::
-                           template Allocate<OutputConstructorArgs...>,
-                       output_constructor_args)) {}
+        produce(ProductionToOpaqueFunction(produce)),
+        input_factory(OpaqueTupleFactory::FromEmpty()),
+        output_factory(OpaqueTupleFactory::FromTypes<OutputTupleArgs...>()),
+        input_tuple(input_factory.Construct()),
+        output_tuple(output_factory.Construct()) {}
 
   template <typename... InputTupleArgs>
   Conversion& Invoke(const std::tuple<InputTupleArgs...>& input) {
     LOG(DEBUG) << "Invoking function";
-    if (input_types != ConstructTypes<InputTupleArgs...>())
-      LOG(FATAL) << "Input types do not match!";
 
-    convert(reinterpret_cast<const void*>(&input),
-            reinterpret_cast<void*>(output_storage.get()));
+    input_tuple.AssignFrom(input);
+
+    if (output_factory.Types().empty())
+      consume(input_tuple);
+    else
+      convert(input_tuple, output_tuple);
 
     return *this;
   }
 
   Conversion& Invoke() {
     LOG(DEBUG) << "Invoking function";
-    if (!input_types.empty()) LOG(FATAL) << "Input types do not match!";
-
-    convert(nullptr, reinterpret_cast<void*>(output_storage.get()));
-
+    if (!input_factory.Types().empty())
+      LOG(FATAL) << "Input types do not match!";
+    produce(output_tuple);
     return *this;
   }
 
-  Conversion& InvokeOpaque(const std::shared_ptr<uint8_t>& input) {
+  Conversion& InvokeOpaque(OpaqueTuple& input) {
     LOG(DEBUG) << "Invoking function";
-    convert(reinterpret_cast<const void*>(input.get()),
-            reinterpret_cast<void*>(output_storage.get()));
-
+    convert(input, output_tuple);
     return *this;
   }
 
-  std::shared_ptr<uint8_t> ResultOpaque() { return output_storage; }
+  Conversion& InvokeOpaque(OpaqueTuple& input, OpaqueTuple& output) {
+    LOG(DEBUG) << "Invoking function";
+    convert(input, output);
+    return *this;
+  }
+
+  OpaqueTuple& ResultOpaque() { return output_tuple; }
 
   template <typename... OutputTypes>
-  const std::tuple<OutputTypes...>& Result() const {
+  const std::tuple<OutputTypes...> Result() const {
     LOG(DEBUG) << "Fetching result";
     using OutputTuple = std::tuple<OutputTypes...>;
-    if (output_types != ConstructTypes<OutputTypes...>())
+    if (output_factory.Types() != ConstructTypes<OutputTypes...>())
       LOG(FATAL) << "Output types do not match!";
-    return *reinterpret_cast<OutputTuple*>(output_storage.get());
+    return output_tuple.ToTuple<OutputTypes...>();
+  }
+
+  const std::vector<Type>& InputTypes() const { return input_factory.Types(); }
+  const std::vector<Type>& OutputTypes() const {
+    return output_factory.Types();
   }
 
   std::string name;
-  std::function<void(const void*, void*)> convert;
-  std::vector<Type> input_types;
-  std::vector<Type> output_types;
+  std::function<void(OpaqueTuple&, OpaqueTuple&)> convert = nullptr;
+  std::function<void(OpaqueTuple&)> produce = nullptr;
+  std::function<void(OpaqueTuple&)> consume = nullptr;
 
-  std::shared_ptr<uint8_t> output_storage;
+  OpaqueTupleFactory input_factory;
+  OpaqueTupleFactory output_factory;
+
+  // Storage for native invocations. For invocations in a graph, dedicated
+  // storage shall be collected from the factories.
+  OpaqueTuple input_tuple;
+  OpaqueTuple output_tuple;
 };
 
 std::ostream& operator<<(std::ostream& os, const Conversion& conversion);

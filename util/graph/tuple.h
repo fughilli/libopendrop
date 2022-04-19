@@ -80,12 +80,31 @@ class OpaqueTuple {
     return opaque_tuple;
   }
 
-  // Accesses the element of type `T` at `index`. If the requested type is does
-  // not match the stored value, or if the index is out of bounds, LOG(FATAL)s.
+  // Accesses the element of type `T` at `index` by reference. If the requested
+  // type does not match the stored value, or if the index is out of bounds,
+  // LOG(FATAL)s.
   template <typename T>
-  T& Get(int index) {
+  T& Ref(int index) const {
     CheckIndex(index);
-    Cell& cell = cells_[index];
+    const Cell& cell = cells_[index];
+    if (cell.type != ToType<T>())
+      LOG(FATAL) << absl::StrFormat(
+          "requesting incorrect type (T = %s) for cell %d of type %s",
+          ToString(ToType<T>()), index, ToString(cell.type));
+    if (cell.buffer == nullptr)
+      LOG(FATAL) << absl::StrFormat("value in cell %d of type %s is nullptr",
+                                    index, ToString(cell.type));
+
+    return *reinterpret_cast<T*>(cell.buffer.get());
+  }
+
+  // Returns the element of type `T` at `index` by value. If the requested type
+  // does not match the stored value, or if the index is out of bounds,
+  // LOG(FATAL)s.
+  template <typename T>
+  T Get(int index) const {
+    CheckIndex(index);
+    const Cell& cell = cells_[index];
     if (cell.type != ToType<T>())
       LOG(FATAL) << absl::StrFormat(
           "requesting incorrect type (T = %s) for cell %d of type %s",
@@ -110,12 +129,25 @@ class OpaqueTuple {
   void AssignFrom(std::tuple<Ts...>& tuple) {
     AssignFromImpl<0, std::tuple<Ts...>, Ts...>(tuple);
   }
+  template <typename... Ts>
+  void AssignFrom(const std::tuple<Ts...>& tuple) {
+    AssignFromImpl<0, std::tuple<Ts...>, Ts...>(tuple);
+  }
+
+  // Returns an std::tuple of the contained values in this OpaqueTuple. The
+  // values in the tuple are copy-constructed from the values contained in the
+  // OpaqueTuple.
+  template <typename... Ts,
+            typename Indices = std::make_index_sequence<sizeof...(Ts)>>
+  std::tuple<Ts...> ToTuple() const {
+    return ToTupleImpl<Ts...>(Indices{});
+  }
 
   // Returns an std::tuple of references to the contained values in this
   // OpaqueTuple.
   template <typename... Ts,
             typename Indices = std::make_index_sequence<sizeof...(Ts)>>
-  std::tuple<Ts...> ToRefTuple() {
+  std::tuple<Ts...> ToRefTuple() const {
     return ToRefTupleImpl<Ts...>(Indices{});
   }
 
@@ -142,6 +174,19 @@ class OpaqueTuple {
     cell.buffer = target_cell.buffer;
   }
 
+  // Reassigns all cells of this OpaqueTuple to the corresponding cells in
+  // `target`. If the two tuples are incompatible, LOG(FATAL)s.
+  void Alias(OpaqueTuple& target) {
+    if (Types() != target.Types())
+      LOG(FATAL) << absl::StrFormat(
+          "attempting to alias an incompatible target (%s != %s)",
+          ToString(Types()), ToString(target.Types()));
+
+    for (int i = 0; i < Types().size(); ++i) {
+      cells_[i].buffer = target.cells_[i].buffer;
+    }
+  }
+
  private:
   OpaqueTuple() = default;
 
@@ -152,7 +197,7 @@ class OpaqueTuple {
   };
 
   // Checks whether or not an index is valid. LOG(FATAL)s if it is not.
-  void CheckIndex(int index) {
+  void CheckIndex(int index) const {
     if (index < 0 || index >= cells_.size())
       LOG(FATAL) << absl::StrFormat(
           "index out of bounds (index = %d; cells_.size() = %d)", index,
@@ -185,13 +230,18 @@ class OpaqueTuple {
   }
   template <size_t index, typename TupleType, typename T1>
   void AssignFromImpl(TupleType tuple) {
-    Get<T1>(index) = std::get<index>(tuple);
+    Ref<T1>(index) = std::get<index>(tuple);
   }
 
   // Implementation for ToRefTuple<Ts...>().
   template <typename... Ts, size_t... I>
-  std::tuple<Ts...> ToRefTupleImpl(std::index_sequence<I...>) {
-    return std::tuple<Ts...>(Get<std::remove_reference_t<Ts>>(I)...);
+  std::tuple<Ts...> ToRefTupleImpl(std::index_sequence<I...>) const {
+    return std::tuple<Ts...>(Ref<std::remove_reference_t<Ts>>(I)...);
+  }
+  // Implementation for ToTuple<Ts...>().
+  template <typename... Ts, size_t... I>
+  std::tuple<Ts...> ToTupleImpl(std::index_sequence<I...>) const {
+    return std::tuple<Ts...>(Get<Ts>(I)...);
   }
 
   // Storage of all elements of OpaqueTuple.
@@ -203,6 +253,8 @@ class OpaqueTuple {
 
 class OpaqueTupleFactory {
  public:
+  static OpaqueTupleFactory FromEmpty() { return {}; }
+
   // Constructs an OpaqueTupleFactory which produces OpaqueTuple of the
   // specified types.
   template <typename... Ts>
@@ -232,6 +284,8 @@ class OpaqueTupleFactory {
     return OpaqueTuple::FromTypesAndMemory(types_and_memory);
   }
 
+  const std::vector<Type>& Types() const { return types_; }
+
  private:
   OpaqueTupleFactory() = default;
 
@@ -256,21 +310,6 @@ class OpaqueTupleFactory {
   std::vector<Type> types_{};
   std::vector<AllocatorType> allocators_{};
 };
-
-// Constructs a std::function() that:
-//   + Accepts `OpaqueTuple`s A and B (where A contains types InputTypes, and B
-//   is assignable from OutputTuple).
-//   + Computes `B = function(A)`.
-template <typename... InputTypes, typename OutputTuple>
-static std::function<void(OpaqueTuple&, OpaqueTuple&)> ToOpaqueFunction(
-    std::function<OutputTuple(std::tuple<InputTypes...>)> function) {
-  return [function](OpaqueTuple& input, OpaqueTuple& output) {
-    // TODO: Determine if this violates strict aliasing rules. My
-    // understanding is that we can use some flag to disable this
-    // requirement.
-    output.AssignFrom(function(input.ToRefTuple<InputTypes...>()));
-  };
-}
 
 }  // namespace opendrop
 

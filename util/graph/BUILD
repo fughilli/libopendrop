@@ -45,6 +45,7 @@ cc_library(
     srcs = ["conversion.cc"],
     hdrs = ["conversion.h"],
     deps = [
+        ":tuple",
         "//util/graph/types",
         "//util/logging",
     ],
@@ -68,6 +69,7 @@ cc_library(
     srcs = ["graph.cc"],
     hdrs = ["graph.h"],
     deps = [
+      ":tuple",
         ":conversion",
         "//third_party:gl_helper",
         "//util/graph/types",

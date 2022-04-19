@@ -23,6 +23,7 @@ build:asan --copt -fsanitize=address
 build:asan --copt -DADDRESS_SANITIZER
 build:asan --copt -O1
 build:asan --copt -g
+build:asan --copt -ggdb
 build:asan --copt -fno-omit-frame-pointer
 build:asan --linkopt -fsanitize=address
 
@@ -33,6 +34,7 @@ test:asan --copt -fsanitize=address
 test:asan --copt -DADDRESS_SANITIZER
 test:asan --copt -O1
 test:asan --copt -g
+test:asan --copt -ggdb
 test:asan --copt -fno-omit-frame-pointer
 test:asan --linkopt -fsanitize=address
 
@@ -44,6 +46,7 @@ build:msan --copt -fsanitize=memory
 build:msan --copt -DMEMORY_SANITIZER
 build:msan --copt -O1
 build:msan --copt -g
+build:msan --copt -ggdb
 build:msan --copt -fno-omit-frame-pointer
 build:msan --linkopt -fsanitize=memory
 
@@ -54,5 +57,6 @@ test:msan --copt -fsanitize=memory
 test:msan --copt -DMEMORY_SANITIZER
 test:msan --copt -O1
 test:msan --copt -g
+test:msan --copt -ggdb
 test:msan --copt -fno-omit-frame-pointer
 test:msan --linkopt -fsanitize=memory
