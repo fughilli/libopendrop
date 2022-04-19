@@ -12,6 +12,7 @@
 #include "primitive/rectangle.h"
 #include "third_party/glm_helper.h"
 #include "util/graph/graph.h"
+#include "imgui_node_editor.h"
 
 namespace opendrop {
 
@@ -21,6 +22,8 @@ class GraphPreset : public Preset {
       std::shared_ptr<gl::GlTextureManager> texture_manager);
 
   std::string name() const override { return "GraphPreset"; }
+
+  ~GraphPreset() override;
 
  protected:
   GraphPreset(std::shared_ptr<gl::GlProgram> warp_program,
@@ -46,6 +49,8 @@ class GraphPreset : public Preset {
   Polyline polyline_;
   GraphBuilder graph_builder_;
   Graph evaluation_graph_;
+
+  ax::NodeEditor::EditorContext* editor_context_;
 };
 
 }  // namespace opendrop

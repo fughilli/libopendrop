@@ -69,8 +69,8 @@ cc_library(
     srcs = ["graph.cc"],
     hdrs = ["graph.h"],
     deps = [
-      ":tuple",
         ":conversion",
+        ":tuple",
         "//third_party:gl_helper",
         "//util/graph/types",
         "//util/logging",
@@ -120,4 +120,16 @@ cc_test(
         "//util/graph/types:unitary",
         "//util/graph/types:color",
     ] + CROSS_COMPILATION_DEPS,
+)
+
+cc_library(
+    name = "rendering",
+    srcs = ["rendering.cc"],
+    hdrs = ["rendering.h"],
+    deps = [
+        ":conversion",
+        ":graph",
+        "@imgui_node_editor",
+        "@imgui",
+    ],
 )

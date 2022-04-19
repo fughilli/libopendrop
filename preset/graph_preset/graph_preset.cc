@@ -9,6 +9,7 @@
 #include "third_party/gl_helper.h"
 #include "third_party/glm_helper.h"
 #include "util/graph/graph.h"
+#include "util/graph/rendering.h"
 #include "util/graph/types/color.h"
 #include "util/graph/types/monotonic.h"
 #include "util/graph/types/texture.h"
@@ -64,7 +65,13 @@ GraphPreset::GraphPreset(
 
   evaluation_graph_ = graph_builder_.Bridge(ConstructTypes<Monotonic>(),
                                             ConstructTypes<Texture>());
+
+  ax::NodeEditor::Config config{};
+  config.SettingsFile = "graph_nodes.json";
+  editor_context_ = ax::NodeEditor::CreateEditor(&config);
 }
+
+GraphPreset::~GraphPreset() { ax::NodeEditor::DestroyEditor(editor_context_); }
 
 absl::StatusOr<std::shared_ptr<Preset>> GraphPreset::MakeShared(
     std::shared_ptr<gl::GlTextureManager> texture_manager) {
@@ -97,6 +104,10 @@ void GraphPreset::OnUpdateGeometry() {
 void GraphPreset::OnDrawFrame(
     absl::Span<const float> samples, std::shared_ptr<GlobalState> state,
     float alpha, std::shared_ptr<gl::GlRenderTarget> output_render_target) {
+  ImGui::Begin("Graph Viewer", nullptr, ImGuiWindowFlags_NoScrollbar);
+  RenderGraph(editor_context_, evaluation_graph_);
+  ImGui::End();
+
   evaluation_graph_.Evaluate(std::tuple<Monotonic>(state->energy()));
   Texture tex = std::get<0>(evaluation_graph_.Result<Texture>());
 

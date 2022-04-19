@@ -17,6 +17,7 @@ cc_library(
         "//third_party:gl_helper",
         "//third_party:glm_helper",
         "//util/graph",
+        "//util/graph:rendering",
         "//util/graph/types",
         "//util/graph/types:color",
         "//util/graph/types:monotonic",
@@ -28,6 +29,8 @@ cc_library(
         "//util/graphics:gl_util",
         "//util/logging",
         "//util/status:status_macros",
+        "@imgui",
+        "@imgui_node_editor",
     ],
 )
 

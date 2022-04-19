@@ -115,3 +115,11 @@ git_repository(
     remote = "https://github.com/fughilli/fix_guards",
     shallow_since = "1648239566 -0700",
 )
+
+new_git_repository(
+    name = "imgui_node_editor",
+    branch = "master",
+    build_file = "@//third_party:imgui_node_editor.BUILD",
+    init_submodules = True,
+    remote = "https://github.com/fughilli/imgui-node-editor",
+)
