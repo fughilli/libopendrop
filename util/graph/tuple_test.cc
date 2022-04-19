@@ -16,11 +16,8 @@ namespace {
 TEST(TupleTest, CanConstructOpaqueTuple) {
   auto opaque_tuple = OpaqueTuple::FromTypes<Unitary, Monotonic>();
 
-  EXPECT_THAT(opaque_tuple.types,
+  EXPECT_THAT(opaque_tuple.Types(),
               ::testing::ElementsAre(Type::kUnitary, Type::kMonotonic));
-  EXPECT_EQ(opaque_tuple.cells.size(), 2);
-  EXPECT_EQ(opaque_tuple.cells[0].type, Type::kUnitary);
-  EXPECT_EQ(opaque_tuple.cells[1].type, Type::kMonotonic);
 }
 
 TEST(TupleTest, CanStoreInOpaqueTuple) {
