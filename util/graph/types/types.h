@@ -31,10 +31,14 @@ Type ToType();
 // Returns `Type::kInteger`.
 template <>
 Type ToType<int>();
+template <>
+Type ToType<int&>();
 
 // Returns `Type::kFloat`.
 template <>
 Type ToType<float>();
+template <>
+Type ToType<float&>();
 
 namespace types_internal {
 template <typename First>
@@ -94,7 +98,7 @@ std::ostream& operator<<(std::ostream& os, const std::list<Type>& types);
 
 template <typename T>
 Type ToType() {
-  return T::kType;
+  return std::remove_reference_t<T>::kType;
 }
 
 template <typename Arg, typename... Args>

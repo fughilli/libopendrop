@@ -4,6 +4,8 @@
 #include <stdint.h>
 
 #include <memory>
+#include <type_traits>
+#include <utility>
 
 #include "absl/strings/str_format.h"
 #include "util/graph/types/types.h"
@@ -24,7 +26,7 @@ struct TupleStorage {
   constexpr static size_t size = sizeof(T);
 
   // Allocates memory with correct alignment for storing an object of type `T`
-  // and invokes the constructor on it, forwarding any constructor arguments.
+  // and invokes the ructor on it, forwarding any ructor arguments.
   template <typename... Args>
   static std::shared_ptr<uint8_t> Allocate(Args&&... args) {
     uint8_t* memory =
@@ -76,22 +78,51 @@ struct OpaqueTuple {
 
     return *reinterpret_cast<T*>(cell.buffer.get());
   }
+
+  template <size_t index, typename TupleType, typename T1, typename T2,
+            typename... Ts>
+  void AssignFromHelper(TupleType tuple) {
+    AssignFromHelper<index, TupleType, T1>(tuple);
+    AssignFromHelper<index + 1, TupleType, T2, Ts...>(tuple);
+  }
+  template <size_t index, typename TupleType, typename T1>
+  void AssignFromHelper(TupleType tuple) {
+    Get<T1>(index) = std::get<index>(tuple);
+  }
+
+  template <typename... Ts>
+  void AssignFrom(std::tuple<Ts...>&& tuple) {
+    AssignFromHelper<0, std::tuple<Ts...>, Ts...>(tuple);
+  }
+  template <typename... Ts>
+  void AssignFrom(std::tuple<Ts...>& tuple) {
+    AssignFromHelper<0, std::tuple<Ts...>, Ts...>(tuple);
+  }
+
+  template <typename... Ts, size_t... I>
+  std::tuple<Ts...> ToTupleImpl(std::index_sequence<I...>) {
+    return std::tuple<Ts...>(Get<std::remove_reference_t<Ts>>(I)...);
+  }
+
+  template <typename... Ts,
+            typename Indices = std::make_index_sequence<sizeof...(Ts)>>
+  std::tuple<Ts...> ToTuple() {
+    return ToTupleImpl<Ts...>(Indices{});
+  }
 };
 
 // Constructs a std::function() that:
 //   + Accepts opaque pointers to buffers of A and B (where A = InputTuple, B =
 //     OutputTuple).
 //   + Computes `B = function(A)`.
-template <typename InputTuple, typename OutputTuple>
-static std::function<void(const OpaqueTuple&, OpaqueTuple&)> ToOpaqueFunction(
-    std::function<OutputTuple(InputTuple)> function) {
-  return [function](const OpaqueTuple& input, OpaqueTuple& output) {
+template <typename... InputTypes, typename OutputTuple>
+static std::function<void(OpaqueTuple&, OpaqueTuple&)> ToOpaqueFunction(
+    std::function<OutputTuple(std::tuple<InputTypes...>)> function) {
+  return [function](OpaqueTuple& input, OpaqueTuple& output) {
     // TODO: Determine if this violates strict aliasing rules. My
     // understanding is that we can use some flag to disable this
     // requirement.
-    // auto t_output = MapTupleToOpaqueTuple<OutputTuple>(output);
-    // const auto t_input = MapTupleToOpaqueTuple<InputTuple>(input);
-    // t_output = function(t_input);
+    output.AssignFrom(function(input.ToTuple<InputTypes...>()));
   };
 }
 
