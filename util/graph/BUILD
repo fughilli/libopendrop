@@ -33,10 +33,10 @@ cc_test(
     deps = [
         ":tuple",
         "@com_googletest//:gtest",
-        "@com_googletest//:gtest_main",
         "//util/graph/types",
         "//util/graph/types:monotonic",
         "//util/graph/types:unitary",
+        "//util/testing:test_main",
     ] + CROSS_COMPILATION_DEPS,
 )
 
@@ -56,7 +56,7 @@ cc_test(
     deps = [
         ":conversion",
         "@com_googletest//:gtest",
-        "@com_googletest//:gtest_main",
+        "//util/testing:test_main",
         "//util/graph/types",
         "//util/graph/types:monotonic",
         "//util/graph/types:unitary",
@@ -109,7 +109,7 @@ cc_test(
         ":graph",
         "@com_google_absl//absl/strings",
         "@com_googletest//:gtest",
-        "@com_googletest//:gtest_main",
+        "//util/testing:test_main",
         "//util/logging",
         ":graph_builtins",
         "//util/testing:graph_matchers",

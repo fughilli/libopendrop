@@ -27,3 +27,11 @@ cc_library(
         "@com_googletest//:gtest",
     ],
 )
+
+cc_library(
+  name = "test_main",
+  srcs = ["test_main.cc"],
+  deps = [
+        "@com_google_absl//absl/debugging:failure_signal_handler",
+        "@com_googletest//:gtest",
+  ])
