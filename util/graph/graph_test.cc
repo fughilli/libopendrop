@@ -52,8 +52,10 @@ TEST(GraphTest, SequenceConversion) {
         return std::tuple<Color>(color);
       });
 
-  Graph graph = graph_builder.Bridge(ConstructTypes<Monotonic>(),
-                                     ConstructTypes<Color>());
+  auto value_or_graph = graph_builder.Bridge(ConstructTypes<Monotonic>(),
+                                             ConstructTypes<Color>());
+  EXPECT_TRUE(value_or_graph.ok());
+  Graph graph = std::move(value_or_graph).value_or(Graph{});
   graph.Evaluate(std::make_tuple<Monotonic>(0));
 
   EXPECT_THAT(std::get<0>(graph.Result<Color>()),
@@ -64,6 +66,95 @@ TEST(GraphTest, SequenceConversion) {
   EXPECT_THAT(std::get<0>(graph.Result<Color>()),
               graph_testing::ColorIsNear(
                   Color(glm::vec4(0.0f, 1.0f, 1.0f, 1.0f)), 0.001f));
+}
+
+TEST(GraphTest, BuilderProducesEmptyGraphForUnsatisfiableConversion) {
+  GraphBuilder graph_builder;
+  graph_builder.DeclareConversion<std::tuple<Monotonic>, std::tuple<Unitary>>(
+      "unitary",
+      [](std::tuple<Monotonic> in) -> std::tuple<Unitary> { return {}; });
+  graph_builder.DeclareConversion<std::tuple<Unitary>, std::tuple<Color>>(
+      "color", [](std::tuple<Unitary> in) -> std::tuple<Color> { return {}; });
+
+  auto value_or_graph =
+      graph_builder.Bridge(ConstructTypes<float>(), ConstructTypes<int>());
+  EXPECT_FALSE(value_or_graph.ok());
+}
+
+TEST(GraphTest, DISABLED_UniqueGraphConversion) {
+  // Compute a function graph:
+  //
+  // A := Monotonic(Unitary, float)     // Add
+  // B := int(Unitary, float)           // Multiply, convert to `int`
+  // C := Color(Monotonic, float, int)  // Send to channels
+  //
+  //        +-----------------------------+
+  //        | input_tuple: Unitary, float |
+  //        +-----------------------------+
+  //            |                |      |
+  //           [A]               |     [B]
+  //            |                |      |
+  //            |                |      V
+  // +------------------------+  |  +------------------+
+  // | mid_tuple_1: Monotonic |  |  | mid_tuple_2: int |
+  // +------------------------+  |  +------------------+
+  //            |                |      |
+  //            |                |      |
+  //            V                V      V
+  //      +-------------------------------------+
+  //      | mid_tuple_combined : Monotonic, float, int |
+  //      +-------------------------------------+
+  //                      |
+  //                     [C]
+  //                      |
+  //                      V
+  //           +---------------------+
+  //           | output_tuple: Color |
+  //           +---------------------+
+  //
+  // `mid_tuple_1` and `mid_tuple_2` own their storage.
+  //
+  // `mid_tuple_combined` is an aliasing OpaqueTuple over both of them.
+
+  std::function<std::tuple<float>(std::tuple<int&, float&>)> c_fn =
+      [](std::tuple<int&, float&> in) -> std::tuple<float> {
+    auto& [a, b] = in;
+    return std::make_tuple(a - b);
+  };
+
+  GraphBuilder graph_builder;
+  graph_builder
+      .DeclareConversion<std::tuple<Unitary, float>, std::tuple<Monotonic>>(
+          "add", [](std::tuple<Unitary, float> in) -> std::tuple<Monotonic> {
+            auto& [u, f] = in;
+            return std::make_tuple(u + f);
+          });
+  graph_builder.DeclareConversion<std::tuple<Unitary, float>, std::tuple<int>>(
+      "multiply", [](std::tuple<Unitary, float> in) -> std::tuple<int> {
+        auto& [u, f] = in;
+        return std::make_tuple(static_cast<int>(u * f));
+      });
+  graph_builder
+      .DeclareConversion<std::tuple<Monotonic, float, int>, std::tuple<Color>>(
+          "to_channels",
+          [](std::tuple<Monotonic, float, int> in) -> std::tuple<Color> {
+            auto& [m, f, i] = in;
+
+            float red = std::fmodf(m * f, 1.0f);
+            float green = std::fmodf(m / i, 1.0f);
+            return glm::vec4(red, green, 1.0f, 1.0f);
+          });
+
+  auto value_or_graph = graph_builder.Bridge(ConstructTypes<Unitary, float>(),
+                                             ConstructTypes<Color>());
+  ASSERT_TRUE(value_or_graph.ok());
+
+  Graph graph = std::move(value_or_graph).value_or(Graph{});
+  graph.Evaluate(std::make_tuple<Unitary, float>(0.5f, 12.0f));
+
+  EXPECT_THAT(std::get<0>(graph.Result<Color>()),
+              graph_testing::ColorIsNear(
+                  Color(glm::vec4(0.46f, 0.1f, 0.0f, 1.0f)), 0.001f));
 }
 
 }  // namespace

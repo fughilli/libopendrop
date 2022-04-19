@@ -67,7 +67,7 @@ TEST(TupleTest, OpaqueTupleAliasingFunctionInvocations) {
   //        | input_tuple: float, float |
   //        +---------------------------+
   //            |                    |
-  //           [B]                  [C]
+  //           [A]                  [B]
   //            |                    |
   //            V                    V
   // +--------------------+  +------------------+

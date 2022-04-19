@@ -74,6 +74,8 @@ cc_library(
         "//third_party:gl_helper",
         "//util/graph/types",
         "//util/logging",
+        "//util/status:status_macros",
+        "@com_google_absl//absl/status:statusor",
         "@com_google_absl//absl/strings",
     ],
 )
@@ -129,7 +131,7 @@ cc_library(
     deps = [
         ":conversion",
         ":graph",
-        "@imgui_node_editor",
         "@imgui",
+        "@imgui_node_editor",
     ],
 )
