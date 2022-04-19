@@ -14,3 +14,45 @@ build --compiler=clang
 test --compiler=clang
 build --crosstool_top=@rpi_bazel//tools/cc_toolchain:toolchain
 test --crosstool_top=@rpi_bazel//tools/cc_toolchain:toolchain
+
+# Address sanitizer
+build:asan --compiler=clang
+build:asan --crosstool_top=@rpi_bazel//tools/cc_toolchain:toolchain
+build:asan --strip=never
+build:asan --copt -fsanitize=address
+build:asan --copt -DADDRESS_SANITIZER
+build:asan --copt -O1
+build:asan --copt -g
+build:asan --copt -fno-omit-frame-pointer
+build:asan --linkopt -fsanitize=address
+
+test:asan --compiler=clang
+test:asan --crosstool_top=@rpi_bazel//tools/cc_toolchain:toolchain
+test:asan --strip=never
+test:asan --copt -fsanitize=address
+test:asan --copt -DADDRESS_SANITIZER
+test:asan --copt -O1
+test:asan --copt -g
+test:asan --copt -fno-omit-frame-pointer
+test:asan --linkopt -fsanitize=address
+
+# Memory sanitizer
+build:msan --compiler=clang
+build:msan --crosstool_top=@rpi_bazel//tools/cc_toolchain:toolchain
+build:msan --strip=never
+build:msan --copt -fsanitize=memory
+build:msan --copt -DMEMORY_SANITIZER
+build:msan --copt -O1
+build:msan --copt -g
+build:msan --copt -fno-omit-frame-pointer
+build:msan --linkopt -fsanitize=memory
+
+test:msan --compiler=clang
+test:msan --crosstool_top=@rpi_bazel//tools/cc_toolchain:toolchain
+test:msan --strip=never
+test:msan --copt -fsanitize=memory
+test:msan --copt -DMEMORY_SANITIZER
+test:msan --copt -O1
+test:msan --copt -g
+test:msan --copt -fno-omit-frame-pointer
+test:msan --linkopt -fsanitize=memory
