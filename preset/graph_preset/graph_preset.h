@@ -26,10 +26,7 @@ class GraphPreset : public Preset {
   ~GraphPreset() override;
 
  protected:
-  GraphPreset(std::shared_ptr<gl::GlProgram> warp_program,
-                 std::shared_ptr<gl::GlProgram> composite_program,
-                 std::shared_ptr<gl::GlRenderTarget> front_render_target,
-                 std::shared_ptr<gl::GlRenderTarget> back_render_target,
+  GraphPreset(
                  std::shared_ptr<gl::GlTextureManager> texture_manager);
 
   void OnDrawFrame(
@@ -39,14 +36,6 @@ class GraphPreset : public Preset {
   void OnUpdateGeometry() override;
 
  private:
-  std::shared_ptr<gl::GlProgram> warp_program_;
-  std::shared_ptr<gl::GlProgram> composite_program_;
-  std::shared_ptr<gl::GlRenderTarget> front_render_target_;
-  std::shared_ptr<gl::GlRenderTarget> back_render_target_;
-
-  std::vector<glm::vec2> vertices_;
-  Rectangle rectangle_;
-  Polyline polyline_;
   GraphBuilder graph_builder_;
   Graph evaluation_graph_;
 

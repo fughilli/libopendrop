@@ -3,8 +3,8 @@
 
 #include "third_party/glm_helper.h"
 #include "util/logging/logging.h"
-#include "util/math/math.h"
 #include "util/math/constants.h"
+#include "util/math/math.h"
 #include "util/math/perspective.h"
 
 namespace opendrop {
@@ -68,14 +68,17 @@ std::tuple<glm::mat4, glm::mat4, glm::mat4> ExtractTransformComponents(
   return std::make_tuple(scale, rotation, translation);
 }
 
+glm::mat4 ScaleTransform(float scale) {
+  return glm::mat4(scale, 0, 0, 0,  // Row 1
+                   0, scale, 0, 0,  // Row 2
+                   0, 0, scale, 0,  // Row 3
+                   0, 0, 0, 1       // Row 4
+  );
+}
+
 glm::mat4 AssembleTransform(float scale, glm::mat4 rotation,
                             glm::mat4 translation) {
-  glm::mat4 scale_matrix(scale, 0, 0, 0,  // Row 1
-                         0, scale, 0, 0,  // Row 2
-                         0, 0, scale, 0,  // Row 3
-                         0, 0, 0, 1       // Row 4
-  );
-  return translation * rotation * scale_matrix;
+  return translation * rotation * ScaleTransform(scale);
 }
 glm::mat4 AssembleTransform(glm::mat4 scale, glm::mat4 rotation,
                             glm::mat4 translation) {

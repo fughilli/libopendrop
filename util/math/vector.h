@@ -29,6 +29,9 @@ glm::mat4 LineTransform(glm::vec3 axis, float line_length,
 std::tuple<glm::mat4, glm::mat4, glm::mat4> ExtractTransformComponents(
     glm::mat4 t);
 
+// Computes a scaling matrix with no other components.
+glm::mat4 ScaleTransform(float scale);
+
 // Assembles a transformation matrix from components.
 glm::mat4 AssembleTransform(float scale, glm::mat4 rotation,
                             glm::mat4 translation);

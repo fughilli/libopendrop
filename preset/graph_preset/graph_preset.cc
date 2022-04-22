@@ -3,9 +3,9 @@
 #include <algorithm>
 #include <cmath>
 
-#include "preset/graph_preset/composite.fsh.h"
-#include "preset/graph_preset/passthrough.vsh.h"
-#include "preset/graph_preset/warp.fsh.h"
+#include "preset/graph_preset/model_frag.fsh.h"
+#include "preset/graph_preset/passthrough_vert.vsh.h"
+#include "preset/graph_preset/zoom_frag.fsh.h"
 #include "third_party/gl_helper.h"
 #include "third_party/glm_helper.h"
 #include "util/graph/graph.h"
@@ -18,25 +18,36 @@
 #include "util/graphics/colors.h"
 #include "util/graphics/gl_util.h"
 #include "util/logging/logging.h"
+#include "util/math/vector.h"
 #include "util/status/status_macros.h"
 
 namespace opendrop {
 
 namespace {
 constexpr float kScaleFactor = 0.5f;
+
+std::shared_ptr<gl::GlProgram> model;
+std::shared_ptr<gl::GlProgram> zoom;
+
+absl::Status InitGlPrograms() {
+  if (model == nullptr) {
+    ASSIGN_OR_RETURN(model,
+                     gl::GlProgram::MakeShared(passthrough_vert_vsh::Code(),
+                                               model_frag_fsh::Code()));
+  }
+  if (zoom == nullptr) {
+    ASSIGN_OR_RETURN(zoom,
+                     gl::GlProgram::MakeShared(passthrough_vert_vsh::Code(),
+                                               zoom_frag_fsh::Code()));
+  }
+  return absl::OkStatus();
 }
 
-GraphPreset::GraphPreset(
-    std::shared_ptr<gl::GlProgram> warp_program,
-    std::shared_ptr<gl::GlProgram> composite_program,
-    std::shared_ptr<gl::GlRenderTarget> front_render_target,
-    std::shared_ptr<gl::GlRenderTarget> back_render_target,
-    std::shared_ptr<gl::GlTextureManager> texture_manager)
-    : Preset(texture_manager),
-      warp_program_(warp_program),
-      composite_program_(composite_program),
-      front_render_target_(front_render_target),
-      back_render_target_(back_render_target) {
+}  // namespace
+
+GraphPreset::GraphPreset(std::shared_ptr<gl::GlTextureManager> texture_manager)
+    : Preset(texture_manager) {
+  // Configure graph.
   graph_builder_.DeclareConversion<std::tuple<Monotonic>, std::tuple<Unitary>>(
       "sinusoid", [](std::tuple<Monotonic> in) -> std::tuple<Unitary> {
         return std::tuple<Unitary>(
@@ -49,19 +60,50 @@ GraphPreset::GraphPreset(
         return std::tuple<Color>(color);
       });
   graph_builder_.DeclareConversion<std::tuple<Color>, std::tuple<Texture>>(
-      "single_color_texture",
+      "colored_rectangle",
       [this, texture_manager](std::tuple<Color> in) -> std::tuple<Texture> {
         Texture tex(width(), height(), texture_manager);
 
-        auto activation = tex.RenderTarget()->Activate();
+        auto rt_activation = tex.RenderTarget()->Activate();
+        auto shader_activation = model->Activate();
 
         glm::vec4 color = std::get<0>(in);
 
-        glClearColor(color.r, color.g, color.b, color.a);
+        GlBindUniform(model, "model_transform", ScaleTransform(1.0f));
+
+        glClearColor(0, 0, 0, 0);
         glClear(GL_COLOR_BUFFER_BIT);
 
-        return tex;
+        Rectangle rectangle;
+        rectangle.SetColor(color);
+        rectangle.Draw();
+
+        return std::make_tuple(tex);
       });
+
+  graph_builder_
+      .DeclareConversion<std::tuple<Texture, Texture>, std::tuple<Texture>>(
+          "zoom",
+          [this, texture_manager](
+              std::tuple<Texture, Texture> in) -> std::tuple<Texture> {
+            auto& [in_tex_a, in_tex_b] = in;
+            Texture tex(width(), height(), texture_manager);
+
+            auto rt_activation = tex.RenderTarget()->Activate();
+            auto shader_activation = zoom->Activate();
+
+            GlBindUniform(zoom, "model_transform", glm::mat4(1.0f));
+            GlBindRenderTargetTextureToUniform(zoom, "in_tex_a",
+                                               in_tex_a.RenderTarget(),
+                                               gl::GlTextureBindingOptions());
+            GlBindRenderTargetTextureToUniform(zoom, "in_tex_b",
+                                               in_tex_b.RenderTarget(),
+                                               gl::GlTextureBindingOptions());
+
+            Rectangle().Draw();
+
+            return std::make_tuple(tex);
+          });
 
   evaluation_graph_ =
       graph_builder_
@@ -77,36 +119,21 @@ GraphPreset::~GraphPreset() { ax::NodeEditor::DestroyEditor(editor_context_); }
 
 absl::StatusOr<std::shared_ptr<Preset>> GraphPreset::MakeShared(
     std::shared_ptr<gl::GlTextureManager> texture_manager) {
-  ASSIGN_OR_RETURN(
-      auto warp_program,
-      gl::GlProgram::MakeShared(passthrough_vsh::Code(), warp_fsh::Code()));
-  ASSIGN_OR_RETURN(auto composite_program,
-                   gl::GlProgram::MakeShared(passthrough_vsh::Code(),
-                                             composite_fsh::Code()));
-  ASSIGN_OR_RETURN(auto front_render_target,
-                   gl::GlRenderTarget::MakeShared(0, 0, texture_manager));
-  ASSIGN_OR_RETURN(auto back_render_target,
-                   gl::GlRenderTarget::MakeShared(0, 0, texture_manager));
-
-  return std::shared_ptr<GraphPreset>(
-      new GraphPreset(warp_program, composite_program, front_render_target,
-                      back_render_target, texture_manager));
+  RETURN_IF_ERROR(InitGlPrograms());
+  return std::shared_ptr<GraphPreset>(new GraphPreset(texture_manager));
 }
 
-void GraphPreset::OnUpdateGeometry() {
-  glViewport(0, 0, width(), height());
-  if (front_render_target_ != nullptr) {
-    front_render_target_->UpdateGeometry(width(), height());
-  }
-  if (back_render_target_ != nullptr) {
-    back_render_target_->UpdateGeometry(width(), height());
-  }
-}
+void GraphPreset::OnUpdateGeometry() { glViewport(0, 0, width(), height()); }
 
 void GraphPreset::OnDrawFrame(
     absl::Span<const float> samples, std::shared_ptr<GlobalState> state,
     float alpha, std::shared_ptr<gl::GlRenderTarget> output_render_target) {
   ImGui::Begin("Graph Viewer", nullptr, ImGuiWindowFlags_NoScrollbar);
+  if (ImGui::Button("Again"))
+    evaluation_graph_ =
+        graph_builder_
+            .Bridge(ConstructTypes<Monotonic>(), ConstructTypes<Texture>())
+            .value();
   RenderGraph(editor_context_, evaluation_graph_);
   ImGui::End();
 

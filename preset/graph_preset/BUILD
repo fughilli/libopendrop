@@ -8,9 +8,9 @@ cc_library(
     hdrs = ["graph_preset.h"],
     linkstatic = 1,
     deps = [
-        ":composite",
-        ":passthrough",
-        ":warp",
+        ":model_frag",
+        ":passthrough_vert",
+        ":zoom_frag",
         "//preset",
         "//primitive:polyline",
         "//primitive:rectangle",
@@ -28,6 +28,7 @@ cc_library(
         "//util/graphics:gl_render_target",
         "//util/graphics:gl_util",
         "//util/logging",
+        "//util/math:vector",
         "//util/status:status_macros",
         "@imgui",
         "@imgui_node_editor",
@@ -35,16 +36,17 @@ cc_library(
 )
 
 shader_cc_library(
-    name = "composite",
-    srcs = ["composite.fsh"],
+    name = "passthrough_vert",
+    srcs = ["passthrough_vert.vsh"],
 )
 
 shader_cc_library(
-    name = "passthrough",
-    srcs = ["passthrough.vsh"],
+    name = "model_frag",
+    srcs = ["model_frag.fsh"],
 )
 
 shader_cc_library(
-    name = "warp",
-    srcs = ["warp.fsh"],
+    name = "zoom_frag",
+    srcs = ["zoom_frag.fsh"],
+    deps = ["//preset/common:math"],
 )
