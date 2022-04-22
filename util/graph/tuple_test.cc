@@ -18,6 +18,7 @@ TEST(TupleTest, CanConstructOpaqueTuple) {
 
   EXPECT_THAT(opaque_tuple.Types(),
               ::testing::ElementsAre(Type::kUnitary, Type::kMonotonic));
+  EXPECT_EQ(opaque_tuple.size(), 2);
 }
 
 TEST(TupleTest, OpaqueTupleDiesOnAccessingEmpty) {
@@ -56,6 +57,8 @@ TEST(TupleTest, OpaqueTupleCanBeAssignedFromStdTuple) {
   EXPECT_EQ(opaque_tuple.Get<Unitary>(0), 0.5f);
   EXPECT_EQ(opaque_tuple.Get<Monotonic>(1), 25.0f);
   EXPECT_EQ(opaque_tuple.Get<Unitary>(2), 0.1f);
+
+  EXPECT_EQ(opaque_tuple.size(), 3);
 }
 
 //
@@ -77,6 +80,20 @@ TEST(TupleTest, OpaqueTupleCanAliasOtherTuple) {
   // Aliasing is bidirectional.
   alias_opaque_tuple.Ref<float>(0) = 0.456f;
   EXPECT_EQ(opaque_tuple.Get<float>(1), 0.456f);
+}
+
+TEST(TupleTest, OpaqueTupleIsAliasOfReturnsExpected) {
+  auto opaque_tuple = OpaqueTuple::ConstructFromTypes<int, float>();
+  auto alias_opaque_tuple = OpaqueTuple::EmptyFromTypes<float, int>();
+
+  EXPECT_FALSE(alias_opaque_tuple.IsAliasOf(0, opaque_tuple, 1));
+  EXPECT_FALSE(alias_opaque_tuple.IsAliasOf(1, opaque_tuple, 0));
+
+  alias_opaque_tuple.Alias(0, opaque_tuple, 1);
+  alias_opaque_tuple.Alias(1, opaque_tuple, 0);
+
+  EXPECT_TRUE(alias_opaque_tuple.IsAliasOf(0, opaque_tuple, 1));
+  EXPECT_TRUE(alias_opaque_tuple.IsAliasOf(1, opaque_tuple, 0));
 }
 
 TEST(TupleTest, OpaqueTupleDiesOnIncorrectAliasingTypes) {

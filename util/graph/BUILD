@@ -72,6 +72,7 @@ cc_library(
         ":conversion",
         ":tuple",
         "//third_party:gl_helper",
+        "//util/container:algorithms",
         "//util/graph/types",
         "//util/logging",
         "//util/status:status_macros",
@@ -131,6 +132,8 @@ cc_library(
     deps = [
         ":conversion",
         ":graph",
+        "//util/container:algorithms",
+        "@com_google_absl//absl/types:span",
         "@imgui",
         "@imgui_node_editor",
     ],

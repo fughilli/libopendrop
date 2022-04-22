@@ -66,6 +66,17 @@ class OpaqueTuple {
     return opaque_tuple;
   }
 
+  // Constructs an OpaqueTuple from the given set of types, leaving all cells
+  // empty (dangling pointers).
+  static OpaqueTuple EmptyFromTypes(absl::Span<const Type> types) {
+    OpaqueTuple opaque_tuple{};
+    for (const Type type : types) {
+      opaque_tuple.types_.push_back(type);
+      opaque_tuple.cells_.push_back(Cell{.buffer = nullptr, .type = type});
+    }
+    return opaque_tuple;
+  }
+
   // Constructs an OpaqueTuple from the given set of types and associated
   // memory. The memory is assumed to be properly sized and aligned and have a
   // correctly constructed object of the specified type within it.
@@ -89,11 +100,13 @@ class OpaqueTuple {
     const Cell& cell = cells_[index];
     if (cell.type != ToType<T>())
       LOG(FATAL) << absl::StrFormat(
-          "requesting incorrect type (T = %s) for cell %d of type %s",
+          "OpaqueTuple::Ref(): requesting incorrect type (T = %s) for cell %d "
+          "of type %s",
           ToString(ToType<T>()), index, ToString(cell.type));
     if (cell.buffer == nullptr)
-      LOG(FATAL) << absl::StrFormat("value in cell %d of type %s is nullptr",
-                                    index, ToString(cell.type));
+      LOG(FATAL) << absl::StrFormat(
+          "OpaqueTuple::Ref(): value in cell %d of type %s is nullptr", index,
+          ToString(cell.type));
 
     return *reinterpret_cast<T*>(cell.buffer.get());
   }
@@ -107,11 +120,13 @@ class OpaqueTuple {
     const Cell& cell = cells_[index];
     if (cell.type != ToType<T>())
       LOG(FATAL) << absl::StrFormat(
-          "requesting incorrect type (T = %s) for cell %d of type %s",
+          "OpaqueTuple::Get(): requesting incorrect type (T = %s) for cell %d "
+          "of type %s",
           ToString(ToType<T>()), index, ToString(cell.type));
     if (cell.buffer == nullptr)
-      LOG(FATAL) << absl::StrFormat("value in cell %d of type %s is nullptr",
-                                    index, ToString(cell.type));
+      LOG(FATAL) << absl::StrFormat(
+          "OpaqueTuple::Get(): value in cell %d of type %s is nullptr", index,
+          ToString(cell.type));
 
     return *reinterpret_cast<T*>(cell.buffer.get());
   }
@@ -187,9 +202,34 @@ class OpaqueTuple {
     }
   }
 
- private:
-  OpaqueTuple() = default;
+  bool IsAliasOf(int index, OpaqueTuple& target, int target_index) {
+    CheckIndex(index);
+    target.CheckIndex(target_index);
 
+    auto& cell = cells_[index];
+    auto& target_cell = target.cells_[target_index];
+    if (cell.type != target_cell.type)
+      LOG(FATAL) << absl::StrFormat(
+          "attempting to test alias of cell %d to target cell of incorrect "
+          "type (target cell %d type is %s, expected %s)",
+          index, target_index, ToString(target_cell.type), ToString(cell.type));
+    if (target_cell.buffer == nullptr)
+      LOG(FATAL) << absl::StrFormat(
+          "value in target cell %d of type %s is nullptr", target_index,
+          ToString(target_cell.type));
+
+    return (cell.buffer == target_cell.buffer);
+  }
+
+  size_t size() const { return cells_.size(); }
+
+  bool CellIsEmpty(int index) const {
+    CHECK(index >= 0 || index < size()) << "CellIsEmpty(): Index out of bounds";
+
+    return cells_[index].buffer == nullptr;
+  }
+
+ private:
   // Storage for an element of OpaqueTuple.
   struct Cell {
     std::shared_ptr<uint8_t> buffer;
@@ -310,6 +350,8 @@ class OpaqueTupleFactory {
   std::vector<Type> types_{};
   std::vector<AllocatorType> allocators_{};
 };
+
+std::ostream& operator<<(std::ostream& os, const OpaqueTuple& tuple);
 
 }  // namespace opendrop
 

@@ -90,7 +90,7 @@ struct Conversion {
 
   template <typename... InputTupleArgs>
   Conversion& Invoke(const std::tuple<InputTupleArgs...>& input) {
-    LOG(DEBUG) << "Invoking function";
+    LOG(DEBUG) << "Invoking function for conversion " << name;
 
     input_tuple.AssignFrom(input);
 
@@ -103,7 +103,7 @@ struct Conversion {
   }
 
   Conversion& Invoke() {
-    LOG(DEBUG) << "Invoking function";
+    LOG(DEBUG) << "Invoking function for conversion " << name;
     if (!input_factory.Types().empty())
       LOG(FATAL) << "Input types do not match!";
     produce(output_tuple);
@@ -111,13 +111,13 @@ struct Conversion {
   }
 
   Conversion& InvokeOpaque(OpaqueTuple& input) {
-    LOG(DEBUG) << "Invoking function";
+    LOG(DEBUG) << "Invoking function for conversion " << name;
     convert(input, output_tuple);
     return *this;
   }
 
   Conversion& InvokeOpaque(OpaqueTuple& input, OpaqueTuple& output) {
-    LOG(DEBUG) << "Invoking function";
+    LOG(DEBUG) << "Invoking function for conversion " << name;
     convert(input, output);
     return *this;
   }

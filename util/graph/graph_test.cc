@@ -54,7 +54,7 @@ TEST(GraphTest, SequenceConversion) {
 
   auto value_or_graph = graph_builder.Bridge(ConstructTypes<Monotonic>(),
                                              ConstructTypes<Color>());
-  EXPECT_TRUE(value_or_graph.ok());
+  EXPECT_TRUE(value_or_graph.ok()) << value_or_graph.status();
   Graph graph = std::move(value_or_graph).value_or(Graph{});
   graph.Evaluate(std::make_tuple<Monotonic>(0));
 
@@ -81,7 +81,7 @@ TEST(GraphTest, BuilderProducesEmptyGraphForUnsatisfiableConversion) {
   EXPECT_FALSE(value_or_graph.ok());
 }
 
-TEST(GraphTest, DISABLED_UniqueGraphConversion) {
+TEST(GraphTest, UniqueGraphConversion) {
   // Compute a function graph:
   //
   // A := Monotonic(Unitary, float)     // Add
@@ -101,9 +101,9 @@ TEST(GraphTest, DISABLED_UniqueGraphConversion) {
   //            |                |      |
   //            |                |      |
   //            V                V      V
-  //      +-------------------------------------+
-  //      | mid_tuple_combined : Monotonic, float, int |
-  //      +-------------------------------------+
+  // +--------------------------------------------+
+  // | mid_tuple_combined : Monotonic, float, int |
+  // +--------------------------------------------+
   //                      |
   //                     [C]
   //                      |
@@ -142,15 +142,15 @@ TEST(GraphTest, DISABLED_UniqueGraphConversion) {
 
             float red = std::fmodf(m * f, 1.0f);
             float green = std::fmodf(m / i, 1.0f);
-            return glm::vec4(red, green, 1.0f, 1.0f);
+            return glm::vec4(red, green, 0.0f, 1.0f);
           });
 
   auto value_or_graph = graph_builder.Bridge(ConstructTypes<Unitary, float>(),
                                              ConstructTypes<Color>());
-  ASSERT_TRUE(value_or_graph.ok());
+  ASSERT_TRUE(value_or_graph.ok()) << value_or_graph.status();
 
   Graph graph = std::move(value_or_graph).value_or(Graph{});
-  graph.Evaluate(std::make_tuple<Unitary, float>(0.5f, 12.0f));
+  graph.Evaluate(std::make_tuple<Unitary, float>(0.5f, 12.1f));
 
   EXPECT_THAT(std::get<0>(graph.Result<Color>()),
               graph_testing::ColorIsNear(

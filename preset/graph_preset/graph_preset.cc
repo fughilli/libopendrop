@@ -66,7 +66,7 @@ GraphPreset::GraphPreset(
   evaluation_graph_ =
       graph_builder_
           .Bridge(ConstructTypes<Monotonic>(), ConstructTypes<Texture>())
-          .ValueOrDie();
+          .value();
 
   ax::NodeEditor::Config config{};
   config.SettingsFile = "graph_nodes.json";

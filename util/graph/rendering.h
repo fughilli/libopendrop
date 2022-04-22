@@ -6,9 +6,6 @@
 
 namespace opendrop {
 
-void RenderConversion(ax::NodeEditor::EditorContext* context,
-                      const Conversion& conversion, int id);
-
 void RenderGraph(ax::NodeEditor::EditorContext* context, const Graph& graph);
 
 }  // namespace opendrop
