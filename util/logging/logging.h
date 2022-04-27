@@ -11,6 +11,7 @@
 #include "absl/time/time.h"
 #include "util/logging/logging_glm_helpers.h"
 #include "util/logging/logging_helpers.h"
+#include "util/logging/logging_macros.h"
 
 #if defined(ENABLE_DEBUG_LOGGING)
 constexpr static bool kDebugLoggingEnabled = true;
@@ -141,33 +142,5 @@ std::string ToString(const T& t) {
   ss << t;
   return ss.str();
 }
-
-#if defined(DISABLE_LOGGING)
-// Logging is disabled. Redirect all log calls to the dummy logger.
-#define LOG(level) _DummyLogger()
-#else
-#define __LOG_FUNCTION_COMMON(level) _Logger(level, __FILE__, __LINE__)
-
-#if defined(ENABLE_DEBUG_LOGGING)
-#define __LOG_FUNCTION_DEBUG(level) __LOG_FUNCTION_COMMON(level)
-#else
-#define __LOG_FUNCTION_DEBUG(level) _DummyLogger()
-#endif
-
-#define __LOG_FUNCTION_INFO(level) __LOG_FUNCTION_COMMON(level)
-#define __LOG_FUNCTION_WARNING(level) __LOG_FUNCTION_COMMON(level)
-#define __LOG_FUNCTION_ERROR(level) __LOG_FUNCTION_COMMON(level)
-#define __LOG_FUNCTION_FATAL(level) __LOG_FUNCTION_COMMON(level)
-
-#define LOG(level) (__LOG_FUNCTION_##level(level))
-#define LOG_IF(level, condition) \
-  if ((condition)) LOG(level)
-#endif
-
-#define CHECK_NULL(pointer)                      \
-  (LOG(FATAL).SetCondition((pointer) == nullptr) \
-   << "CHECK_NULL FAIL ((" #pointer ") == nullptr): ")
-#define CHECK(expression) \
-  (LOG(FATAL).SetCondition(!(expression)) << "CHECK FAIL (" #expression "): ")
 
 #endif  // UTIL_LOGGING_LOGGING_H_

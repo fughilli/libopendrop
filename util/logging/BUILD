@@ -12,8 +12,18 @@ cc_library(
     deps = [
         ":logging_glm_helpers",
         ":logging_helpers",
+        ":logging_macros",
         "@com_google_absl//absl/strings:str_format",
         "@com_google_absl//absl/time",
+    ],
+)
+
+cc_library(
+    name = "logging_macros",
+    hdrs = ["logging_macros.h"],
+    linkstatic = 1,
+    deps = [
+      "//util/time:periodic",
     ],
 )
 

@@ -14,6 +14,7 @@ cc_library(
         "//third_party:glm_helper",
         "//util/graphics:gl_interface",
         "//util/graphics:gl_render_target",
+        "//util/logging",
     ],
 )
 

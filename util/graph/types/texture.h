@@ -22,9 +22,13 @@ class Texture {
   Texture(size_t width, size_t height,
           std::shared_ptr<gl::GlTextureManager> texture_manager)
       : width_(width), height_(height) {
-    render_target_ = std::move(gl::GlRenderTarget::MakeShared(width_, height_,
-                                                              texture_manager))
-                         .value();
+    auto status_or_render_target =
+        gl::GlRenderTarget::MakeShared(width_, height_, texture_manager);
+    if (!status_or_render_target.ok()) {
+      LOG(ERROR) << status_or_render_target.status();
+      return;
+    }
+    render_target_ = std::move(status_or_render_target).value();
   }
 
   Texture operator-(const Texture& other) const {

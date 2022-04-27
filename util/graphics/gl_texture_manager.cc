@@ -1,12 +1,25 @@
 #include "util/graphics/gl_texture_manager.h"
 
+#include <stddef.h>
+
+#include <string>
+
 #include "third_party/gl_helper.h"
 #include "util/logging/logging.h"
 
 namespace gl {
 
+namespace {
+std::string MakeAllocationString(const std::vector<bool>& allocated) {
+  std::string s(allocated.size(), '_');
+  for (size_t i = 0; i < allocated.size(); ++i) s[i] = allocated[i] ? 'X' : '_';
+
+  return s;
+}
+}  // namespace
+
 GlTextureManager::GlTextureManager() : total_texture_units_(0) {
-  glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, &total_texture_units_);
+  glGetIntegerv(GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS, &total_texture_units_);
 
   allocated_texture_units_.resize(total_texture_units_, false);
 
@@ -26,6 +39,9 @@ absl::StatusOr<int> GlTextureManager::Allocate() {
   allocated_texture_units_[texture_unit] = true;
 
   LOG(DEBUG) << "Allocated texture unit " << texture_unit;
+
+  LOG_N_SEC(1.0, INFO) << "Allocated texture units: "
+                       << MakeAllocationString(allocated_texture_units_);
   return texture_unit;
 }
 

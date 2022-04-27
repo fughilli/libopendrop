@@ -49,9 +49,14 @@ GraphPreset::GraphPreset(std::shared_ptr<gl::GlTextureManager> texture_manager)
     : Preset(texture_manager) {
   // Configure graph.
   graph_builder_.DeclareConversion<std::tuple<Monotonic>, std::tuple<Unitary>>(
-      "sinusoid", [](std::tuple<Monotonic> in) -> std::tuple<Unitary> {
+      "fast_sinusoid", [](std::tuple<Monotonic> in) -> std::tuple<Unitary> {
         return std::tuple<Unitary>(
-            Unitary((1.0f + std::cos(std::get<0>(in))) / 2.0f));
+            Unitary((1.0f + std::cos(std::get<0>(in) * 30)) / 2.0f));
+      });
+  graph_builder_.DeclareConversion<std::tuple<Monotonic>, std::tuple<Unitary>>(
+      "slow_sinusoid", [](std::tuple<Monotonic> in) -> std::tuple<Unitary> {
+        return std::tuple<Unitary>(
+            Unitary((1.0f + std::cos(std::get<0>(in) * 3)) / 2.0f));
       });
   graph_builder_.DeclareConversion<std::tuple<Unitary>, std::tuple<Color>>(
       "color_wheel", [](std::tuple<Unitary> in) -> std::tuple<Color> {
@@ -69,7 +74,7 @@ GraphPreset::GraphPreset(std::shared_ptr<gl::GlTextureManager> texture_manager)
 
         glm::vec4 color = std::get<0>(in);
 
-        GlBindUniform(model, "model_transform", ScaleTransform(1.0f));
+        GlBindUniform(model, "model_transform", ScaleTransform(0.2f));
 
         glClearColor(0, 0, 0, 0);
         glClear(GL_COLOR_BUFFER_BIT);
@@ -81,29 +86,55 @@ GraphPreset::GraphPreset(std::shared_ptr<gl::GlTextureManager> texture_manager)
         return std::make_tuple(tex);
       });
 
-  graph_builder_
-      .DeclareConversion<std::tuple<Texture, Texture>, std::tuple<Texture>>(
-          "zoom",
-          [this, texture_manager](
-              std::tuple<Texture, Texture> in) -> std::tuple<Texture> {
-            auto& [in_tex_a, in_tex_b] = in;
-            Texture tex(width(), height(), texture_manager);
+  graph_builder_.DeclareConversion<std::tuple<Texture, Texture, Unitary>,
+                                   std::tuple<Texture>>(
+      "zoom",
+      [this, texture_manager](
+          std::tuple<Texture, Texture, Unitary> in) -> std::tuple<Texture> {
+        auto& [in_tex_a, in_tex_b, rotation_coeff] = in;
+        Texture tex(width(), height(), texture_manager);
 
-            auto rt_activation = tex.RenderTarget()->Activate();
-            auto shader_activation = zoom->Activate();
+        auto rt_activation = tex.RenderTarget()->Activate();
+        auto shader_activation = zoom->Activate();
 
-            GlBindUniform(zoom, "model_transform", glm::mat4(1.0f));
-            GlBindRenderTargetTextureToUniform(zoom, "in_tex_a",
-                                               in_tex_a.RenderTarget(),
-                                               gl::GlTextureBindingOptions());
-            GlBindRenderTargetTextureToUniform(zoom, "in_tex_b",
-                                               in_tex_b.RenderTarget(),
-                                               gl::GlTextureBindingOptions());
+        GlBindUniform(zoom, "model_transform", glm::mat4(1.0f));
+        GlBindRenderTargetTextureToUniform(zoom, "in_tex_a",
+                                           in_tex_a.RenderTarget(),
+                                           gl::GlTextureBindingOptions());
+        GlBindRenderTargetTextureToUniform(zoom, "in_tex_b",
+                                           in_tex_b.RenderTarget(),
+                                           gl::GlTextureBindingOptions());
+        GlBindUniform(zoom, "rotation_coeff", rotation_coeff.value);
 
-            Rectangle().Draw();
+        Rectangle().Draw();
 
-            return std::make_tuple(tex);
-          });
+        return std::make_tuple(tex);
+      });
+  // Texture recurse_tex(width(), height(), texture_manager);
+  // graph_builder_.DeclareConversion<std::tuple<Texture>, std::tuple<Texture>>(
+  //     "zoom",
+  //     [this, texture_manager,
+  //      &recurse_tex](std::tuple<Texture> in) -> std::tuple<Texture> {
+  //       auto& [in_tex] = in;
+  //       Texture tex(width(), height(), texture_manager);
+
+  //       auto rt_activation = tex.RenderTarget()->Activate();
+  //       auto shader_activation = zoom->Activate();
+
+  //       GlBindUniform(zoom, "model_transform", glm::mat4(1.0f));
+  //       GlBindRenderTargetTextureToUniform(zoom, "in_tex_a",
+  //                                          in_tex.RenderTarget(),
+  //                                          gl::GlTextureBindingOptions());
+  //       GlBindRenderTargetTextureToUniform(zoom, "in_tex_b",
+  //                                          recurse_tex.RenderTarget(),
+  //                                          gl::GlTextureBindingOptions());
+
+  //       Rectangle().Draw();
+
+  //       recurse_tex = tex;
+
+  //       return std::make_tuple(recurse_tex);
+  //     });
 
   evaluation_graph_ =
       graph_builder_
@@ -134,15 +165,18 @@ void GraphPreset::OnDrawFrame(
         graph_builder_
             .Bridge(ConstructTypes<Monotonic>(), ConstructTypes<Texture>())
             .value();
+  ImGui::Checkbox("Evaluate?", &evaluate_);
   RenderGraph(editor_context_, evaluation_graph_);
   ImGui::End();
 
-  evaluation_graph_.Evaluate(std::tuple<Monotonic>(state->energy()));
-  Texture tex = std::get<0>(evaluation_graph_.Result<Texture>());
+  if (evaluate_) {
+    evaluation_graph_.Evaluate(std::tuple<Monotonic>(state->energy()));
+    Texture tex = std::get<0>(evaluation_graph_.Result<Texture>());
 
-  {
-    auto output_activation = output_render_target->Activate();
-    Blit(tex);
+    {
+      auto output_activation = output_render_target->Activate();
+      Blit(tex);
+    }
   }
 }
 

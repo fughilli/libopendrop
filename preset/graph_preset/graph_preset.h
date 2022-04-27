@@ -40,6 +40,8 @@ class GraphPreset : public Preset {
   Graph evaluation_graph_;
 
   ax::NodeEditor::EditorContext* editor_context_;
+
+  bool evaluate_ = false;
 };
 
 }  // namespace opendrop

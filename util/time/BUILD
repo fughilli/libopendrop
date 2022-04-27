@@ -6,6 +6,11 @@ cc_library(
 )
 
 cc_library(
+    name = "periodic",
+    hdrs = ["periodic.h"],
+)
+
+cc_library(
     name = "rate_limiter",
     hdrs = ["rate_limiter.h"],
     deps = [":oneshot"],

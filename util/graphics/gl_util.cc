@@ -2,6 +2,7 @@
 
 #include "third_party/gl_helper.h"
 #include "third_party/glm_helper.h"
+#include "util/logging/logging.h"
 
 namespace gl {
 namespace {
@@ -56,6 +57,11 @@ void GlBindRenderTargetTextureToUniform(
     std::shared_ptr<GlProgram> program, std::string texture_uniform_name,
     std::shared_ptr<GlRenderTarget> render_target,
     GlTextureBindingOptions binding_options) {
+  if (render_target == nullptr) {
+    LOG(ERROR)
+        << "GlBindRenderTargetTextureToUniform(): render_target is nullptr";
+    return;
+  }
   glActiveTexture(GL_TEXTURE0 + render_target->texture_unit());
   glBindTexture(GL_TEXTURE_2D, render_target->texture_handle());
 

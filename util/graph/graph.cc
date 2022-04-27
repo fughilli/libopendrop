@@ -99,10 +99,18 @@ void GraphBuilder::InsertConversion(std::shared_ptr<Conversion> conversion) {
     conversions_by_individual_output_[output_type].push_back(conversion);
 }
 
-void AliasHelper(NodePortIndex value_in, NodePortIndex alias) {
-  CHECK(!(NodePortIndexIsNullptr(value_in, kOutput) &&
-          NodePortIndexIsNullptr(alias, kInput)))
-      << "Attempting to alias two null values";
+bool AliasHelper(NodePortIndex value_in, NodePortIndex alias) {
+  if (NodePortIndexIsNullptr(value_in, kOutput) &&
+      NodePortIndexIsNullptr(alias, kInput)) {
+    if (alias.first->conversion != nullptr) {
+      alias.first->ConstructEmptyInputs();
+    } else {
+      LOG(ERROR) << "No factory to construct inputs for aliasing " << value_in
+                 << " -> " << alias;
+      return false;
+    }
+  }
+
   auto& [alias_node, alias_index] = alias;
   auto& [value_in_node, value_in_index] = value_in;
 
@@ -117,6 +125,7 @@ void AliasHelper(NodePortIndex value_in, NodePortIndex alias) {
   Edge edge{.value_in = value_in, .alias = alias};
   alias_node->input_edges.push_back(edge);
   value_in_node->output_edges.push_back(edge);
+  return true;
 }
 
 void PrintState(
@@ -133,11 +142,39 @@ void PrintState(
   }
 }
 
+struct Choice {
+  NodePortIndex port_index;
+  bool is_new;
+};
+
+bool Satisfy(Graph& graph, NodePortIndex to_satisfy, Choice choice,
+             std::vector<NodePortIndex>& unsatisfied,
+             std::map<Type, std::vector<NodePortIndex>>& available_by_type) {
+  if (!AliasHelper(choice.port_index, to_satisfy)) return false;
+
+  if (!choice.is_new) return true;
+
+  auto& new_node = choice.port_index.first;
+
+  graph.nodes.push_back(new_node);
+
+  for (int i = 0; i < new_node->InputSize(); ++i) {
+    unsatisfied.push_back(new_node->PortIndex(i));
+  }
+  for (int i = 0; i < new_node->OutputSize(); ++i) {
+    available_by_type[new_node->output_tuple.Types()[i]].push_back(
+        new_node->PortIndex(i));
+  }
+  return true;
+}
+
 absl::StatusOr<Graph> GraphBuilder::Bridge(
     const std::vector<Type>& input_types,
     const std::vector<Type>& output_types) {
-  LOG(DEBUG) << "Bridge(input_types = " << input_types
-             << ", output_types = " << output_types << ")";
+  LOG(INFO) << "=========================================================";
+  LOG(INFO) << "Bridge(input_types = " << input_types
+            << ", output_types = " << output_types << ")";
+  LOG(INFO) << "=========================================================";
 
   // List of node port inputs which are unsatisfied in the graph.
   std::vector<NodePortIndex> unsatisfied{};
@@ -161,7 +198,7 @@ absl::StatusOr<Graph> GraphBuilder::Bridge(
         graph.io_node->PortIndex(i));
   }
 
-  LOG(DEBUG) << "Before loop";
+  LOG(INFO) << "Before loop";
   PrintState(unsatisfied, available_by_type);
 
   do {
@@ -178,39 +215,16 @@ absl::StatusOr<Graph> GraphBuilder::Bridge(
 
     const Type to_satisfy_type = NodePortIndexType(to_satisfy, kInput);
 
-    LOG(DEBUG) << "Trying to satisfy type " << to_satisfy_type;
+    LOG(INFO) << "Trying to satisfy type " << to_satisfy_type;
+
+    std::vector<Choice> choices{};
     if (Contains(available_by_type, to_satisfy_type)) {
       NodePortIndex matching_available =
           RandomPick<NodePortIndex>(available_by_type[to_satisfy_type]);
-      LOG(DEBUG) << "Found existing available value: " << matching_available;
-      if (NodePortIndexIsNullptr(matching_available, kOutput)) {
-        // The available output does not have storage. Check to see if the input
-        // has storage; if it does, alias it. If it doesn't, see if it can be
-        // constructed and alias it. Otherwise, drop through to looking for a
-        // conversion to produce it.
-        //
-        // Note: becase Graph currently uses a dummy `io_node` for the
-        // input/output ports, this algorithm will prevent passthrough
-        // connections from occurring (connections directly between graph
-        // input/output that do not pass through a node).
-        if (!NodePortIndexIsNullptr(to_satisfy, kInput)) {
-          // The input has storage. Alias it.
-          AliasHelper(matching_available, to_satisfy);
-          continue;
-        } else {
-          // The input does not have storage. See if we can construct it.
-          if (to_satisfy.first->conversion != nullptr) {
-            to_satisfy.first->ConstructEmptyInputs();
-            AliasHelper(matching_available, to_satisfy);
-            continue;
-          }
-        }
-        LOG(DEBUG) << "Both ports are null";
-      } else {
-        // The output has storage. Alias it.
-        AliasHelper(matching_available, to_satisfy);
-        continue;
-      }
+      LOG(INFO) << "Found existing available value: " << matching_available;
+      if (!graph.HasEmptyInputCells() ||
+          matching_available.first == graph.io_node)
+        choices.push_back({.port_index = matching_available, .is_new = false});
     }
 
     // Find a conversion that could satisfy the input, instantiate it, and
@@ -219,22 +233,19 @@ absl::StatusOr<Graph> GraphBuilder::Bridge(
       auto new_node =
           std::make_shared<Node>(RandomPick<std::shared_ptr<Conversion>>(
               conversions_by_individual_output_[to_satisfy_type]));
-      graph.nodes.push_back(new_node);
 
       NodePortIndex matching_from_conversion = new_node->PortIndex(
           RandomIndexOf<Type>(new_node->output_tuple.Types(), to_satisfy_type));
-      LOG(DEBUG) << "Satisfying " << to_satisfy_type << " with new node "
-                 << *new_node << " port " << matching_from_conversion;
-      AliasHelper(matching_from_conversion, to_satisfy);
+      LOG(INFO) << "Satisfying " << to_satisfy_type << " with new node "
+                << *new_node << " port " << matching_from_conversion;
+      choices.push_back(
+          {.port_index = matching_from_conversion, .is_new = true});
+    }
 
-      for (int i = 0; i < new_node->InputSize(); ++i) {
-        unsatisfied.push_back(new_node->PortIndex(i));
-      }
-      for (int i = 0; i < new_node->OutputSize(); ++i) {
-        available_by_type[new_node->output_tuple.Types()[i]].push_back(
-            new_node->PortIndex(i));
-      }
-      continue;
+    if (!choices.empty()) {
+      if (Satisfy(graph, to_satisfy, RandomPick<Choice>(choices), unsatisfied,
+                  available_by_type))
+        continue;
     }
 
     return absl::NotFoundError(absl::StrFormat(

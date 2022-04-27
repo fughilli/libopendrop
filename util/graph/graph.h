@@ -221,6 +221,12 @@ class Graph {
     return evaluation_ordered_nodes;
   }
 
+  bool HasEmptyInputCells() const {
+    for (int i = 0; i < io_node->output_tuple.size(); ++i)
+      if (io_node->output_tuple.CellIsEmpty(i)) return true;
+    return false;
+  }
+
  private:
   std::vector<std::shared_ptr<Node>> evaluation_ordered_nodes = {};
 
@@ -341,9 +347,11 @@ class Graph {
                  << " inputs satisfied, "
                  << count_unsatisfied_inputs(candidate_node)
                  << " inputs unsatisfied.";
-      if (count_satisfied_inputs(candidate_node) == 0)
-        LOG(FATAL) << "Failed to determine evaluation order; maybe the graph "
+      if (count_satisfied_inputs(candidate_node) == 0) {
+        LOG(ERROR) << "Failed to determine evaluation order; maybe the graph "
                       "is ill-formed?";
+        return;
+      }
 
       evaluation_ordered_nodes.push_back(candidate_node);
       evaluated.insert(candidate_node);
