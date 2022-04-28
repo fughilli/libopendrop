@@ -47,6 +47,17 @@ absl::Status InitGlPrograms() {
 
 GraphPreset::GraphPreset(std::shared_ptr<gl::GlTextureManager> texture_manager)
     : Preset(texture_manager) {
+  graph_builder_
+      .DeclareConversion<std::tuple<Unitary, Unitary>, std::tuple<Unitary>>(
+          "product",
+          [](std::tuple<Unitary, Unitary> in) -> std::tuple<Unitary> {
+            auto& [a, b] = in;
+            return std::tuple<Unitary>(a * b);
+          });
+  graph_builder_.DeclareProduction<std::tuple<Unitary>>(
+      "random", []() -> std::tuple<Unitary> {
+        return 5.0f;
+      });
   // Configure graph.
   graph_builder_.DeclareConversion<std::tuple<Monotonic>, std::tuple<Unitary>>(
       "fast_sinusoid", [](std::tuple<Monotonic> in) -> std::tuple<Unitary> {
@@ -64,27 +75,28 @@ GraphPreset::GraphPreset(std::shared_ptr<gl::GlTextureManager> texture_manager)
             glm::vec4(HsvToRgb(glm::vec3(std::get<0>(in), 1.0f, 1.0f)), 1.0f);
         return std::tuple<Color>(color);
       });
-  graph_builder_.DeclareConversion<std::tuple<Color>, std::tuple<Texture>>(
-      "colored_rectangle",
-      [this, texture_manager](std::tuple<Color> in) -> std::tuple<Texture> {
-        Texture tex(width(), height(), texture_manager);
+  graph_builder_
+      .DeclareConversion<std::tuple<Color, Unitary>, std::tuple<Texture>>(
+          "colored_rectangle",
+          [this, texture_manager](
+              std::tuple<Color, Unitary> in) -> std::tuple<Texture> {
+            auto& [color, scale] = in;
+            Texture tex(width(), height(), texture_manager);
 
-        auto rt_activation = tex.RenderTarget()->Activate();
-        auto shader_activation = model->Activate();
+            auto rt_activation = tex.RenderTarget()->Activate();
+            auto shader_activation = model->Activate();
 
-        glm::vec4 color = std::get<0>(in);
+            GlBindUniform(model, "model_transform", ScaleTransform(scale));
 
-        GlBindUniform(model, "model_transform", ScaleTransform(0.2f));
+            glClearColor(0, 0, 0, 0);
+            glClear(GL_COLOR_BUFFER_BIT);
 
-        glClearColor(0, 0, 0, 0);
-        glClear(GL_COLOR_BUFFER_BIT);
+            Rectangle rectangle;
+            rectangle.SetColor(color);
+            rectangle.Draw();
 
-        Rectangle rectangle;
-        rectangle.SetColor(color);
-        rectangle.Draw();
-
-        return std::make_tuple(tex);
-      });
+            return std::make_tuple(tex);
+          });
 
   graph_builder_.DeclareConversion<std::tuple<Texture, Texture, Unitary>,
                                    std::tuple<Texture>>(
@@ -163,14 +175,16 @@ void GraphPreset::OnDrawFrame(
   if (ImGui::Button("Again"))
     evaluation_graph_ =
         graph_builder_
-            .Bridge(ConstructTypes<Monotonic>(), ConstructTypes<Texture>())
+            .Bridge(ConstructTypes<Monotonic, Unitary, Unitary, Unitary>(),
+                    ConstructTypes<Texture>())
             .value();
   ImGui::Checkbox("Evaluate?", &evaluate_);
   RenderGraph(editor_context_, evaluation_graph_);
   ImGui::End();
 
   if (evaluate_) {
-    evaluation_graph_.Evaluate(std::tuple<Monotonic>(state->energy()));
+    evaluation_graph_.Evaluate(std::tuple<Monotonic, Unitary, Unitary, Unitary>(
+        state->energy(), state->bass(), state->mid(), state->treble()));
     Texture tex = std::get<0>(evaluation_graph_.Result<Texture>());
 
     {

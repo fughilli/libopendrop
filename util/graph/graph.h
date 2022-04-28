@@ -400,6 +400,14 @@ class GraphBuilder {
 
     InsertConversion(conversion);
   }
+  template <typename OutputTuple>
+  void DeclareProduction(
+      std::string name,
+      std::function<OutputTuple()> conversion_function) {
+    auto conversion = std::make_shared<Conversion>(name, conversion_function);
+
+    InsertConversion(conversion);
+  }
 
   Graph Construct(absl::string_view graph_spec) {
     return Graph(conversions_by_name_[std::string(graph_spec)]);

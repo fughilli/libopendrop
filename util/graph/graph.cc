@@ -191,7 +191,8 @@ absl::StatusOr<Graph> GraphBuilder::Bridge(
   // Populate `unsatisfied` and `available_by_type` with the node ports from the
   // empty graph.
   for (int i = 0; i < graph.io_node->InputSize(); ++i) {
-    unsatisfied.push_back(graph.io_node->PortIndex(i));
+    auto port_index = graph.io_node->PortIndex(i);
+    unsatisfied.push_back(port_index);
   }
   for (int i = 0; i < graph.io_node->OutputSize(); ++i) {
     available_by_type[graph.io_node->output_tuple.Types()[i]].push_back(
@@ -201,7 +202,7 @@ absl::StatusOr<Graph> GraphBuilder::Bridge(
   LOG(INFO) << "Before loop";
   PrintState(unsatisfied, available_by_type);
 
-  do {
+  while(!unsatisfied.empty()) {
     // TODO: Fill entire tuples at once, if a matching conversion exists.
     //
     // if (Contains(conversions_by_output_, output_types)) {
@@ -252,7 +253,7 @@ absl::StatusOr<Graph> GraphBuilder::Bridge(
         "No path from %s to %s found; unable to satisfy type %s",
         ToString(input_types), ToString(output_types),
         ToString(to_satisfy_type)));
-  } while (unsatisfied.size());
+  }
 
   return graph;
 }

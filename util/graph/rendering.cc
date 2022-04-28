@@ -52,31 +52,28 @@ void RenderNode(ax::NodeEditor::EditorContext* context, const Node& node,
 
   ImGui::Text("#%d", evaluation_index);
 
-  const size_t num_lines = std::max(node.InputSize(), node.OutputSize());
+  ImGui::Columns(2);
 
-  for (size_t i = 0; i < num_lines; ++i) {
-    bool both = false;
-    if (i < node.input_tuple.Types().size()) {
-      Type input_type = node.input_tuple.Types()[i];
-      NE::BeginPin(id * 1000 + 100 + i, NE::PinKind::Input);
-      ImGui::PushStyleColor(ImGuiCol_Text,
-                            BoolColor(!node.input_tuple.CellIsEmpty(i)));
-      ImGui::Text("-> %s", ToString(input_type).c_str());
-      ImGui::PopStyleColor();
-      NE::EndPin();
-      both = true;
-    }
-    if (i < node.output_tuple.Types().size()) {
-      if (both) ImGui::SameLine();
-      Type output_type = node.output_tuple.Types()[i];
-      NE::BeginPin(id * 1000 + i, NE::PinKind::Output);
-      ImGui::PushStyleColor(ImGuiCol_Text,
-                            BoolColor(!node.output_tuple.CellIsEmpty(i)));
-      ImGui::Text("%s ->", ToString(output_type).c_str());
-      ImGui::PopStyleColor();
-      NE::EndPin();
-    }
+  for (size_t i = 0; i < node.input_tuple.Types().size(); ++i) {
+    Type input_type = node.input_tuple.Types()[i];
+    NE::BeginPin(id * 1000 + 100 + i, NE::PinKind::Input);
+    ImGui::PushStyleColor(ImGuiCol_Text,
+                          BoolColor(!node.input_tuple.CellIsEmpty(i)));
+    ImGui::Text("-> %s", ToString(input_type).c_str());
+    ImGui::PopStyleColor();
+    NE::EndPin();
   }
+  for (size_t i = 0; i < node.output_tuple.Types().size(); ++i) {
+    Type output_type = node.output_tuple.Types()[i];
+    NE::BeginPin(id * 1000 + i, NE::PinKind::Output);
+    ImGui::PushStyleColor(ImGuiCol_Text,
+                          BoolColor(!node.output_tuple.CellIsEmpty(i)));
+    ImGui::Text("%s ->", ToString(output_type).c_str());
+    ImGui::PopStyleColor();
+    NE::EndPin();
+  }
+
+  ImGui::Columns();
 
   NE::EndNode();
 }
