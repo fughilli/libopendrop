@@ -31,6 +31,8 @@ class OutlineModel {
     float energy;
     float blend_coeff;
     ModelToDraw model_to_draw;
+
+    float pupil_size = 1.0f;
   };
 
   static absl::StatusOr<std::shared_ptr<OutlineModel>> MakeShared();

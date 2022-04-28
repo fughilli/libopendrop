@@ -80,6 +80,14 @@ glm::mat4 ScaleTransform(float scale) {
   );
 }
 
+glm::mat4 ScaleTransform(float scale_x, float scale_y, float scale_z) {
+  return glm::mat4(scale_x, 0, 0, 0,  // Row 1
+                   0, scale_y, 0, 0,  // Row 2
+                   0, 0, scale_z, 0,  // Row 3
+                   0, 0, 0, 1         // Row 4
+  );
+}
+
 glm::mat4 AssembleTransform(float scale, glm::mat4 rotation,
                             glm::mat4 translation) {
   return translation * rotation * ScaleTransform(scale);

@@ -32,6 +32,9 @@ std::tuple<glm::mat4, glm::mat4, glm::mat4> ExtractTransformComponents(
 // Computes a scaling matrix with no other components.
 glm::mat4 ScaleTransform(float scale);
 
+// Computes a scaling matrix with no other components.
+glm::mat4 ScaleTransform(float scale_x, float scale_y, float scale_z);
+
 // Assembles a transformation matrix from components.
 glm::mat4 AssembleTransform(float scale, glm::mat4 rotation,
                             glm::mat4 translation);

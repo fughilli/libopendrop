@@ -20,8 +20,9 @@
 #include "preset/common/star.obj.h"
 #include "preset/common/star_outline.obj.h"
 #include "third_party/gl_helper.h"
-#include "util/graphics/gl_util.h"
 #include "third_party/glm_helper.h"
+#include "util/graphics/gl_util.h"
+#include "util/math/vector.h"
 #include "util/status/status_macros.h"
 
 namespace opendrop {
@@ -148,13 +149,23 @@ void OutlineModel::Draw(const Params& params) {
       glLineWidth(50);
       GlBindUniform(model_program_, "black", true);
       GlBindUniform(model_program_, "max_negative_z", true);
-      eyeball_pupil_.Draw();
+      // GlBindUniform(
+      //     model_program_, "model_transform",
+      //     params.model_transform *
+      //         ScaleTransform(1, params.pupil_size, params.pupil_size));
+      // eyeball_pupil_.Draw();
+      // GlBindUniform(model_program_, "model_transform", params.model_transform);
       eyeball_iris_.Draw();
       eyeball_ball_.Draw();
       glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
       GlBindUniform(model_program_, "max_negative_z", false);
       GlBindUniform(model_program_, "black", true);
+      GlBindUniform(
+          model_program_, "model_transform",
+          params.model_transform *
+              ScaleTransform(1, params.pupil_size, params.pupil_size));
       eyeball_pupil_.Draw();
+      GlBindUniform(model_program_, "model_transform", params.model_transform);
       GlBindUniform(model_program_, "black", false);
       GlBindUniform(model_program_, "light_color_a", params.color_a);
       GlBindUniform(model_program_, "light_color_b", params.color_b);

@@ -123,6 +123,7 @@ void SpaceWhaleEyeWarp::DrawEyeball(GlobalState& state, glm::vec2 zoom_vec) {
       .energy = state.energy(),
       .blend_coeff = texture_trigger_ ? 0.3f : 0.0f,
       .model_to_draw = OutlineModel::ModelToDraw::kEyeball,
+      .pupil_size = 0.5f + (1.0f + beat_estimators_[0].triangle_phase()) / 2.0f,
   });
 }
 
