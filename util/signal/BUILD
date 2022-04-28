@@ -68,3 +68,14 @@ cc_test(
         "@com_googletest//:gtest_main",
     ] + CROSS_COMPILATION_DEPS,
 )
+
+cc_library(
+    name = "decay_towards",
+    hdrs = ["decay_towards.h"],
+)
+
+cc_library(
+    name = "transition_controller",
+    hdrs = ["transition_controller.h"],
+    deps = [":decay_towards"],
+)

@@ -16,6 +16,7 @@
 #include "implot.h"
 #include "util/logging/logging.h"
 #include "util/math/math.h"
+#include "debug/signal_scope.h"
 
 namespace opendrop {
 
@@ -239,6 +240,7 @@ class ControlInjector {
     while (control_port_.Read(&control)) {
       for (auto& [control_name, control_value] : control.control()) {
         controls_by_name_[control_name] = control_value;
+        SignalScope::PlotSignal(control_name, control_value);
       }
 
       for (auto& button : control.buttons()) {
@@ -261,7 +263,6 @@ class ControlInjector {
 
     ImGui::Checkbox("Signal Inject Enable?", &enable_injection_);
     if (ImGui::Button("Save")) Save();
-    return;
 
     for (auto& [signal_name, signal_value] : signals_by_name_) {
       int selection = -1;

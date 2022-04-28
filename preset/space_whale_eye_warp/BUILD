@@ -27,6 +27,7 @@ cc_library(
         "//third_party:glm_helper",
         "//util/logging",
         "//util/signal:signals",
+        "//util/signal:transition_controller",
         "//util/status:status_macros",
         "//util/audio:beat_estimator",
         "//util/graphics:gl_interface",

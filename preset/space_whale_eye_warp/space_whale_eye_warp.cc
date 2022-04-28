@@ -20,6 +20,7 @@
 #include "util/math/perspective.h"
 #include "util/math/vector.h"
 #include "util/signal/signals.h"
+#include "util/signal/transition_controller.h"
 #include "util/status/status_macros.h"
 
 namespace opendrop {
@@ -102,14 +103,12 @@ std::tuple<int, float> CountAndScale(float arg, int max_count) {
 }
 float EstimateBeatPhase(GlobalState& state) { return 0; }
 
-void SpaceWhaleEyeWarp::DrawEyeball(GlobalState& state, glm::vec2 zoom_vec) {
+void SpaceWhaleEyeWarp::DrawEyeball(GlobalState& state, glm::vec3 zoom_vec) {
   float eye_scale = SIGPLOT(
       "eye_scale", 0.4 + SineEase(beat_estimators_[0].triangle_phase()) * 0.2);
-  glm::mat4 model_transform =
-      ScaleTransform(eye_scale) *
-      glm::mat4(
-          OrientTowards(glm::vec3(zoom_vec, 0) + Directions::kIntoScreen)) *
-      RotateAround(Directions::kUp, kPi / 2);
+  glm::mat4 model_transform = ScaleTransform(eye_scale) *
+                              glm::mat4(OrientTowards(zoom_vec)) *
+                              RotateAround(Directions::kUp, kPi / 2);
   const glm::vec4 color_a =
       glm::vec4(HsvToRgb(glm::vec3(state.energy(), 1, 1)), 1);
   const glm::vec4 color_b =
@@ -121,7 +120,7 @@ void SpaceWhaleEyeWarp::DrawEyeball(GlobalState& state, glm::vec2 zoom_vec) {
       .render_target = back_render_target_,
       .alpha = 1,
       .energy = state.energy(),
-      .blend_coeff = texture_trigger_ ? 0.3f : 0.0f,
+      .blend_coeff = 0.3f,
       .model_to_draw = OutlineModel::ModelToDraw::kEyeball,
       .pupil_size = 0.5f + (1.0f + beat_estimators_[0].triangle_phase()) / 2.0f,
   });
@@ -134,13 +133,24 @@ void SpaceWhaleEyeWarp::OnDrawFrame(
     beat_estimators_[i].Estimate(state->channel_band(i), state->dt());
   }
 
-  float zoom_coeff = 1.1f;
+  glm::vec3 zoom_vec =
+      glm::vec3(UnitVectorAtAngle(zoom_angle_), 0) + Directions::kIntoScreen;
 
-  glm::vec2 zoom_vec = UnitVectorAtAngle(zoom_angle_);
+  zoom_vec =
+      glm::vec3(SIGINJECT_OVERRIDE("zoom_vec_x", zoom_vec.x, -1.0f, 1.0f),
+                SIGINJECT_OVERRIDE("zoom_vec_y", zoom_vec.y, -1.0f, 1.0f),
+                SIGINJECT_OVERRIDE("zoom_vec_z", zoom_vec.z, -1.0f, 1.0f));
+
+  zoom_vec = glm::normalize(zoom_vec);
 
   zoom_angle_ += (0.3 + (beat_estimators_[0].triangle_phase() *
                          sin(state->energy() * 10))) /
                  10;
+
+  transition_controller_.Input(
+      SIGINJECT_OVERRIDE("transition_input", 0.0f, -1.0f, 1.0f));
+
+  SIGPLOT("transition_value", transition_controller_.value());
 
   {
     auto depth_output_activation = depth_output_target_->Activate();
@@ -165,7 +175,6 @@ void SpaceWhaleEyeWarp::OnDrawFrame(
     GlBindUniform(warp_program_, "energy", state->energy());
     // Figure out how to keep it from zooming towards the viewer when the line
     // is moving
-    GlBindUniform(warp_program_, "zoom_coeff", zoom_coeff);
     GlBindUniform(warp_program_, "zoom_vec", zoom_vec);
     GlBindUniform(warp_program_, "model_transform", glm::mat4(1.0f));
     auto binding_options = gl::GlTextureBindingOptions();

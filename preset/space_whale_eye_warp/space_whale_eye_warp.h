@@ -13,6 +13,7 @@
 #include "util/graphics/gl_interface.h"
 #include "util/graphics/gl_render_target.h"
 #include "util/graphics/gl_texture_manager.h"
+#include "util/signal/transition_controller.h"
 
 namespace opendrop {
 
@@ -43,7 +44,7 @@ class SpaceWhaleEyeWarp : public Preset {
   void OnUpdateGeometry() override;
 
  private:
-  void DrawEyeball(GlobalState& state, glm::vec2 zoom_vec);
+  void DrawEyeball(GlobalState& state, glm::vec3 zoom_vec);
 
   std::shared_ptr<gl::GlProgram> warp_program_;
   std::shared_ptr<gl::GlProgram> composite_program_;
@@ -67,6 +68,9 @@ class SpaceWhaleEyeWarp : public Preset {
   bool texture_trigger_ = false;
 
   BeatEstimator beat_estimators_[3] = {{0.99f}, {0.99f}, {0.99f}};
+
+  TransitionController transition_controller_{TransitionController::Options{
+      .decay_rate = 0.05f, .input_decay_zone = 0.2f}};
 };
 
 }  // namespace opendrop

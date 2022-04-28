@@ -15,6 +15,7 @@ cc_library(
         ":control_cc_proto",
         ":control_state_cc_proto",
         ":proto_port",
+        ":signal_scope",
         "//util/logging",
         "//util/math",
         "@com_google_absl//absl/container:flat_hash_map",
