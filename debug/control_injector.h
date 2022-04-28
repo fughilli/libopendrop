@@ -261,6 +261,7 @@ class ControlInjector {
 
     ImGui::Checkbox("Signal Inject Enable?", &enable_injection_);
     if (ImGui::Button("Save")) Save();
+    return;
 
     for (auto& [signal_name, signal_value] : signals_by_name_) {
       int selection = -1;

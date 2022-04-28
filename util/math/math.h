@@ -88,6 +88,11 @@ T Sign(T value) {
   return value;
 }
 
+template <typename T>
+T Quantize(T value, T multiple, T zero = 0) {
+  return std::floor((value - zero) / multiple) * multiple + zero;
+}
+
 }  // namespace opendrop
 
 #endif  // UTIL_MATH_MATH_H_

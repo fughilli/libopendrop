@@ -22,6 +22,7 @@
 #include "preset/rotary_transporter/rotary_transporter.h"
 #include "preset/shape_bounce/shape_bounce.h"
 #include "preset/simple_preset/simple_preset.h"
+#include "preset/space_whale_eye_warp/space_whale_eye_warp.h"
 #include "preset/template_preset/template_preset.h"
 
 namespace opendrop {
@@ -102,7 +103,8 @@ absl::StatusOr<std::shared_ptr<opendrop::Preset>> GetRandomPresetFromList(
       opendrop::Glowsticks3d, opendrop::Glowsticks3dZoom,
       opendrop::RotaryTransporter, opendrop::CubeBoom, opendrop::EyeRoll,
       opendrop::CubeWreath, opendrop::Pills, opendrop::Glowsticks3dZoom*/
-      opendrop::GraphPreset>(std::forward<Args>(args)...);
+      /*opendrop::GraphPreset*/ opendrop::SpaceWhaleEyeWarp>(
+      std::forward<Args>(args)...);
 }
 
 }  // namespace opendrop

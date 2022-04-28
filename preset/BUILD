@@ -14,6 +14,7 @@ PRESET_DEPS_LIST = [
     "//preset/cube_wreath",
     "//preset/pills",
     "//preset/graph_preset",
+    "//preset/space_whale_eye_warp",
 ]
 
 cc_library(

@@ -12,6 +12,8 @@ namespace opendrop {
 
 class GlobalState {
  public:
+  static constexpr int kNumFilterBands = 3;
+
   struct Options {
     int sampling_rate;
   };
@@ -62,9 +64,19 @@ class GlobalState {
     return treble_left_energy() + treble_right_energy();
   }
 
+  float channel_band_left(int band) const {
+    return channel_bands_[0][std::clamp(band, 0, kNumFilterBands)];
+  }
+  float channel_band_right(int band) const {
+    return channel_bands_[1][std::clamp(band, 0, kNumFilterBands)];
+  }
+
+  float channel_band(int band) const {
+    return channel_band_left(band) + channel_band_right(band);
+  }
+
  private:
   static constexpr int kNumChannels = 2;
-  static constexpr int kNumFilterBands = 3;
   using FilterCoeffs = std::tuple<float, float, IirBandFilterType>;
   static constexpr std::array<FilterCoeffs, kNumFilterBands> kFilterBandCoeffs =
       {
