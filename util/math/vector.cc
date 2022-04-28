@@ -31,6 +31,12 @@ glm::mat4 RingTransform(glm::vec3 normal, float radius,
          translation;
 }
 
+glm::mat4 TranslationTransform(glm::vec3 translation) {
+  glm::mat4 ret = Constants::kI4x4;
+  ret[3] = glm::vec4(translation, 1.0f);
+  return ret;
+}
+
 glm::mat4 LineTransform(glm::vec3 axis, float line_length,
                         float position_along_line) {
   glm::mat4 translation = Constants::kI4x4;

@@ -122,10 +122,12 @@ float EstimateBeatPhase(GlobalState& state) { return 0; }
 
 void SpaceWhaleEyeWarp::DrawEyeball(GlobalState& state, glm::vec3 zoom_vec,
                                     float pupil_size, float scale,
-                                    float black_alpha) {
-  glm::mat4 model_transform = ScaleTransform(scale) *
-                              glm::mat4(OrientTowards(zoom_vec)) *
-                              RotateAround(Directions::kUp, kPi / 2);
+                                    float black_alpha, bool back,
+                                    glm::vec3 offset) {
+  glm::mat4 model_transform =
+      glm::mat4(OrientTowards(zoom_vec)) * TranslationTransform(offset) *
+      glm::mat4(OrientTowards(zoom_vec / 2.0f)) * ScaleTransform(scale) *
+      RotateAround(Directions::kUp, kPi / 2);
   const glm::vec4 color_a =
       glm::vec4(HsvToRgb(glm::vec3(state.energy(), 1, 1)), 1);
   const glm::vec4 color_b =
@@ -140,7 +142,8 @@ void SpaceWhaleEyeWarp::DrawEyeball(GlobalState& state, glm::vec3 zoom_vec,
       .blend_coeff = 0.3f,
       .model_to_draw = OutlineModel::ModelToDraw::kEyeball,
       .pupil_size = pupil_size,
-      .black_render_target = back_back_render_target_,
+      .black_render_target =
+          back ? back_back_render_target_ : back_render_target_,
       .black_alpha = black_alpha,
   });
 }
@@ -161,8 +164,6 @@ void SpaceWhaleEyeWarp::OnDrawFrame(
 
   float pupil_size =
       0.5f + (1.0f + beat_estimators_[0].triangle_phase()) / 2.0f;
-
-  pupil_size = Lerp(pupil_size, 20.0f, transition_controller_.LeadOutValue());
 
   glm::vec3 zoom_vec =
       glm::vec3(UnitVectorAtAngle(zoom_angle_), 0) + Directions::kIntoScreen;
@@ -200,12 +201,47 @@ void SpaceWhaleEyeWarp::OnDrawFrame(
     glDepthRange(0, 10);
     glEnable(GL_DEPTH_TEST);
 
-    DrawEyeball(*state, zoom_vec, pupil_size, eye_scale,
-                std::min(1.0f, 0.1f + transition_controller_.LeadOutValue()));
+    if (transition_controller_.TransitionCount() % 2 == 0) {
+      pupil_size =
+          Lerp(pupil_size, 20.0f, transition_controller_.LeadOutValue());
+      DrawEyeball(*state, zoom_vec, pupil_size, eye_scale,
+                  std::min(1.0f, 0.1f + transition_controller_.LeadOutValue()),
+                  true /*transition_controller_.TransitionCount() % 2 == 0*/,
+                  glm::vec3(0, 0, 0));
+    } else {
+      pupil_size =
+          Lerp(pupil_size, 100.0f, transition_controller_.LeadOutValue());
+      DrawEyeball(*state, zoom_vec, pupil_size, eye_scale / 4,
+                  std::min(1.0f, 0.1f + transition_controller_.LeadOutValue()),
+                  true /*transition_controller_.TransitionCount() % 2 == 0*/,
+                  glm::vec3(-0.2, 0.1, 0));
+      DrawEyeball(*state, zoom_vec, pupil_size, eye_scale / 4,
+                  std::min(1.0f, 0.1f + transition_controller_.LeadOutValue()),
+                  true /*transition_controller_.TransitionCount() % 2 == 0*/,
+                  glm::vec3(0.2, 0.1, 0));
+    }
 
     glDisable(GL_DEPTH_TEST);
   }
 
+  glm::vec4 rainbow_border =
+      glm::vec4(HsvToRgb(glm::vec3(background_hue_, 1, 1)), 1);
+
+  glm::vec4 black_and_white_border = glm::vec4(0, 0, 0, 1);
+  {
+    bool white = std::fmod(background_hue_ * 10.0f, 1.0f) > 0.5f;
+    if (white) black_and_white_border = glm::vec4(1, 1, 1, 1);
+  }
+
+  glm::vec4 front_border, back_border;
+  if (transition_controller_.TransitionCount() % 2 == 1) {
+    front_border = black_and_white_border;
+    back_border = rainbow_border;
+
+  } else {
+    back_border = black_and_white_border;
+    front_border = rainbow_border;
+  }
   {
     auto front_activation = front_render_target_->Activate();
 
@@ -223,19 +259,14 @@ void SpaceWhaleEyeWarp::OnDrawFrame(
         state->power() *
         SIGINJECT_OVERRIDE("space_whale_eye_warp_border_hue_coeff", 0.1f, 0.0f,
                            3.0f);
-    binding_options.border_color = glm::vec4(
-        HsvToRgb(glm::vec3(
-            background_hue_, 1,
-            SIGINJECT_OVERRIDE("space_whale_eye_warp_border_value_coeff", 1.0f,
-                               0.0f, 1.0f))) *
-            static_cast<float>(transition_controller_.TransitionCount() % 2),
-        1);
+    binding_options.border_color = front_border;
     binding_options.sampling_mode = gl::GlTextureSamplingMode::kClampToBorder;
     GlBindRenderTargetTextureToUniform(warp_program_, "last_frame",
                                        back_render_target_, binding_options);
     GlBindRenderTargetTextureToUniform(warp_program_, "input",
                                        depth_output_target_, binding_options);
-    GlBindUniform(warp_program_, "input_enable", true);
+    GlBindUniform(warp_program_, "input_enable",
+                  transition_controller_.TransitionCount() % 2 == 0);
 
     glViewport(0, 0, longer_dimension(), longer_dimension());
     rectangle_.Draw();
@@ -257,14 +288,7 @@ void SpaceWhaleEyeWarp::OnDrawFrame(
         state->power() *
         SIGINJECT_OVERRIDE("space_whale_eye_warp_border_hue_coeff", 0.1f, 0.0f,
                            3.0f);
-    binding_options.border_color = glm::vec4(
-        HsvToRgb(glm::vec3(
-            background_hue_, 1,
-            SIGINJECT_OVERRIDE("space_whale_eye_warp_border_value_coeff", 1.0f,
-                               0.0f, 1.0f))) *
-            static_cast<float>((transition_controller_.TransitionCount() + 1) %
-                               2),
-        1);
+    binding_options.border_color = back_border;
     binding_options.sampling_mode = gl::GlTextureSamplingMode::kClampToBorder;
     GlBindRenderTargetTextureToUniform(
         warp_program_, "last_frame", back_back_render_target_, binding_options);
@@ -284,6 +308,11 @@ void SpaceWhaleEyeWarp::OnDrawFrame(
     GlBindRenderTargetTextureToUniform(composite_program_, "render_target",
                                        front_render_target_,
                                        gl::GlTextureBindingOptions());
+    GlBindRenderTargetTextureToUniform(composite_program_, "input",
+                                       depth_output_target_,
+                                       gl::GlTextureBindingOptions());
+    GlBindUniform(composite_program_, "input_enable",
+                  transition_controller_.TransitionCount() % 2 == 1);
 
     SquareViewport();
     rectangle_.Draw();
