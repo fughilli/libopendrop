@@ -80,10 +80,14 @@ void OutlineModel::Draw(const Params& params) {
   GlBindRenderTargetTextureToUniform(model_program_, "render_target",
                                      params.render_target,
                                      gl::GlTextureBindingOptions());
+  GlBindRenderTargetTextureToUniform(model_program_, "black_render_target",
+                                     params.black_render_target,
+                                     gl::GlTextureBindingOptions());
 
   GlBindUniform(model_program_, "energy", params.energy);
   GlBindUniform(model_program_, "blend_coeff", params.blend_coeff);
   GlBindUniform(model_program_, "model_transform", params.model_transform);
+  GlBindUniform(model_program_, "black_alpha", 0.0f);
 
   switch (SIGINJECT_ENUM("model_to_draw", params.model_to_draw)) {
     case kCube:
@@ -154,7 +158,8 @@ void OutlineModel::Draw(const Params& params) {
       //     params.model_transform *
       //         ScaleTransform(1, params.pupil_size, params.pupil_size));
       // eyeball_pupil_.Draw();
-      // GlBindUniform(model_program_, "model_transform", params.model_transform);
+      // GlBindUniform(model_program_, "model_transform",
+      // params.model_transform);
       eyeball_iris_.Draw();
       eyeball_ball_.Draw();
       glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
@@ -164,7 +169,9 @@ void OutlineModel::Draw(const Params& params) {
           model_program_, "model_transform",
           params.model_transform *
               ScaleTransform(1, params.pupil_size, params.pupil_size));
+      GlBindUniform(model_program_, "black_alpha", params.black_alpha);
       eyeball_pupil_.Draw();
+      GlBindUniform(model_program_, "black_alpha", 0.0f);
       GlBindUniform(model_program_, "model_transform", params.model_transform);
       GlBindUniform(model_program_, "black", false);
       GlBindUniform(model_program_, "light_color_a", params.color_a);

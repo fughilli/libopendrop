@@ -17,10 +17,15 @@ uniform float blend_coeff;
 uniform vec4 light_color_a;
 uniform vec4 light_color_b;
 
+uniform float black_alpha;
+uniform sampler2D black_render_target;
+
 void main() {
   vec3 light_direction = vec3(cos(energy), sin(energy), -0.6);
   gl_FragColor =
-      black ? vec4(0, 0, 0, 1)
+      black ? mix(vec4(0, 0, 0, 1),
+                  texture2D(black_render_target, screen_to_tex(screen_uv / 2)),
+                  black_alpha)
             : (texture2D(render_target, texture_uv) * blend_coeff +
                mix(light_color_a, light_color_b,
                    dot(normalize(normal), normalize(light_direction))) *

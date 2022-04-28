@@ -3,10 +3,10 @@
 
 #include <memory>
 
-#include "util/graphics/gl_interface.h"
-#include "util/graphics/gl_render_target.h"
 #include "primitive/model.h"
 #include "third_party/glm_helper.h"
+#include "util/graphics/gl_interface.h"
+#include "util/graphics/gl_render_target.h"
 
 namespace opendrop {
 
@@ -33,6 +33,9 @@ class OutlineModel {
     ModelToDraw model_to_draw;
 
     float pupil_size = 1.0f;
+
+    std::shared_ptr<gl::GlRenderTarget> black_render_target;
+    float black_alpha;
   };
 
   static absl::StatusOr<std::shared_ptr<OutlineModel>> MakeShared();

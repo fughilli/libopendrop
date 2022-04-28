@@ -28,15 +28,18 @@ class SpaceWhaleEyeWarp : public Preset {
   int max_count() const override { return 1; }
 
  protected:
-  SpaceWhaleEyeWarp(std::shared_ptr<gl::GlProgram> warp_program,
-                    std::shared_ptr<gl::GlProgram> composite_program,
-                    std::shared_ptr<gl::GlProgram> passthrough_program,
-                    std::shared_ptr<gl::GlRenderTarget> model_texture_target,
-                    std::shared_ptr<gl::GlRenderTarget> front_render_target,
-                    std::shared_ptr<gl::GlRenderTarget> back_render_target,
-                    std::shared_ptr<gl::GlRenderTarget> depth_output_target,
-                    std::shared_ptr<OutlineModel> outline_model,
-                    std::shared_ptr<gl::GlTextureManager> texture_manager);
+  SpaceWhaleEyeWarp(
+      std::shared_ptr<gl::GlProgram> warp_program,
+      std::shared_ptr<gl::GlProgram> composite_program,
+      std::shared_ptr<gl::GlProgram> passthrough_program,
+      std::shared_ptr<gl::GlRenderTarget> model_texture_target,
+      std::shared_ptr<gl::GlRenderTarget> back_front_render_target,
+      std::shared_ptr<gl::GlRenderTarget> back_back_render_target,
+      std::shared_ptr<gl::GlRenderTarget> front_render_target,
+      std::shared_ptr<gl::GlRenderTarget> back_render_target,
+      std::shared_ptr<gl::GlRenderTarget> depth_output_target,
+      std::shared_ptr<OutlineModel> outline_model,
+      std::shared_ptr<gl::GlTextureManager> texture_manager);
 
   void OnDrawFrame(
       absl::Span<const float> samples, std::shared_ptr<GlobalState> state,
@@ -45,10 +48,10 @@ class SpaceWhaleEyeWarp : public Preset {
   void OnUpdateGeometry() override;
 
  private:
-  constexpr static float kCutoff = 10.0f;
+  constexpr static float kCutoff = 0.1f;
 
   void DrawEyeball(GlobalState& state, glm::vec3 zoom_vec, float pupil_size,
-                   float eye_scale);
+                   float eye_scale, float black_alpha);
 
   std::shared_ptr<gl::GlProgram> warp_program_;
   std::shared_ptr<gl::GlProgram> composite_program_;
@@ -56,6 +59,8 @@ class SpaceWhaleEyeWarp : public Preset {
   std::shared_ptr<gl::GlRenderTarget> model_texture_target_;
   std::shared_ptr<gl::GlRenderTarget> front_render_target_;
   std::shared_ptr<gl::GlRenderTarget> back_render_target_;
+  std::shared_ptr<gl::GlRenderTarget> back_front_render_target_;
+  std::shared_ptr<gl::GlRenderTarget> back_back_render_target_;
   std::shared_ptr<gl::GlRenderTarget> depth_output_target_;
   std::shared_ptr<OutlineModel> outline_model_;
 
@@ -73,8 +78,11 @@ class SpaceWhaleEyeWarp : public Preset {
 
   BeatEstimator beat_estimators_[3] = {{0.99f}, {0.99f}, {0.99f}};
 
-  TransitionController transition_controller_{TransitionController::Options{
-      .decay_rate = 0.05f, .input_decay_zone = 0.2f}};
+  TransitionController transition_controller_{
+      TransitionController::Options{.decay_rate = 0.05f,
+                                    .input_decay_zone = 0.2f,
+                                    .threshold = 0.6f,
+                                    .closeness_threshold = 0.01f}};
 
   std::shared_ptr<IirFilter> zoom_filters_[3] = {
       IirSinglePoleFilter(kCutoff, IirSinglePoleFilterType::kLowpass),

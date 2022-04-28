@@ -36,6 +36,8 @@ SpaceWhaleEyeWarp::SpaceWhaleEyeWarp(
     std::shared_ptr<gl::GlRenderTarget> model_texture_target,
     std::shared_ptr<gl::GlRenderTarget> front_render_target,
     std::shared_ptr<gl::GlRenderTarget> back_render_target,
+    std::shared_ptr<gl::GlRenderTarget> back_front_render_target,
+    std::shared_ptr<gl::GlRenderTarget> back_back_render_target,
     std::shared_ptr<gl::GlRenderTarget> depth_output_target,
     std::shared_ptr<OutlineModel> outline_model,
     std::shared_ptr<gl::GlTextureManager> texture_manager)
@@ -46,6 +48,8 @@ SpaceWhaleEyeWarp::SpaceWhaleEyeWarp(
       model_texture_target_(model_texture_target),
       front_render_target_(front_render_target),
       back_render_target_(back_render_target),
+      back_front_render_target_(back_front_render_target),
+      back_back_render_target_(back_back_render_target),
       depth_output_target_(depth_output_target),
       outline_model_(outline_model)
 
@@ -66,6 +70,10 @@ absl::StatusOr<std::shared_ptr<Preset>> SpaceWhaleEyeWarp::MakeShared(
                    gl::GlRenderTarget::MakeShared(0, 0, texture_manager));
   ASSIGN_OR_RETURN(auto back_render_target,
                    gl::GlRenderTarget::MakeShared(0, 0, texture_manager));
+  ASSIGN_OR_RETURN(auto back_front_render_target,
+                   gl::GlRenderTarget::MakeShared(0, 0, texture_manager));
+  ASSIGN_OR_RETURN(auto back_back_render_target,
+                   gl::GlRenderTarget::MakeShared(0, 0, texture_manager));
   ASSIGN_OR_RETURN(auto depth_output_target,
                    gl::GlRenderTarget::MakeShared(0, 0, texture_manager,
                                                   {.enable_depth = true}));
@@ -73,8 +81,9 @@ absl::StatusOr<std::shared_ptr<Preset>> SpaceWhaleEyeWarp::MakeShared(
 
   return std::shared_ptr<SpaceWhaleEyeWarp>(new SpaceWhaleEyeWarp(
       warp_program, composite_program, passthrough_program, nullptr,
-      front_render_target, back_render_target, depth_output_target,
-      outline_model, texture_manager));
+      front_render_target, back_render_target, back_front_render_target,
+      back_back_render_target, depth_output_target, outline_model,
+      texture_manager));
 }
 
 void SpaceWhaleEyeWarp::OnUpdateGeometry() {
@@ -90,6 +99,14 @@ void SpaceWhaleEyeWarp::OnUpdateGeometry() {
   if (back_render_target_ != nullptr) {
     back_render_target_->UpdateGeometry(longer_dimension(), longer_dimension());
   }
+  if (back_front_render_target_ != nullptr) {
+    back_front_render_target_->UpdateGeometry(longer_dimension(),
+                                              longer_dimension());
+  }
+  if (back_back_render_target_ != nullptr) {
+    back_back_render_target_->UpdateGeometry(longer_dimension(),
+                                             longer_dimension());
+  }
   if (depth_output_target_ != nullptr) {
     depth_output_target_->UpdateGeometry(longer_dimension(),
                                          longer_dimension());
@@ -104,7 +121,8 @@ std::tuple<int, float> CountAndScale(float arg, int max_count) {
 float EstimateBeatPhase(GlobalState& state) { return 0; }
 
 void SpaceWhaleEyeWarp::DrawEyeball(GlobalState& state, glm::vec3 zoom_vec,
-                                    float pupil_size, float scale) {
+                                    float pupil_size, float scale,
+                                    float black_alpha) {
   glm::mat4 model_transform = ScaleTransform(scale) *
                               glm::mat4(OrientTowards(zoom_vec)) *
                               RotateAround(Directions::kUp, kPi / 2);
@@ -122,6 +140,8 @@ void SpaceWhaleEyeWarp::DrawEyeball(GlobalState& state, glm::vec3 zoom_vec,
       .blend_coeff = 0.3f,
       .model_to_draw = OutlineModel::ModelToDraw::kEyeball,
       .pupil_size = pupil_size,
+      .black_render_target = back_back_render_target_,
+      .black_alpha = black_alpha,
   });
 }
 
@@ -147,16 +167,16 @@ void SpaceWhaleEyeWarp::OnDrawFrame(
   glm::vec3 zoom_vec =
       glm::vec3(UnitVectorAtAngle(zoom_angle_), 0) + Directions::kIntoScreen;
 
-  zoom_vec =
-      glm::vec3(SIGINJECT_OVERRIDE("zoom_vec_x",
-                                   zoom_filters_[0]->ProcessSample(zoom_vec.x),
-                                   -1.0f, 1.0f),
-                SIGINJECT_OVERRIDE("zoom_vec_y",
-                                   zoom_filters_[1]->ProcessSample(zoom_vec.y),
-                                   -1.0f, 1.0f),
-                SIGINJECT_OVERRIDE("zoom_vec_z",
-                                   zoom_filters_[2]->ProcessSample(zoom_vec.z),
-                                   -1.0f, 1.0f));
+  zoom_vec = glm::vec3(
+
+      SIGPLOT("zoom_vec_x_filtered",
+              zoom_filters_[0]->ProcessSample(SIGPLOT(
+                  "zoom_vec_x",
+                  SIGINJECT_OVERRIDE("zoom_vec_x", zoom_vec.x, -1.0f, 1.0f)))),
+      zoom_filters_[1]->ProcessSample(
+          SIGINJECT_OVERRIDE("zoom_vec_y", zoom_vec.y, -1.0f, 1.0f)),
+      zoom_filters_[2]->ProcessSample(
+          SIGINJECT_OVERRIDE("zoom_vec_z", zoom_vec.z, -1.0f, 1.0f)));
 
   zoom_vec = glm::normalize(zoom_vec);
 
@@ -180,7 +200,8 @@ void SpaceWhaleEyeWarp::OnDrawFrame(
     glDepthRange(0, 10);
     glEnable(GL_DEPTH_TEST);
 
-    DrawEyeball(*state, zoom_vec, pupil_size, eye_scale);
+    DrawEyeball(*state, zoom_vec, pupil_size, eye_scale,
+                std::min(1.0f, 0.1f + transition_controller_.LeadOutValue()));
 
     glDisable(GL_DEPTH_TEST);
   }
@@ -214,6 +235,40 @@ void SpaceWhaleEyeWarp::OnDrawFrame(
                                        back_render_target_, binding_options);
     GlBindRenderTargetTextureToUniform(warp_program_, "input",
                                        depth_output_target_, binding_options);
+    GlBindUniform(warp_program_, "input_enable", true);
+
+    glViewport(0, 0, longer_dimension(), longer_dimension());
+    rectangle_.Draw();
+  }
+  {
+    auto back_front_activation = back_front_render_target_->Activate();
+
+    auto program_activation = warp_program_->Activate();
+
+    GlBindUniform(warp_program_, "frame_size", glm::ivec2(width(), height()));
+    GlBindUniform(warp_program_, "power", state->power());
+    GlBindUniform(warp_program_, "energy", state->energy());
+    // Figure out how to keep it from zooming towards the viewer when the line
+    // is moving
+    GlBindUniform(warp_program_, "zoom_vec", zoom_vec);
+    GlBindUniform(warp_program_, "model_transform", glm::mat4(1.0f));
+    auto binding_options = gl::GlTextureBindingOptions();
+    background_hue_ +=
+        state->power() *
+        SIGINJECT_OVERRIDE("space_whale_eye_warp_border_hue_coeff", 0.1f, 0.0f,
+                           3.0f);
+    binding_options.border_color = glm::vec4(
+        HsvToRgb(glm::vec3(
+            background_hue_, 1,
+            SIGINJECT_OVERRIDE("space_whale_eye_warp_border_value_coeff", 1.0f,
+                               0.0f, 1.0f))) *
+            static_cast<float>((transition_controller_.TransitionCount() + 1) %
+                               2),
+        1);
+    binding_options.sampling_mode = gl::GlTextureSamplingMode::kClampToBorder;
+    GlBindRenderTargetTextureToUniform(
+        warp_program_, "last_frame", back_back_render_target_, binding_options);
+    GlBindUniform(warp_program_, "input_enable", false);
 
     glViewport(0, 0, longer_dimension(), longer_dimension());
     rectangle_.Draw();
@@ -234,6 +289,8 @@ void SpaceWhaleEyeWarp::OnDrawFrame(
     rectangle_.Draw();
 
     back_render_target_->swap_texture_unit(front_render_target_.get());
+    back_back_render_target_->swap_texture_unit(
+        back_front_render_target_.get());
   }
 }
 
