@@ -55,6 +55,7 @@ void RenderNode(ax::NodeEditor::EditorContext* context, const Node& node,
   const size_t num_lines = std::max(node.InputSize(), node.OutputSize());
 
   for (size_t i = 0; i < num_lines; ++i) {
+    bool both = false;
     if (i < node.input_tuple.Types().size()) {
       Type input_type = node.input_tuple.Types()[i];
       NE::BeginPin(id * 1000 + 100 + i, NE::PinKind::Input);
@@ -63,9 +64,10 @@ void RenderNode(ax::NodeEditor::EditorContext* context, const Node& node,
       ImGui::Text("-> %s", ToString(input_type).c_str());
       ImGui::PopStyleColor();
       NE::EndPin();
+      both = true;
     }
-    ImGui::SameLine();
     if (i < node.output_tuple.Types().size()) {
+      if (both) ImGui::SameLine();
       Type output_type = node.output_tuple.Types()[i];
       NE::BeginPin(id * 1000 + i, NE::PinKind::Output);
       ImGui::PushStyleColor(ImGuiCol_Text,
