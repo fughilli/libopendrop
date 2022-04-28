@@ -43,8 +43,7 @@ class SpaceWhaleEyeWarp : public Preset {
   void OnUpdateGeometry() override;
 
  private:
-  void DrawCubes(float scale, float power, float bass, float energy, float dt, float time,
-                 float zoom_coeff, glm::vec3 zoom_vec, int num_cubes);
+  void DrawEyeball(GlobalState& state, glm::vec2 zoom_vec);
 
   std::shared_ptr<gl::GlProgram> warp_program_;
   std::shared_ptr<gl::GlProgram> composite_program_;
@@ -63,17 +62,11 @@ class SpaceWhaleEyeWarp : public Preset {
   float background_hue_ = 0;
   float rot_arg_ = 0.0f;
 
+  float zoom_angle_ = 0.0f;
+
   bool texture_trigger_ = false;
 
   BeatEstimator beat_estimators_[3] = {{0.99f}, {0.99f}, {0.99f}};
-  const char* beat_estimator_signal_names_[3] = {"bass_beat", "mid_beat",
-                                                 "treble_beat"};
-  const char* beat_estimator_signal_names_binned_[3] = {
-      "bass_beat_bin", "mid_beat_bin", "treble_beat_bin"};
-  const char* beat_estimator_signal_names_phase_[3] = {
-      "bass_beat_phase", "mid_beat_phase", "treble_beat_phase"};
-  const char* beat_estimator_signal_names_threshold_[3] = {
-      "bass_beat_threshold", "mid_beat_threshold", "treble_beat_threshold"};
 };
 
 }  // namespace opendrop

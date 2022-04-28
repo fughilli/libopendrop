@@ -54,6 +54,8 @@ float EvenDistribution(int index, int count);
 float ClusterDistribution(int index, int count, int n_clusters,
                           float cluster_scale, float* out_cluster_coeff);
 
+glm::mat4 RotateAround(glm::vec3 axis, float angle);
+
 }  // namespace opendrop
 
 #endif  // UTIL_MATH_VECTOR_H_

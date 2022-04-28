@@ -102,147 +102,44 @@ std::tuple<int, float> CountAndScale(float arg, int max_count) {
 }
 float EstimateBeatPhase(GlobalState& state) { return 0; }
 
-void SpaceWhaleEyeWarp::DrawCubes(float cube_scale, float power, float bass,
-                                  float energy, float dt, float time,
-                                  float zoom_coeff, glm::vec3 zoom_vec,
-                                  int num_cubes) {
-  float rot_speed_coeff = SIGINJECT_OVERRIDE(
-      "space_whale_eye_warp_rot_speed_coeff", 1.0f, 0.0f, 5.0f);
-
-  rot_arg_ += rot_speed_coeff * dt;
-
-  glm::mat3x3 look_rotation = OrientTowards(zoom_vec);
-
-  float SIGPLOT_ASSIGN(locate_mix_coeff,
-                       SineEase(std::clamp(zoom_coeff * 3, 0.0f, 1.0f)));
-  // locate_mix_coeff = 1.0f;
-  float SIGPLOT_ASSIGN(opposite_locate_mix_coeff,
-                       std::clamp(zoom_coeff, -1.0f, 0.0f));
-
-  auto [n_clusters, cluster_scale] = CountAndScale(time / 3, 7);
-
-  SIGPLOT("cluster_scale", cluster_scale);
-  SIGPLOT("maybe_sign", Sign(cos(time / 3 * kPi)));
-
-  glm::mat4 model_transform;
-  for (int i = 0; i < num_cubes; ++i) {
-    float cluster_coeff = 0.0f;
-    float position_along_ring = static_cast<float>(
-        sin(energy) * 5 + ClusterDistribution(i, num_cubes, n_clusters,
-                                              cluster_scale, &cluster_coeff));
-    float SIGPLOT_ASSIGN(ring_radius, 0.3f + (sin(energy * 10) + 1) / 6);
-    ring_radius *= Lerp((0.5f + cluster_coeff * 0.5f), 1.0f, cluster_scale);
-    glm::mat4 ring_transform = RingTransform(Directions::kOutOfScreen,
-                                             ring_radius, position_along_ring);
-
-    // Build a transform that takes an object from the center and moves it out
-    // along a line extending from the left to the right edge of the display.
-    float distribute_coeff = 2 * i / static_cast<float>(num_cubes);
-    position_accum_ +=
-        (dt / 30) * SineEase(-std::clamp(zoom_coeff * 3, -1.0f, 0.0f));
-    float SIGPLOT_ASSIGN_WRAP(slide_coeff, position_accum_, 0.0f, 1.0f);
-    glm::mat4 line_transform = glm::translate(
-        glm::mat4(1.0f),
-        // Rotate the set of objects from one side of the screen to the other.
-        // Choose the extents such that in the worst case we don't have a gap at
-        // either end.
-        glm::vec3((-1.0f + std::fmodf(distribute_coeff + slide_coeff, 2.0f)) *
-                      (static_cast<float>(num_cubes + 1) / (num_cubes - 1)),
-                  0.0f, 0.0f));
-    glm::mat4 locate_transform =
-        TransformMix(line_transform, ring_transform, locate_mix_coeff);
-    auto transform_components = ExtractTransformComponents(locate_transform);
-
-    model_transform =
-        /*glm::mat4(look_rotation) **/ locate_transform *
-        glm::mat4x4(cube_scale * 0.7, 0, 0, 0,  // Row 1
-                    0, cube_scale * 0.7, 0, 0,  // Row 2
-                    0, 0, cube_scale * 0.7, 0,  // Row 3
-                    0, 0, 0, 1                  // Row 4
-                    ) *
-        glm::rotate(glm::mat4(1.0f), rot_arg_ * 1.0f,
-                    glm::vec3(0.0f, 0.0f, 1.0f)) *
-        glm::rotate(glm::mat4(1.0f), rot_arg_ * 0.7f,
-                    glm::vec3(0.0f, 1.0f, 0.0f)) *
-        glm::rotate(glm::mat4(1.0f), rot_arg_ * 1.5f,
-                    glm::vec3(1.0f, 0.0f, 0.0f));
-    const glm::vec4 color_a = glm::vec4(HsvToRgb(glm::vec3(energy, 1, 1)), 1);
-    const glm::vec4 color_b =
-        glm::vec4(HsvToRgb(glm::vec3(energy + 0.5, 1, 1)), 1);
-
-    if (SIGINJECT_TRIGGER("space_whale_eye_warp_texture_enable")) {
-      texture_trigger_ = !texture_trigger_;
-    }
-
-    outline_model_->Draw({
-        .model_transform = model_transform,
-        .color_a = color_a,
-        .color_b = color_b,
-        .render_target = back_render_target_,
-        .alpha = 1,
-        .energy = energy,
-        .blend_coeff = texture_trigger_ ? 0.3f : 0.0f,
-        .model_to_draw = InterpolateEnum<OutlineModel::ModelToDraw>(
-            std::fmodf(energy, 1.0f)),
-    });
-  }
+void SpaceWhaleEyeWarp::DrawEyeball(GlobalState& state, glm::vec2 zoom_vec) {
+  float eye_scale = SIGPLOT(
+      "eye_scale", 0.4 + SineEase(beat_estimators_[0].triangle_phase()) * 0.2);
+  glm::mat4 model_transform =
+      ScaleTransform(eye_scale) *
+      glm::mat4(
+          OrientTowards(glm::vec3(zoom_vec, 0) + Directions::kIntoScreen)) *
+      RotateAround(Directions::kUp, kPi / 2);
+  const glm::vec4 color_a =
+      glm::vec4(HsvToRgb(glm::vec3(state.energy(), 1, 1)), 1);
+  const glm::vec4 color_b =
+      glm::vec4(HsvToRgb(glm::vec3(state.energy() + 0.5, 1, 1)), 1);
+  outline_model_->Draw({
+      .model_transform = model_transform,
+      .color_a = color_a,
+      .color_b = color_b,
+      .render_target = back_render_target_,
+      .alpha = 1,
+      .energy = state.energy(),
+      .blend_coeff = texture_trigger_ ? 0.3f : 0.0f,
+      .model_to_draw = OutlineModel::ModelToDraw::kEyeball,
+  });
 }
 
 void SpaceWhaleEyeWarp::OnDrawFrame(
     absl::Span<const float> samples, std::shared_ptr<GlobalState> state,
     float alpha, std::shared_ptr<gl::GlRenderTarget> output_render_target) {
-  for (int i = 0; i < 1; ++i) {
+  for (int i = 0; i < 3; ++i) {
     beat_estimators_[i].Estimate(state->channel_band(i), state->dt());
-    // SignalScope::PlotSignalOn(beat_estimator_signal_names_[i],
-    //                           beat_estimators_[i].beat() ? 1.0f : 0.0f);
-    //  SignalScope::PlotSignalOn(beat_estimator_signal_names_binned_[i],
-    //                            beat_estimators_[i].beat_binned() ? 1.0f :
-    //                            0.0f);
-    //  SignalScope::PlotSignalOn(beat_estimator_signal_names_phase_[i],
-    //                            beat_estimators_[i].phase());
-    //  SignalScope::PlotSignalOn(beat_estimator_signal_names_threshold_[i],
-    //                            beat_estimators_[i].triangle_phase());
   }
-  SIGPLOT("beat_phase", EstimateBeatPhase(*state));
-  float bass = SIGPLOT("bass power", state->bass());
-  SIGPLOT("mid power", state->mid());
-  SIGPLOT("treble power", state->treble());
 
-  float SIGPLOT_ASSIGN_WRAP(energy, static_cast<float>(state->energy()), 0.0f,
-                            1.0f);
-  energy *= 0.1;
-  float SIGPLOT_ASSIGN(power, state->power());
+  float zoom_coeff = 1.1f;
 
-  float SIGPLOT_ASSIGN(zoom_coeff,
-                       SIGINJECT_OVERRIDE("space_whale_eye_warp_zoom_coeff",
-                                          sin(energy * 2), -1.0f, 1.0f));
+  glm::vec2 zoom_vec = UnitVectorAtAngle(zoom_angle_);
 
-  float SIGPLOT_ASSIGN(trunc_zoom_coeff,
-                       std::clamp(SineEase(zoom_coeff), 0.0f, 1.0f));
-
-  int num_cubes =
-      SIGINJECT_OVERRIDE("space_whale_eye_warp_num_cubes", 16, 1, 32);
-
-  glm::vec3 zoom_vec = glm::vec3(UnitVectorAtAngle(energy * 2) *
-                                     std::sin(energy * 0.3f) * trunc_zoom_coeff,
-                                 0) *
-                           trunc_zoom_coeff +
-                       Directions::kIntoScreen;
-  glm::vec3 cube_orient_vec = zoom_vec;
-  cube_orient_vec.x /= 2;
-  cube_orient_vec.y /= 2;
-
-  float cube_scale = SIGPLOT(
-      "cube_scale", 0.2 + SineEase(beat_estimators_[0].triangle_phase()) / 2);
-
-  // SIGINJECT_OVERRIDE(
-  //    "space_whale_eye_warp_model_scale",
-  //    static_cast<float>(
-  //        std::clamp(
-  //            0.1 + (SineEase(beat_estimators_[0].triangle_phase()) + 1)
-  //            / 15.5, 0.0, 2.0) * 0.3 +
-  //        bass / 5),
-  //    0.05f, 0.4f);
+  zoom_angle_ += (0.3 + (beat_estimators_[0].triangle_phase() *
+                         sin(state->energy() * 10))) /
+                 10;
 
   {
     auto depth_output_activation = depth_output_target_->Activate();
@@ -251,8 +148,9 @@ void SpaceWhaleEyeWarp::OnDrawFrame(
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glDepthRange(0, 10);
     glEnable(GL_DEPTH_TEST);
-    DrawCubes(cube_scale, power, bass, energy, state->dt(), state->t(),
-              zoom_coeff, cube_orient_vec, num_cubes);
+
+    DrawEyeball(*state, zoom_vec);
+
     glDisable(GL_DEPTH_TEST);
   }
 
@@ -261,18 +159,9 @@ void SpaceWhaleEyeWarp::OnDrawFrame(
 
     auto program_activation = warp_program_->Activate();
 
-    zoom_coeff =
-        (SineEase(MapValue<float, /*clamp=*/true>(
-             (zoom_coeff - 1.0f / 3.0f) * 2.0f, -1.0f, 1.0f, 0.0f, 1.0f)) *
-             2.0f -
-         1.0f) *
-            0.1 +
-        1.05;
-    SIGPLOT("shader zoom coeff", zoom_coeff);
-
     GlBindUniform(warp_program_, "frame_size", glm::ivec2(width(), height()));
-    GlBindUniform(warp_program_, "power", power);
-    GlBindUniform(warp_program_, "energy", energy);
+    GlBindUniform(warp_program_, "power", state->power());
+    GlBindUniform(warp_program_, "energy", state->energy());
     // Figure out how to keep it from zooming towards the viewer when the line
     // is moving
     GlBindUniform(warp_program_, "zoom_coeff", zoom_coeff);
@@ -280,8 +169,9 @@ void SpaceWhaleEyeWarp::OnDrawFrame(
     GlBindUniform(warp_program_, "model_transform", glm::mat4(1.0f));
     auto binding_options = gl::GlTextureBindingOptions();
     background_hue_ +=
-        power * SIGINJECT_OVERRIDE("space_whale_eye_warp_border_hue_coeff",
-                                   0.1f, 0.0f, 3.0f);
+        state->power() *
+        SIGINJECT_OVERRIDE("space_whale_eye_warp_border_hue_coeff", 0.1f, 0.0f,
+                           3.0f);
     binding_options.border_color = glm::vec4(
         HsvToRgb(glm::vec3(
             background_hue_, 1,

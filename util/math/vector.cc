@@ -41,6 +41,10 @@ glm::mat4 LineTransform(glm::vec3 axis, float line_length,
   return translation;
 }
 
+glm::mat4 RotateAround(glm::vec3 axis, float angle) {
+  return glm::rotate(Constants::kI4x4, angle, axis);
+}
+
 std::tuple<glm::mat4, glm::mat4, glm::mat4> ExtractTransformComponents(
     glm::mat4 t) {
   glm::mat4 translation(1);

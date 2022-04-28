@@ -82,7 +82,7 @@ vec4 blur_sample_texture(sampler2D tex, vec2 uv, ivec2 tex_size,
   vec2 offset = vec2(blur_pix, blur_pix) / tex_size;
   vec2 offset_n = vec2(offset.x, -offset.y);
   return (texture2D(tex, uv + offset) + texture2D(tex, uv - offset) +
-          texture2D(tex, uv + offset) + texture2D(tex, uv - offset)) /
+          texture2D(tex, uv + offset_n) + texture2D(tex, uv - offset_n)) /
          4.0f;
 }
 
