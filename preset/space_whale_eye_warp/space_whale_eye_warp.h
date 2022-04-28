@@ -13,6 +13,7 @@
 #include "util/graphics/gl_interface.h"
 #include "util/graphics/gl_render_target.h"
 #include "util/graphics/gl_texture_manager.h"
+#include "util/signal/filter.h"
 #include "util/signal/transition_controller.h"
 
 namespace opendrop {
@@ -44,7 +45,10 @@ class SpaceWhaleEyeWarp : public Preset {
   void OnUpdateGeometry() override;
 
  private:
-  void DrawEyeball(GlobalState& state, glm::vec3 zoom_vec);
+  constexpr static float kCutoff = 10.0f;
+
+  void DrawEyeball(GlobalState& state, glm::vec3 zoom_vec, float pupil_size,
+                   float eye_scale);
 
   std::shared_ptr<gl::GlProgram> warp_program_;
   std::shared_ptr<gl::GlProgram> composite_program_;
@@ -71,6 +75,11 @@ class SpaceWhaleEyeWarp : public Preset {
 
   TransitionController transition_controller_{TransitionController::Options{
       .decay_rate = 0.05f, .input_decay_zone = 0.2f}};
+
+  std::shared_ptr<IirFilter> zoom_filters_[3] = {
+      IirSinglePoleFilter(kCutoff, IirSinglePoleFilterType::kLowpass),
+      IirSinglePoleFilter(kCutoff, IirSinglePoleFilterType::kLowpass),
+      IirSinglePoleFilter(kCutoff, IirSinglePoleFilterType::kLowpass)};
 };
 
 }  // namespace opendrop

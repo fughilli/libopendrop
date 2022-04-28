@@ -103,10 +103,9 @@ std::tuple<int, float> CountAndScale(float arg, int max_count) {
 }
 float EstimateBeatPhase(GlobalState& state) { return 0; }
 
-void SpaceWhaleEyeWarp::DrawEyeball(GlobalState& state, glm::vec3 zoom_vec) {
-  float eye_scale = SIGPLOT(
-      "eye_scale", 0.4 + SineEase(beat_estimators_[0].triangle_phase()) * 0.2);
-  glm::mat4 model_transform = ScaleTransform(eye_scale) *
+void SpaceWhaleEyeWarp::DrawEyeball(GlobalState& state, glm::vec3 zoom_vec,
+                                    float pupil_size, float scale) {
+  glm::mat4 model_transform = ScaleTransform(scale) *
                               glm::mat4(OrientTowards(zoom_vec)) *
                               RotateAround(Directions::kUp, kPi / 2);
   const glm::vec4 color_a =
@@ -122,7 +121,7 @@ void SpaceWhaleEyeWarp::DrawEyeball(GlobalState& state, glm::vec3 zoom_vec) {
       .energy = state.energy(),
       .blend_coeff = 0.3f,
       .model_to_draw = OutlineModel::ModelToDraw::kEyeball,
-      .pupil_size = 0.5f + (1.0f + beat_estimators_[0].triangle_phase()) / 2.0f,
+      .pupil_size = pupil_size,
   });
 }
 
@@ -133,24 +132,45 @@ void SpaceWhaleEyeWarp::OnDrawFrame(
     beat_estimators_[i].Estimate(state->channel_band(i), state->dt());
   }
 
+  transition_controller_.Update(
+      SIGINJECT_OVERRIDE("transition_input", 0.0f, -1.0f, 1.0f));
+
+  SIGPLOT_ON("lead_in_value", transition_controller_.LeadInValue());
+  SIGPLOT_ON("lead_out_value", transition_controller_.LeadOutValue());
+  SIGPLOT_ON("transition_count", transition_controller_.TransitionCount());
+
+  float pupil_size =
+      0.5f + (1.0f + beat_estimators_[0].triangle_phase()) / 2.0f;
+
+  pupil_size = Lerp(pupil_size, 20.0f, transition_controller_.LeadOutValue());
+
   glm::vec3 zoom_vec =
       glm::vec3(UnitVectorAtAngle(zoom_angle_), 0) + Directions::kIntoScreen;
 
   zoom_vec =
-      glm::vec3(SIGINJECT_OVERRIDE("zoom_vec_x", zoom_vec.x, -1.0f, 1.0f),
-                SIGINJECT_OVERRIDE("zoom_vec_y", zoom_vec.y, -1.0f, 1.0f),
-                SIGINJECT_OVERRIDE("zoom_vec_z", zoom_vec.z, -1.0f, 1.0f));
+      glm::vec3(SIGINJECT_OVERRIDE("zoom_vec_x",
+                                   zoom_filters_[0]->ProcessSample(zoom_vec.x),
+                                   -1.0f, 1.0f),
+                SIGINJECT_OVERRIDE("zoom_vec_y",
+                                   zoom_filters_[1]->ProcessSample(zoom_vec.y),
+                                   -1.0f, 1.0f),
+                SIGINJECT_OVERRIDE("zoom_vec_z",
+                                   zoom_filters_[2]->ProcessSample(zoom_vec.z),
+                                   -1.0f, 1.0f));
 
   zoom_vec = glm::normalize(zoom_vec);
+
+  zoom_vec = Lerp(zoom_vec, Directions::kIntoScreen,
+                  std::min(transition_controller_.LeadOutValue() * 3.0f, 1.0f));
 
   zoom_angle_ += (0.3 + (beat_estimators_[0].triangle_phase() *
                          sin(state->energy() * 10))) /
                  10;
 
-  transition_controller_.Input(
-      SIGINJECT_OVERRIDE("transition_input", 0.0f, -1.0f, 1.0f));
-
-  SIGPLOT("transition_value", transition_controller_.value());
+  float eye_scale =
+      SIGPLOT("eye_scale",
+              (0.4 + SineEase(beat_estimators_[0].triangle_phase()) * 0.2) *
+                  transition_controller_.LeadInValue());
 
   {
     auto depth_output_activation = depth_output_target_->Activate();
@@ -160,7 +180,7 @@ void SpaceWhaleEyeWarp::OnDrawFrame(
     glDepthRange(0, 10);
     glEnable(GL_DEPTH_TEST);
 
-    DrawEyeball(*state, zoom_vec);
+    DrawEyeball(*state, zoom_vec, pupil_size, eye_scale);
 
     glDisable(GL_DEPTH_TEST);
   }
@@ -186,7 +206,8 @@ void SpaceWhaleEyeWarp::OnDrawFrame(
         HsvToRgb(glm::vec3(
             background_hue_, 1,
             SIGINJECT_OVERRIDE("space_whale_eye_warp_border_value_coeff", 1.0f,
-                               0.0f, 1.0f))),
+                               0.0f, 1.0f))) *
+            static_cast<float>(transition_controller_.TransitionCount() % 2),
         1);
     binding_options.sampling_mode = gl::GlTextureSamplingMode::kClampToBorder;
     GlBindRenderTargetTextureToUniform(warp_program_, "last_frame",
