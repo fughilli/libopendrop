@@ -53,6 +53,7 @@ class SpaceWhaleEyeWarp : public Preset {
   void DrawEyeball(GlobalState& state, glm::vec3 zoom_vec, float pupil_size,
                    float eye_scale, float black_alpha, bool back,
                    glm::vec3 offset);
+  void DrawWhale(GlobalState& state, glm::vec3 zoom_vec, float scale, float mouth_open);
 
   std::shared_ptr<gl::GlProgram> warp_program_;
   std::shared_ptr<gl::GlProgram> composite_program_;

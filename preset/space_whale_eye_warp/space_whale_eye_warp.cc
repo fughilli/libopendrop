@@ -148,6 +148,31 @@ void SpaceWhaleEyeWarp::DrawEyeball(GlobalState& state, glm::vec3 zoom_vec,
   });
 }
 
+void SpaceWhaleEyeWarp::DrawWhale(GlobalState& state, glm::vec3 zoom_vec,
+                                  float scale, float mouth_open) {
+  glm::mat4 model_transform = glm::mat4(OrientTowards(zoom_vec)) *
+                              ScaleTransform(scale) *
+                              RotateAround(Directions::kUp, kPi);
+  const glm::vec4 color_a =
+      glm::vec4(HsvToRgb(glm::vec3(state.energy(), 1, 1)), 1);
+  const glm::vec4 color_b =
+      glm::vec4(HsvToRgb(glm::vec3(state.energy() + 0.5, 1, 1)), 1);
+  outline_model_->Draw({
+      .model_transform = model_transform,
+      .color_a = color_a,
+      .color_b = color_b,
+      .render_target = back_render_target_,
+      .alpha = 1,
+      .energy = state.energy(),
+      .blend_coeff = 0.3f,
+      .model_to_draw = OutlineModel::ModelToDraw::kHead,
+      .pupil_size = 0.0f,
+      .black_render_target = back_back_render_target_,
+      .black_alpha = 0.0f,
+      .mouth_open = mouth_open,
+  });
+}
+
 void SpaceWhaleEyeWarp::OnDrawFrame(
     absl::Span<const float> samples, std::shared_ptr<GlobalState> state,
     float alpha, std::shared_ptr<gl::GlRenderTarget> output_render_target) {
@@ -206,19 +231,25 @@ void SpaceWhaleEyeWarp::OnDrawFrame(
           Lerp(pupil_size, 20.0f, transition_controller_.LeadOutValue());
       DrawEyeball(*state, zoom_vec, pupil_size, eye_scale,
                   std::min(1.0f, 0.1f + transition_controller_.LeadOutValue()),
-                  true /*transition_controller_.TransitionCount() % 2 == 0*/,
+                  true
+                  /*transition_controller_.TransitionCount() % 2 == 0*/,
                   glm::vec3(0, 0, 0));
+      LOG(INFO) << "Drawing eyeball";
+      // DrawWhale(*state, zoom_vec, (1 + sin(state->energy() * 30)) / 2);
     } else {
       pupil_size =
           Lerp(pupil_size, 100.0f, transition_controller_.LeadOutValue());
       DrawEyeball(*state, zoom_vec, pupil_size, eye_scale / 4,
                   std::min(1.0f, 0.1f + transition_controller_.LeadOutValue()),
                   true /*transition_controller_.TransitionCount() % 2 == 0*/,
-                  glm::vec3(-0.2, 0.1, 0));
+                  glm::vec3(-0.2, 0.15, -0.25));
       DrawEyeball(*state, zoom_vec, pupil_size, eye_scale / 4,
                   std::min(1.0f, 0.1f + transition_controller_.LeadOutValue()),
                   true /*transition_controller_.TransitionCount() % 2 == 0*/,
-                  glm::vec3(0.2, 0.1, 0));
+                  glm::vec3(0.2, 0.15, -0.25));
+      LOG(INFO) << "Drawing whale";
+      DrawWhale(*state, zoom_vec, eye_scale,
+                (1 + sin(state->energy() * 30)) / 2);
     }
 
     glDisable(GL_DEPTH_TEST);

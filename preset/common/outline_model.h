@@ -19,7 +19,8 @@ class OutlineModel {
     kCube = 3,
     kLoX = 4,
     kEyeball = 5,
-    kDenseLastValue = kEyeball,
+    kHead = 6,
+    kDenseLastValue = kHead,
   };
 
   struct Params {
@@ -36,6 +37,8 @@ class OutlineModel {
 
     std::shared_ptr<gl::GlRenderTarget> black_render_target;
     float black_alpha;
+
+    float mouth_open = 0.0f;
   };
 
   static absl::StatusOr<std::shared_ptr<OutlineModel>> MakeShared();
@@ -62,6 +65,10 @@ class OutlineModel {
   Model eyeball_pupil_;
   Model eyeball_iris_;
   Model eyeball_ball_;
+  Model head_outer_;
+  Model head_inner_;
+  Model jaw_outer_;
+  Model jaw_inner_;
 };
 
 }  // namespace opendrop

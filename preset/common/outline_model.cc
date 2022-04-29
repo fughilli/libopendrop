@@ -10,6 +10,10 @@
 #include "preset/common/eyeball_ball.obj.h"
 #include "preset/common/eyeball_iris.obj.h"
 #include "preset/common/eyeball_pupil.obj.h"
+#include "preset/common/head_inner.obj.h"
+#include "preset/common/head_outer.obj.h"
+#include "preset/common/jaw_inner.obj.h"
+#include "preset/common/jaw_outer.obj.h"
 #include "preset/common/lo_x.obj.h"
 #include "preset/common/model.fsh.h"
 #include "preset/common/passthrough_vert.vsh.h"
@@ -59,7 +63,15 @@ OutlineModel::OutlineModel(std::shared_ptr<gl::GlProgram> model_program)
       eyeball_iris_(eyeball_iris_obj::Vertices(), eyeball_iris_obj::Normals(),
                     eyeball_iris_obj::Uvs(), eyeball_iris_obj::Triangles()),
       eyeball_ball_(eyeball_ball_obj::Vertices(), eyeball_ball_obj::Normals(),
-                    eyeball_ball_obj::Uvs(), eyeball_ball_obj::Triangles())
+                    eyeball_ball_obj::Uvs(), eyeball_ball_obj::Triangles()),
+      head_outer_(head_outer_obj::Vertices(), head_outer_obj::Normals(),
+                  head_outer_obj::Uvs(), head_outer_obj::Triangles()),
+      head_inner_(head_inner_obj::Vertices(), head_inner_obj::Normals(),
+                  head_inner_obj::Uvs(), head_inner_obj::Triangles()),
+      jaw_outer_(jaw_outer_obj::Vertices(), jaw_outer_obj::Normals(),
+                 jaw_outer_obj::Uvs(), jaw_outer_obj::Triangles()),
+      jaw_inner_(jaw_inner_obj::Vertices(), jaw_inner_obj::Normals(),
+                 jaw_inner_obj::Uvs(), jaw_inner_obj::Triangles())
 
 {}
 
@@ -89,7 +101,7 @@ void OutlineModel::Draw(const Params& params) {
   GlBindUniform(model_program_, "model_transform", params.model_transform);
   GlBindUniform(model_program_, "black_alpha", 0.0f);
 
-  switch (SIGINJECT_ENUM("model_to_draw", params.model_to_draw)) {
+  switch (params.model_to_draw) {
     case kCube:
       GlBindUniform(model_program_, "black", true);
       cube_outline_.Draw();
@@ -184,6 +196,47 @@ void OutlineModel::Draw(const Params& params) {
           model_program_, "light_color_b",
           glm::mix(params.color_b, glm::vec4(1.0f, 1.0f, 1.0f, 1.0f), 0.7f));
       eyeball_ball_.Draw();
+      break;
+    case kHead:
+      GlBindUniform(model_program_, "blend_coeff", 0.0f);
+
+      glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+      glLineWidth(50);
+      GlBindUniform(model_program_, "black", true);
+      GlBindUniform(model_program_, "max_negative_z", true);
+      head_outer_.Draw();
+      glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+      GlBindUniform(model_program_, "max_negative_z", false);
+      head_inner_.Draw();
+      GlBindUniform(model_program_, "black", false);
+      GlBindUniform(
+          model_program_, "light_color_a",
+          glm::mix(params.color_a, glm::vec4(0.0f, 0.0f, 1.0f, 1.0f), 0.7f));
+      GlBindUniform(
+          model_program_, "light_color_b",
+          glm::mix(params.color_b, glm::vec4(0.0f, 0.0f, 1.0f, 1.0f), 0.7f));
+      head_outer_.Draw();
+
+      GlBindUniform(
+          model_program_, "model_transform",
+          params.model_transform *
+              RotateAround(glm::vec3(1, 0, 0), kPi / 2 * params.mouth_open));
+      glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+      glLineWidth(50);
+      GlBindUniform(model_program_, "black", true);
+      GlBindUniform(model_program_, "max_negative_z", true);
+      jaw_outer_.Draw();
+      glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+      GlBindUniform(model_program_, "max_negative_z", false);
+      jaw_inner_.Draw();
+      GlBindUniform(model_program_, "black", false);
+      GlBindUniform(
+          model_program_, "light_color_a",
+          glm::mix(params.color_a, glm::vec4(0.0f, 0.0f, 1.0f, 1.0f), 0.7f));
+      GlBindUniform(
+          model_program_, "light_color_b",
+          glm::mix(params.color_b, glm::vec4(0.0f, 0.0f, 1.0f, 1.0f), 0.7f));
+      jaw_outer_.Draw();
       break;
   }
 }

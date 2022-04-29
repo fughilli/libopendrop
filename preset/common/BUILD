@@ -20,6 +20,10 @@ cc_library(
         ":eyeball_ball",
         ":eyeball_iris",
         ":eyeball_pupil",
+        ":head_inner",
+        ":head_outer",
+        ":jaw_inner",
+        ":jaw_outer",
         ":lo_x",
         ":model",
         ":monkey",
@@ -148,4 +152,28 @@ model_cc_library(
     name = "lo_x",
     srcs = ["lo_x.obj"],
     normalize = True,
+)
+
+model_cc_library(
+    name = "head_outer",
+    srcs = ["head_outer.obj"],
+    scale = 0.707107,
+)
+
+model_cc_library(
+    name = "head_inner",
+    srcs = ["head_inner.obj"],
+    scale = 0.707107,
+)
+
+model_cc_library(
+    name = "jaw_outer",
+    srcs = ["jaw_outer.obj"],
+    scale = 0.707107,
+)
+
+model_cc_library(
+    name = "jaw_inner",
+    srcs = ["jaw_inner.obj"],
+    scale = 0.707107,
 )
