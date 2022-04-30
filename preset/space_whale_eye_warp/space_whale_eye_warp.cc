@@ -217,6 +217,11 @@ void SpaceWhaleEyeWarp::OnDrawFrame(
       SIGPLOT("eye_scale",
               (0.4 + SineEase(beat_estimators_[0].triangle_phase()) * 0.2) *
                   transition_controller_.LeadInValue());
+  // Return the whale scale to 0.4 by the lead-out value so that we don't get
+  // the whale clipping through the pupil plane.
+  float whale_scale =
+      Lerp(eye_scale, 0.4f,
+           std::min(transition_controller_.LeadOutValue() * 3, 1.0f));
 
   {
     auto depth_output_activation = depth_output_target_->Activate();
@@ -227,15 +232,26 @@ void SpaceWhaleEyeWarp::OnDrawFrame(
     glEnable(GL_DEPTH_TEST);
 
     if (transition_controller_.TransitionCount() % 2 == 0) {
-      pupil_size =
-          Lerp(pupil_size, 20.0f, transition_controller_.LeadOutValue());
-      DrawEyeball(*state, zoom_vec, pupil_size, eye_scale,
-                  std::min(1.0f, 0.1f + transition_controller_.LeadOutValue()),
-                  true
-                  /*transition_controller_.TransitionCount() % 2 == 0*/,
-                  glm::vec3(0, 0, 0));
-      LOG(INFO) << "Drawing eyeball";
-      // DrawWhale(*state, zoom_vec, (1 + sin(state->energy() * 30)) / 2);
+      const float scale_modifier = (2.0f / (num_eyeballs_ + 1));
+      pupil_size = Lerp(pupil_size, 20.0f / scale_modifier,
+                        transition_controller_.LeadOutValue());
+      for (int i = 0; i < num_eyeballs_; ++i) {
+        glm::vec2 displacement(0, 0);
+        if (num_eyeballs_ > 1) {
+          displacement = UnitVectorAtAngle(IndexToAngle(i, num_eyeballs_) +
+                                           state->treble_energy() * 100) *
+                         Lerp(0.2f, 0.6f,
+                              Lerp(beat_estimators_[1].triangle_phase(),
+                                   UnitarySin(state->mid_energy() * 100),
+                                   UnitarySin(state->energy() * 10)));
+        }
+        DrawEyeball(
+            *state, zoom_vec, pupil_size, eye_scale * scale_modifier,
+            std::min(1.0f, 0.1f + transition_controller_.LeadOutValue()),
+            true
+            /*transition_controller_.TransitionCount() % 2 == 0*/,
+            glm::vec3(displacement, 0));
+      }
     } else {
       pupil_size =
           Lerp(pupil_size, 100.0f, transition_controller_.LeadOutValue());
@@ -247,9 +263,10 @@ void SpaceWhaleEyeWarp::OnDrawFrame(
                   std::min(1.0f, 0.1f + transition_controller_.LeadOutValue()),
                   true /*transition_controller_.TransitionCount() % 2 == 0*/,
                   glm::vec3(0.2, 0.15, -0.25));
-      LOG(INFO) << "Drawing whale";
-      DrawWhale(*state, zoom_vec, eye_scale,
-                (1 + sin(state->energy() * 30)) / 2);
+      DrawWhale(*state, zoom_vec, whale_scale,
+                std::clamp(
+                    (1 + sin(state->mid_energy() * 200)) / 2 + state->mid() * 3,
+                    0.0f, 1.0f));
     }
 
     glDisable(GL_DEPTH_TEST);
@@ -265,6 +282,12 @@ void SpaceWhaleEyeWarp::OnDrawFrame(
   }
 
   glm::vec4 front_border, back_border;
+  if (transition_controller_.Transitioned()) {
+    front_render_target_->swap_texture_unit(back_front_render_target_.get());
+    back_back_render_target_->swap_texture_unit(back_render_target_.get());
+
+    num_eyeballs_ = Coefficients::Random<1, int>(1, 6)[0];
+  }
   if (transition_controller_.TransitionCount() % 2 == 1) {
     front_border = black_and_white_border;
     back_border = rainbow_border;
@@ -273,6 +296,7 @@ void SpaceWhaleEyeWarp::OnDrawFrame(
     back_border = black_and_white_border;
     front_border = rainbow_border;
   }
+
   {
     auto front_activation = front_render_target_->Activate();
 

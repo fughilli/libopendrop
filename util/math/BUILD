@@ -52,6 +52,7 @@ cc_test(
 
 cc_library(
     name = "math",
+    srcs = ["math.cc"],
     hdrs = ["math.h"],
     deps = ["//util/logging"],
 )

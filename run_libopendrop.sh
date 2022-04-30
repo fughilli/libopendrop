@@ -95,7 +95,7 @@ while [[ ! -z "$@" ]]; do
       ;;
 
     *)
-      passthrough_args+="${arg}"
+      passthrough_args+=" ${arg}"
       ;;
   esac
 done
@@ -199,6 +199,8 @@ if [[ $run_with_ibazel == 1 ]]; then
 else
   bazel_executable=bazelisk
 fi
+
+echo "Invoking with passthrough args: ${passthrough_args[@]}"
 
 if [[ $run_binary == 1 ]]; then
   $valgrind_command ../bazel-bin/libopendrop/main $options \

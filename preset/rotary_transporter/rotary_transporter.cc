@@ -37,7 +37,7 @@ RotaryTransporter::RotaryTransporter(
       composite_program_(composite_program),
       front_render_target_(front_render_target),
       back_render_target_(back_render_target) {
-  zoom_angle_ = Coefficients::Random<1>(0.f, M_PI * 2)[0];
+  zoom_angle_ = Coefficients::Random<1>(0.f, kPi * 2)[0];
   border_color_phase_ = Coefficients::Random<1>(0.f, 1.f)[0];
 }
 

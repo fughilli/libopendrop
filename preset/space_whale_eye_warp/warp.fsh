@@ -22,7 +22,7 @@ void main() {
   // audio. We multiply in the power such that instantaneous changes in the
   // audio cause more immediately perceptible "jumps" in the zoom effect.
   float zoom_coeff = 1.0 + zoom_vec.z / 10;
-  texture_uv = zoom_towards(screen_uv, zoom_coeff, -zoom_vec.xy);
+  texture_uv = zoom_towards(screen_uv, zoom_coeff, -zoom_vec.xy * 2);
 
   // Rotate the texture by a pseudo-random amount that varies by `energy`.
   // Additionally multiply in `power` for the same reason as above.

@@ -36,24 +36,24 @@
 #include "absl/flags/parse.h"
 #include "absl/time/clock.h"
 #include "absl/types/span.h"
-#include "backends/imgui_impl_opengl2.h"
-#include "backends/imgui_impl_sdl.h"
-#include "util/cleanup.h"
-#include "debug/control_injector.h"
-#include "debug/signal_scope.h"
-#include "util/graphics/gl_interface.h"
-#include "util/graphics/gl_texture_manager.h"
-#include "imgui.h"
-#include "implot.h"
 #include "application/open_drop_controller.h"
 #include "application/open_drop_controller_interface.h"
+#include "backends/imgui_impl_opengl2.h"
+#include "backends/imgui_impl_sdl.h"
+#include "debug/control_injector.h"
+#include "debug/signal_scope.h"
+#include "imgui.h"
+#include "implot.h"
 #include "preset/preset_list.h"
-#include "util/graphics/sdl/sdl_gl_interface.h"
-#include "util/math/coefficients.h"
 #include "third_party/gl_helper.h"
-#include "util/logging/logging.h"
-#include "util/time/performance_timer.h"
 #include "util/audio/pulseaudio_interface.h"
+#include "util/cleanup.h"
+#include "util/graphics/gl_interface.h"
+#include "util/graphics/gl_texture_manager.h"
+#include "util/graphics/sdl/sdl_gl_interface.h"
+#include "util/logging/logging.h"
+#include "util/math/coefficients.h"
+#include "util/time/performance_timer.h"
 #include "util/time/rate_limiter.h"
 
 ABSL_FLAG(std::string, pulseaudio_server, "",
@@ -92,6 +92,9 @@ ABSL_FLAG(int, sampling_rate, 44100,
           "Sampling rate to use with the input source, in Hz.");
 ABSL_FLAG(std::string, control_state, "",
           "Path to a .textproto of a ControlState to save to/load from");
+ABSL_FLAG(int, control_port, 9944, "UDP port to listen for control packets on");
+ABSL_FLAG(bool, inject, false,
+          "Whether or not to start injecting control immediately at startup");
 
 namespace opendrop {
 
@@ -170,8 +173,10 @@ extern "C" int main(int argc, char *argv[]) {
 
   absl::InstallFailureSignalHandler(absl::FailureSignalHandlerOptions());
 
+  ControlInjector::SetPort(absl::GetFlag(FLAGS_control_port));
   ControlInjector::SetStatePath(absl::GetFlag(FLAGS_control_state));
   ControlInjector::Load();
+  ControlInjector::EnableInjection(absl::GetFlag(FLAGS_inject));
 
   {
     if (SDL_Init(SDL_INIT_VIDEO) < 0) {

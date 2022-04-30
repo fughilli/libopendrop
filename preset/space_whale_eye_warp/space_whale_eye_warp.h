@@ -78,6 +78,8 @@ class SpaceWhaleEyeWarp : public Preset {
 
   bool texture_trigger_ = false;
 
+  int num_eyeballs_ = 3;
+
   BeatEstimator beat_estimators_[3] = {{0.99f}, {0.99f}, {0.99f}};
 
   TransitionController transition_controller_{

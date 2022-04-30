@@ -9,11 +9,11 @@
 #include "preset/glowsticks_3d/passthrough.vsh.h"
 #include "preset/glowsticks_3d/ribbon.fsh.h"
 #include "preset/glowsticks_3d/warp.fsh.h"
-#include "util/math/coefficients.h"
-#include "util/graphics/colors.h"
 #include "third_party/gl_helper.h"
+#include "util/graphics/colors.h"
 #include "util/graphics/gl_util.h"
 #include "util/logging/logging.h"
+#include "util/math/coefficients.h"
 #include "util/math/math.h"
 #include "util/status/status_macros.h"
 
@@ -70,14 +70,15 @@ Glowsticks3d::Glowsticks3d(
       ribbon2_(glm::vec3(), kRibbonSegmentCount),
       flip_y_(false),
       flip_oneshot_(kFlipMinimumInterval) {
-  segment_scales_ = Coefficients::Random<3>(0.2, 0.5);
+  segment_scales_ = Coefficients::Random<3>(0.2f, 0.5f);
   segment_scales_[2] = 1.0f;
 
   auto base_position_array = Coefficients::Random<2>(-0.2f, 0.2f);
   base_position_ = glm::vec2(base_position_array[0], base_position_array[1]);
   color_phase_coefficients_ = Coefficients::Random<2>(0.f, 1.f);
   color_rate_coefficients_ = Coefficients::Random<2>(0.f, 0.001f);
-  direction_reversal_coefficients_ = Coefficients::Random<kNumSegments>(5, 20);
+  direction_reversal_coefficients_ =
+      Coefficients::Random<kNumSegments>(5.0f, 20.0f);
   rotational_rate_coefficients_ =
       Coefficients::Random<kNumSegments>(0.01f, 0.1f);
 }

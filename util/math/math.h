@@ -93,6 +93,15 @@ T Quantize(T value, T multiple, T zero = 0) {
   return std::floor((value - zero) / multiple) * multiple + zero;
 }
 
+template <typename T>
+float IndexToAngle(T index, T count) {
+  if (count <= 1) return 0.0f;
+
+  return 2.0f * kPi * index / count;
+}
+
+float UnitarySin(float x);
+
 }  // namespace opendrop
 
 #endif  // UTIL_MATH_MATH_H_

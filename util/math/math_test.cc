@@ -75,5 +75,17 @@ TEST(MathTest, SignProducesExpectedValue) {
   EXPECT_NEAR(Sign<float>(0.0f), 0, kEpsilon);
 }
 
+TEST(MathTest, IndexToAngleProducesExpectedValue) {
+  EXPECT_NEAR(IndexToAngle(0, 1), 0);
+  EXPECT_NEAR(IndexToAngle(1, 1), 0);
+
+  EXPECT_NEAR(IndexToAngle(0, 4), 0);
+  EXPECT_NEAR(IndexToAngle(1, 4), kPi / 2);
+  EXPECT_NEAR(IndexToAngle(2, 4), kPi);
+  EXPECT_NEAR(IndexToAngle(3, 4), 3 * kPi / 4);
+
+  EXPECT_NEAR(IndexToAngle(-1, 4), -kPi / 2);
+}
+
 }  // namespace
 }  // namespace opendrop

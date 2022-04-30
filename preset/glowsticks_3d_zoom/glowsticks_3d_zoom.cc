@@ -73,13 +73,14 @@ Glowsticks3dZoom::Glowsticks3dZoom(
       ribbon2_(glm::vec3(), kRibbonSegmentCount),
       flip_y_(false),
       flip_oneshot_(kFlipMinimumInterval) {
-  segment_scales_ = Coefficients::Random<3>(0.1, 0.5);
+  segment_scales_ = Coefficients::Random<3>(0.1f, 0.5f);
   segment_scales_[2] = 1.0f;
 
   auto base_position_array = Coefficients::Random<2>(-0.2f, 0.2f);
   base_position_ = glm::vec2(base_position_array[0], base_position_array[1]);
   color_coefficients_ = Coefficients::Random<2>(1.0f, 3.0f);
-  direction_reversal_coefficients_ = Coefficients::Random<kNumSegments>(5, 20);
+  direction_reversal_coefficients_ =
+      Coefficients::Random<kNumSegments>(5.0f, 20.0f);
   rotational_rate_coefficients_ =
       Coefficients::Random<kNumSegments>(0.1f, 0.3f);
 }

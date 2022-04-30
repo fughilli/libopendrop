@@ -12,11 +12,11 @@
 #include "debug/control.pb.h"
 #include "debug/control_state.pb.h"
 #include "debug/proto_port.h"
+#include "debug/signal_scope.h"
 #include "google/protobuf/text_format.h"
 #include "implot.h"
 #include "util/logging/logging.h"
 #include "util/math/math.h"
-#include "debug/signal_scope.h"
 
 namespace opendrop {
 
@@ -96,8 +96,15 @@ class ControlInjector {
     instance().LoadFromProto(control_state);
   }
 
+  static void SetPort(int port) { instance().SetPortHelper(port); }
+
+  static void EnableInjection(bool inject) {
+    instance().enable_injection_ = inject;
+  }
+
  private:
   static constexpr size_t kDefaultHistorySize = 1024;
+  static constexpr int kDefaultControlPort = 9944;
 
   struct Signal {
     float low = std::numeric_limits<float>::max();
@@ -139,7 +146,7 @@ class ControlInjector {
     }
   };
 
-  ControlInjector() : control_port_(9944) {}
+  ControlInjector() : control_port_(kDefaultControlPort) {}
 
   static ControlInjector& instance() {
     static ControlInjector* instance = nullptr;
@@ -233,6 +240,11 @@ class ControlInjector {
       buttons_as_ints_.push_back(button);
       buttons_as_strings_.push_back(absl::StrFormat("%d", button));
     }
+  }
+
+  void SetPortHelper(int port) {
+    LOG(INFO) << "Set control port to " << port;
+    control_port_ = ProtoPort<Control>(port);
   }
 
   void InjectHelper() {

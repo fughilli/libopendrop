@@ -17,6 +17,8 @@ flags.DEFINE_boolean("list", False,
                      "List available MIDI inputs, and then exit")
 flags.DEFINE_string("input_filter", None, "Regex to filter MIDI inputs by")
 flags.DEFINE_boolean("verbose", False, "")
+flags.DEFINE_multi_integer(
+    "ports", [9944], "UDP ports on localhost to send control packets to")
 
 
 def make_key(msg):
@@ -47,8 +49,12 @@ class Runner:
         self.buttons: List[Button] = []
         self.inport = None
 
+        self.init_sockets()
+
+    def init_sockets(self):
+        self.ports = FLAGS.ports
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        self.server_tuple = ('127.0.0.1', 9944)
+        self.server_tuples = [('127.0.0.1', port) for port in self.ports]
 
     def start(self):
         self.should_exit = False
@@ -58,7 +64,7 @@ class Runner:
     def update_value(self, key, value):
         ranges = None
         if key not in self.control_ranges:
-            self.control_ranges[key] = (value, value)
+            self.control_ranges[key] = (0, 127)
         else:
             ranges = self.control_ranges[key]
             if value < ranges[0]:
@@ -95,7 +101,8 @@ class Runner:
             control.control[k] = v
         control.buttons.extend(self.buttons)
         self.buttons = []
-        self.socket.sendto(control.SerializeToString(), self.server_tuple)
+        for server_tuple in self.server_tuples:
+            self.socket.sendto(control.SerializeToString(), server_tuple)
 
     def initialize_device(self):
         input_names = mido.get_input_names()
@@ -133,16 +140,18 @@ class Runner:
         print("Exiting")
 
 
-runner = Runner()
+runner = None
 
 
 def start():
+    global runner
     if FLAGS.list:
         input_listing = '\n'.join(mido.get_input_names())
         print(f"Available inputs:\n{input_listing:s}")
         return
 
     print("Runner start")
+    runner = Runner()
     runner.start()
 
 
