@@ -203,7 +203,7 @@ fi
 echo "Invoking with passthrough args: ${passthrough_args[@]}"
 
 if [[ $run_binary == 1 ]]; then
-  $valgrind_command ../bazel-bin/libopendrop/main $options \
+  $valgrind_command binaries/libopendrop_for_ct_live $options \
     ${passthrough_args[@]}
 else
   bazel_command="run"
