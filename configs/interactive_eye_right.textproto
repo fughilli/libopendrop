@@ -1,18 +1,19 @@
+buttons: 3001
 control_mappings {
   key: "transition_input"
-  value: "control_change:3:1:0"
+  value: "control_change:4:1:0"
 }
 control_mappings {
   key: "zoom_vec_x"
-  value: "control_change:3:2:0"
+  value: "control_change:4:2:0"
 }
 control_mappings {
   key: "zoom_vec_y"
-  value: "control_change:3:3:0"
+  value: "control_change:4:3:0"
 }
 control_mappings {
   key: "zoom_vec_z"
-  value: "control_change:3:4:0"
+  value: "control_change:4:4:0"
 }
 signals_by_name {
   key: "space_whale_eye_warp_border_hue_coeff"
@@ -74,7 +75,7 @@ counters_by_name {
 }
 controls_by_name {
   key: "control_change:3:0:0"
-  value: 0.466666669
+  value: 0.496063
 }
 controls_by_name {
   key: "control_change:3:1:0"
@@ -82,25 +83,33 @@ controls_by_name {
 }
 controls_by_name {
   key: "control_change:3:2:0"
-  value: 0.484126985
+  value: 0.708661437
 }
 controls_by_name {
   key: "control_change:3:3:0"
-  value: 0.452380955
+  value: 0.543307066
 }
 controls_by_name {
   key: "control_change:3:4:0"
-  value: 0.714285731
+  value: 0.527559042
 }
 controls_by_name {
   key: "control_change:4:0:0"
-  value: 0
+  value: 0.496063
+}
+controls_by_name {
+  key: "control_change:4:1:0"
+  value: 0.496063
 }
 controls_by_name {
   key: "control_change:4:2:0"
-  value: 0.722222209
+  value: 0.370078743
 }
 controls_by_name {
   key: "control_change:4:3:0"
-  value: 0.28125
+  value: 0.48031497
+}
+controls_by_name {
+  key: "control_change:4:4:0"
+  value: 0.724409461
 }
