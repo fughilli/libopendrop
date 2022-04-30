@@ -101,7 +101,6 @@ class Runner:
         control.buttons.extend(self.buttons)
         self.buttons = []
         for server_tuple in self.server_tuples:
-            print("Sending to", server_tuple)
             self.socket.sendto(control.SerializeToString(), server_tuple)
 
     def initialize_device(self):
