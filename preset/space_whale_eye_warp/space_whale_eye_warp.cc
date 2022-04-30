@@ -53,7 +53,10 @@ SpaceWhaleEyeWarp::SpaceWhaleEyeWarp(
       depth_output_target_(depth_output_target),
       outline_model_(outline_model)
 
-{}
+{
+  bias_color_ =
+      HsvToRgb(glm::vec3(Coefficients::Random<1, float>(0, 2 * kPi)[0], 1, 1));
+}
 
 absl::StatusOr<std::shared_ptr<Preset>> SpaceWhaleEyeWarp::MakeShared(
     std::shared_ptr<gl::GlTextureManager> texture_manager) {
@@ -170,6 +173,8 @@ void SpaceWhaleEyeWarp::DrawWhale(GlobalState& state, glm::vec3 zoom_vec,
       .black_render_target = back_back_render_target_,
       .black_alpha = 0.0f,
       .mouth_open = mouth_open,
+      .bias_color = glm::vec4(bias_color_, 1),
+      .bias_coeff = 0.7f,
   });
 }
 
@@ -312,6 +317,8 @@ void SpaceWhaleEyeWarp::OnDrawFrame(
 
     num_eyeballs_ = Coefficients::Random<1, int>(1, 6)[0];
     energy_coefficient_ = Coefficients::Random<1, float>(0.05f, 1.0f)[0];
+    bias_color_ = HsvToRgb(
+        glm::vec3(Coefficients::Random<1, float>(0, 2 * kPi)[0], 1, 1));
   }
   if (transition_controller_.TransitionCount() % 2 == 1) {
     front_border = black_and_white_border;

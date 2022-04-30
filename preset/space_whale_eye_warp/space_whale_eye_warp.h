@@ -97,6 +97,8 @@ class SpaceWhaleEyeWarp : public Preset {
                                     .closeness_threshold = 0.01f,
                                     .lead_in = false}};
 
+  glm::vec3 bias_color_;
+
   std::shared_ptr<IirFilter> zoom_filters_[3] = {
       IirSinglePoleFilter(kCutoff, IirSinglePoleFilterType::kLowpass),
       IirSinglePoleFilter(kCutoff, IirSinglePoleFilterType::kLowpass),

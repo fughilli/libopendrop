@@ -39,6 +39,9 @@ class OutlineModel {
     float black_alpha;
 
     float mouth_open = 0.0f;
+
+    glm::vec4 bias_color;
+    float bias_coeff = 0.0f;
   };
 
   static absl::StatusOr<std::shared_ptr<OutlineModel>> MakeShared();

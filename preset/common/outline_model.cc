@@ -211,10 +211,10 @@ void OutlineModel::Draw(const Params& params) {
       GlBindUniform(model_program_, "black", false);
       GlBindUniform(
           model_program_, "light_color_a",
-          glm::mix(params.color_a, glm::vec4(0.0f, 0.0f, 1.0f, 1.0f), 0.7f));
+          glm::mix(params.color_a, params.bias_color, params.bias_coeff));
       GlBindUniform(
           model_program_, "light_color_b",
-          glm::mix(params.color_b, glm::vec4(0.0f, 0.0f, 1.0f, 1.0f), 0.7f));
+          glm::mix(params.color_b, params.bias_color, params.bias_coeff));
       head_outer_.Draw();
 
       GlBindUniform(
@@ -232,10 +232,10 @@ void OutlineModel::Draw(const Params& params) {
       GlBindUniform(model_program_, "black", false);
       GlBindUniform(
           model_program_, "light_color_a",
-          glm::mix(params.color_a, glm::vec4(0.0f, 0.0f, 1.0f, 1.0f), 0.7f));
+          glm::mix(params.color_a, params.bias_color, params.bias_coeff));
       GlBindUniform(
           model_program_, "light_color_b",
-          glm::mix(params.color_b, glm::vec4(0.0f, 0.0f, 1.0f, 1.0f), 0.7f));
+          glm::mix(params.color_b, params.bias_color, params.bias_coeff));
       jaw_outer_.Draw();
       break;
   }

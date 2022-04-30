@@ -95,13 +95,13 @@ class Runner:
         self.thread.join()
 
     def send_control(self):
-        print(self.control_ranges)
         control = Control()
         for k, v in self.control_values.items():
             control.control[k] = v
         control.buttons.extend(self.buttons)
         self.buttons = []
         for server_tuple in self.server_tuples:
+            print("Sending to", server_tuple)
             self.socket.sendto(control.SerializeToString(), server_tuple)
 
     def initialize_device(self):
