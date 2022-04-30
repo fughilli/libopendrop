@@ -53,7 +53,8 @@ class SpaceWhaleEyeWarp : public Preset {
   void DrawEyeball(GlobalState& state, glm::vec3 zoom_vec, float pupil_size,
                    float eye_scale, float black_alpha, bool back,
                    glm::vec3 offset);
-  void DrawWhale(GlobalState& state, glm::vec3 zoom_vec, float scale, float mouth_open);
+  void DrawWhale(GlobalState& state, glm::vec3 zoom_vec, float scale,
+                 float mouth_open);
 
   std::shared_ptr<gl::GlProgram> warp_program_;
   std::shared_ptr<gl::GlProgram> composite_program_;
@@ -79,6 +80,7 @@ class SpaceWhaleEyeWarp : public Preset {
   bool texture_trigger_ = false;
 
   int num_eyeballs_ = 3;
+  float energy_coefficient_ = 1.0f;
 
   BeatEstimator beat_estimators_[3] = {{0.99f}, {0.99f}, {0.99f}};
 
@@ -87,6 +89,13 @@ class SpaceWhaleEyeWarp : public Preset {
                                     .input_decay_zone = 0.2f,
                                     .threshold = 0.6f,
                                     .closeness_threshold = 0.01f}};
+  TransitionController scale_controller_{
+      TransitionController::Options{.decay_rate = 0.05f,
+                                    .input_decay_zone = 0.2f,
+                                    .input_scale = 0.1f,
+                                    .threshold = 0.6f,
+                                    .closeness_threshold = 0.01f,
+                                    .lead_in = false}};
 
   std::shared_ptr<IirFilter> zoom_filters_[3] = {
       IirSinglePoleFilter(kCutoff, IirSinglePoleFilterType::kLowpass),

@@ -14,6 +14,7 @@ class TransitionController {
     float input_scale = 0.01f;
     float threshold = 0.8f;
     float closeness_threshold = 1e-3f;
+    bool lead_in = true;
   };
 
   TransitionController(Options options)
@@ -39,7 +40,7 @@ class TransitionController {
         if ((1.0f - decay_towards_.value()) < options_.closeness_threshold) {
           ++count_;
           transitioned_last_update_ = true;
-          state_ = kLeadingIn;
+          state_ = options_.lead_in ? kLeadingIn : kUserControlled;
           decay_towards_.value() = 0;
         }
         break;

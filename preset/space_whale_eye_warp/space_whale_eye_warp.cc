@@ -179,9 +179,10 @@ void SpaceWhaleEyeWarp::OnDrawFrame(
   for (int i = 0; i < 3; ++i) {
     beat_estimators_[i].Estimate(state->channel_band(i), state->dt());
   }
-
-  transition_controller_.Update(
-      SIGINJECT_OVERRIDE("transition_input", 0.0f, -1.0f, 1.0f));
+  float transition_input =
+      SIGINJECT_OVERRIDE("transition_input", 0.0f, -1.0f, 1.0f);
+  transition_controller_.Update(transition_input);
+  scale_controller_.Update(-transition_input);
 
   SIGPLOT_ON("lead_in_value", transition_controller_.LeadInValue());
   SIGPLOT_ON("lead_out_value", transition_controller_.LeadOutValue());
@@ -206,8 +207,9 @@ void SpaceWhaleEyeWarp::OnDrawFrame(
 
   zoom_vec = glm::normalize(zoom_vec);
 
-  zoom_vec = Lerp(zoom_vec, Directions::kIntoScreen,
-                  std::min(transition_controller_.LeadOutValue() * 3.0f, 1.0f));
+  glm::vec3 look_zoom_vec =
+      Lerp(zoom_vec, Directions::kIntoScreen,
+           std::min(transition_controller_.LeadOutValue() * 3.0f, 1.0f));
 
   zoom_angle_ += (0.3 + (beat_estimators_[0].triangle_phase() *
                          sin(state->energy() * 10))) /
@@ -223,6 +225,22 @@ void SpaceWhaleEyeWarp::OnDrawFrame(
       Lerp(eye_scale, 0.4f,
            std::min(transition_controller_.LeadOutValue() * 3, 1.0f));
 
+  if (scale_controller_.TransitionCount() % 2 == 0) {
+    eye_scale *= (1.0f - scale_controller_.LeadOutValue());
+    whale_scale *= (1.0f - scale_controller_.LeadOutValue());
+  } else {
+    if (scale_controller_.LeadOutValue() > 0.1f) {
+      eye_scale *= scale_controller_.LeadOutValue();
+      whale_scale *= scale_controller_.LeadOutValue();
+    } else {
+      eye_scale = 0.0f;
+      whale_scale = 0.0f;
+    }
+  }
+
+  SIGPLOT_ON("modified_eye_scale", eye_scale);
+  SIGPLOT_ON("modified_whale_scale", whale_scale);
+
   {
     auto depth_output_activation = depth_output_target_->Activate();
     glViewport(0, 0, longer_dimension(), longer_dimension());
@@ -231,42 +249,48 @@ void SpaceWhaleEyeWarp::OnDrawFrame(
     glDepthRange(0, 10);
     glEnable(GL_DEPTH_TEST);
 
-    if (transition_controller_.TransitionCount() % 2 == 0) {
-      const float scale_modifier = (2.0f / (num_eyeballs_ + 1));
-      pupil_size = Lerp(pupil_size, 20.0f / scale_modifier,
-                        transition_controller_.LeadOutValue());
-      for (int i = 0; i < num_eyeballs_; ++i) {
-        glm::vec2 displacement(0, 0);
-        if (num_eyeballs_ > 1) {
-          displacement = UnitVectorAtAngle(IndexToAngle(i, num_eyeballs_) +
-                                           state->treble_energy() * 100) *
-                         Lerp(0.2f, 0.6f,
-                              Lerp(beat_estimators_[1].triangle_phase(),
-                                   UnitarySin(state->mid_energy() * 100),
-                                   UnitarySin(state->energy() * 10)));
+    if (eye_scale != 0.0f || whale_scale != 0.0f) {
+      if (transition_controller_.TransitionCount() % 2 == 0) {
+        const float scale_modifier = (2.0f / (num_eyeballs_ + 1));
+        pupil_size = Lerp(pupil_size, 20.0f / scale_modifier,
+                          transition_controller_.LeadOutValue());
+        for (int i = 0; i < num_eyeballs_; ++i) {
+          glm::vec2 displacement(0, 0);
+          if (num_eyeballs_ > 1) {
+            displacement = UnitVectorAtAngle(IndexToAngle(i, num_eyeballs_) +
+                                             state->treble_energy() * 100 *
+                                                 energy_coefficient_) *
+                           Lerp(0.2f, 0.6f,
+                                Lerp(beat_estimators_[1].triangle_phase(),
+                                     UnitarySin(state->mid_energy() * 100 *
+                                                energy_coefficient_),
+                                     UnitarySin(state->energy() * 10)));
+          }
+          DrawEyeball(
+              *state, look_zoom_vec, pupil_size, eye_scale * scale_modifier,
+              std::min(1.0f, 0.1f + transition_controller_.LeadOutValue()),
+              true
+              /*transition_controller_.TransitionCount() % 2 == 0*/,
+              glm::vec3(displacement, 0));
         }
+      } else {
+        pupil_size =
+            Lerp(pupil_size, 100.0f, transition_controller_.LeadOutValue());
         DrawEyeball(
-            *state, zoom_vec, pupil_size, eye_scale * scale_modifier,
+            *state, look_zoom_vec, pupil_size, eye_scale / 4,
             std::min(1.0f, 0.1f + transition_controller_.LeadOutValue()),
-            true
-            /*transition_controller_.TransitionCount() % 2 == 0*/,
-            glm::vec3(displacement, 0));
+            true /*transition_controller_.TransitionCount() % 2 == 0*/,
+            glm::vec3(-0.2, 0.15, -0.25));
+        DrawEyeball(
+            *state, look_zoom_vec, pupil_size, eye_scale / 4,
+            std::min(1.0f, 0.1f + transition_controller_.LeadOutValue()),
+            true /*transition_controller_.TransitionCount() % 2 == 0*/,
+            glm::vec3(0.2, 0.15, -0.25));
+        DrawWhale(*state, look_zoom_vec, whale_scale,
+                  std::clamp((1 + sin(state->mid_energy() * 200)) / 2 +
+                                 state->mid() * 3,
+                             0.0f, 1.0f));
       }
-    } else {
-      pupil_size =
-          Lerp(pupil_size, 100.0f, transition_controller_.LeadOutValue());
-      DrawEyeball(*state, zoom_vec, pupil_size, eye_scale / 4,
-                  std::min(1.0f, 0.1f + transition_controller_.LeadOutValue()),
-                  true /*transition_controller_.TransitionCount() % 2 == 0*/,
-                  glm::vec3(-0.2, 0.15, -0.25));
-      DrawEyeball(*state, zoom_vec, pupil_size, eye_scale / 4,
-                  std::min(1.0f, 0.1f + transition_controller_.LeadOutValue()),
-                  true /*transition_controller_.TransitionCount() % 2 == 0*/,
-                  glm::vec3(0.2, 0.15, -0.25));
-      DrawWhale(*state, zoom_vec, whale_scale,
-                std::clamp(
-                    (1 + sin(state->mid_energy() * 200)) / 2 + state->mid() * 3,
-                    0.0f, 1.0f));
     }
 
     glDisable(GL_DEPTH_TEST);
@@ -287,6 +311,7 @@ void SpaceWhaleEyeWarp::OnDrawFrame(
     back_back_render_target_->swap_texture_unit(back_render_target_.get());
 
     num_eyeballs_ = Coefficients::Random<1, int>(1, 6)[0];
+    energy_coefficient_ = Coefficients::Random<1, float>(0.05f, 1.0f)[0];
   }
   if (transition_controller_.TransitionCount() % 2 == 1) {
     front_border = black_and_white_border;
