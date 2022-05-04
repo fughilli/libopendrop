@@ -301,13 +301,22 @@ void SpaceWhaleEyeWarp::OnDrawFrame(
     glDisable(GL_DEPTH_TEST);
   }
 
+  background_hue_ += state->power() *
+                     SIGINJECT_OVERRIDE("space_whale_eye_warp_border_hue_coeff",
+                                        0.1f, 0.0f, 0.5f);
+
+  const float background_value = SIGINJECT_OVERRIDE(
+      "space_whale_eye_warp_border_value_coeff", 1.0f, 0.0f, 1.0f);
+
   glm::vec4 rainbow_border =
-      glm::vec4(HsvToRgb(glm::vec3(background_hue_, 1, 1)), 1);
+      glm::vec4(HsvToRgb(glm::vec3(background_hue_, 1, background_value)), 1);
 
   glm::vec4 black_and_white_border = glm::vec4(0, 0, 0, 1);
   {
     bool white = std::fmod(background_hue_ * 10.0f, 1.0f) > 0.5f;
-    if (white) black_and_white_border = glm::vec4(1, 1, 1, 1);
+    if (white)
+      black_and_white_border =
+          glm::vec4(glm::vec3(1, 1, 1) * background_value, 1);
   }
 
   glm::vec4 front_border, back_border;
@@ -342,10 +351,6 @@ void SpaceWhaleEyeWarp::OnDrawFrame(
     GlBindUniform(warp_program_, "zoom_vec", zoom_vec);
     GlBindUniform(warp_program_, "model_transform", glm::mat4(1.0f));
     auto binding_options = gl::GlTextureBindingOptions();
-    background_hue_ +=
-        state->power() *
-        SIGINJECT_OVERRIDE("space_whale_eye_warp_border_hue_coeff", 0.1f, 0.0f,
-                           3.0f);
     binding_options.border_color = front_border;
     binding_options.sampling_mode = gl::GlTextureSamplingMode::kClampToBorder;
     GlBindRenderTargetTextureToUniform(warp_program_, "last_frame",
@@ -371,10 +376,6 @@ void SpaceWhaleEyeWarp::OnDrawFrame(
     GlBindUniform(warp_program_, "zoom_vec", zoom_vec);
     GlBindUniform(warp_program_, "model_transform", glm::mat4(1.0f));
     auto binding_options = gl::GlTextureBindingOptions();
-    background_hue_ +=
-        state->power() *
-        SIGINJECT_OVERRIDE("space_whale_eye_warp_border_hue_coeff", 0.1f, 0.0f,
-                           3.0f);
     binding_options.border_color = back_border;
     binding_options.sampling_mode = gl::GlTextureSamplingMode::kClampToBorder;
     GlBindRenderTargetTextureToUniform(

@@ -46,6 +46,7 @@ enable_valgrind=0
 compiler_config=""
 build_only=0
 run_with_ibazel=0
+binary_to_run=""
 
 passthrough_args=()
 
@@ -65,6 +66,12 @@ while [[ ! -z "$@" ]]; do
 
     '-b')
       run_binary=1
+      ;;
+
+    '-B')
+      run_binary=2
+      binary_to_run=$1
+      shift
       ;;
 
     '-dv')
@@ -203,7 +210,10 @@ fi
 echo "Invoking with passthrough args: ${passthrough_args[@]}"
 
 if [[ $run_binary == 1 ]]; then
-  $valgrind_command binaries/libopendrop_for_ct_live_default_control_enabled $options \
+  $valgrind_command bazel-bin/main $options \
+    ${passthrough_args[@]}
+elif [[ $run_binary == 2 ]]; then
+  $valgrind_command "$binary_to_run" $options \
     ${passthrough_args[@]}
 else
   bazel_command="run"

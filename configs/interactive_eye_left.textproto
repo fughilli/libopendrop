@@ -1,4 +1,12 @@
 control_mappings {
+  key: "space_whale_eye_warp_border_hue_coeff"
+  value: "control_change:0:76:0"
+}
+control_mappings {
+  key: "space_whale_eye_warp_border_value_coeff"
+  value: "control_change:0:75:0"
+}
+control_mappings {
   key: "transition_input"
   value: "control_change:3:1:0"
 }
@@ -18,7 +26,7 @@ signals_by_name {
   key: "space_whale_eye_warp_border_hue_coeff"
   value {
     low: 0
-    high: 3
+    high: 0.5
   }
 }
 signals_by_name {
@@ -73,6 +81,18 @@ counters_by_name {
   }
 }
 controls_by_name {
+  key: "control_change:0:75:0"
+  value: 0
+}
+controls_by_name {
+  key: "control_change:0:76:0"
+  value: 0.173228353
+}
+controls_by_name {
+  key: "control_change:0:77:0"
+  value: 0.527559042
+}
+controls_by_name {
   key: "control_change:3:0:0"
   value: 0.496063
 }
@@ -82,15 +102,15 @@ controls_by_name {
 }
 controls_by_name {
   key: "control_change:3:2:0"
-  value: 0.307086617
+  value: 0.543307066
 }
 controls_by_name {
   key: "control_change:3:3:0"
-  value: 0.566929162
+  value: 0.637795269
 }
 controls_by_name {
   key: "control_change:3:4:0"
-  value: 0.629921257
+  value: 0.669291317
 }
 controls_by_name {
   key: "control_change:4:0:0"
@@ -98,13 +118,13 @@ controls_by_name {
 }
 controls_by_name {
   key: "control_change:4:2:0"
-  value: 0.314960629
+  value: 0.291338593
 }
 controls_by_name {
   key: "control_change:4:3:0"
-  value: 0.574803174
+  value: 0.566929162
 }
 controls_by_name {
   key: "control_change:4:4:0"
-  value: 0.637795269
+  value: 0.606299222
 }

@@ -95,6 +95,8 @@ ABSL_FLAG(std::string, control_state, "",
 ABSL_FLAG(int, control_port, 9944, "UDP port to listen for control packets on");
 ABSL_FLAG(bool, inject, false,
           "Whether or not to start injecting control immediately at startup");
+ABSL_FLAG(bool, draw_signal_viewer, true,
+          "Whether or not to draw the signal viewer");
 
 namespace opendrop {
 
@@ -191,6 +193,10 @@ extern "C" int main(int argc, char *argv[]) {
     auto position_y = (absl::GetFlag(FLAGS_window_y) == -1)
                           ? SDL_WINDOWPOS_UNDEFINED
                           : absl::GetFlag(FLAGS_window_y);
+
+    const bool draw_signal_viewer = absl::GetFlag(FLAGS_draw_signal_viewer);
+
+    ControlInjector::SetEnableImgui(draw_signal_viewer);
 
     auto sdl_gl_interface = std::make_shared<gl::SdlGlInterface>(
         SDL_CreateWindow("OpenDrop", position_x, position_y,
@@ -389,19 +395,24 @@ extern "C" int main(int argc, char *argv[]) {
 
         ImGui::End();
 
-        ImGui::Begin("OpenDrop Signals Viewer", nullptr, 0);
-        ImPlot::SetNextAxisLimits(ImAxis_Y1, -1.0f, 1.0f);
-        if (ImPlot::BeginPlot("samples")) {
-          auto &processor = open_drop_controller->audio_processor();
-          interleaved_samples.resize(0x10000 * processor.channels_per_sample());
-          auto samples_view = open_drop_controller->GetCurrentFrameSamples();
-          ImPlot::PlotLine("Interleaved Samples", samples_view.data(),
-                           samples_view.size());
-          ImPlot::EndPlot();
+        if (draw_signal_viewer) {
+          ImGui::Begin("OpenDrop Signals Viewer", nullptr, 0);
+          ImPlot::SetNextAxisLimits(ImAxis_Y1, -1.0f, 1.0f);
+          if (ImPlot::BeginPlot("samples")) {
+            auto &processor = open_drop_controller->audio_processor();
+            interleaved_samples.resize(0x10000 *
+                                       processor.channels_per_sample());
+            auto samples_view = open_drop_controller->GetCurrentFrameSamples();
+            ImPlot::PlotLine("Interleaved Samples", samples_view.data(),
+                             samples_view.size());
+            ImPlot::EndPlot();
+          }
+          ControlInjector::Inject();
+          SignalScope::Plot();
+          ImGui::End();
+        } else {
+          ControlInjector::Inject();
         }
-        ControlInjector::Inject();
-        SignalScope::Plot();
-        ImGui::End();
 
         ImGui::Render();
         ImGui_ImplOpenGL2_RenderDrawData(ImGui::GetDrawData());

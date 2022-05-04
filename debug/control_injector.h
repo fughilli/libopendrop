@@ -74,6 +74,10 @@ class ControlInjector {
 
   static void SetStatePath(std::string path) { instance().state_path_ = path; }
 
+  static void SetEnableImgui(bool enable_imgui) {
+    instance().enable_imgui_ = enable_imgui;
+  }
+
   static void Save() {
     if (instance().state_path_ == "") return;
     std::ofstream output_proto(instance().state_path_.c_str());
@@ -269,6 +273,8 @@ class ControlInjector {
       }
     }
 
+    if (!enable_imgui_) return;
+
     std::vector<const char*> controls = {};
     for (auto& [control_name, control_value] : controls_by_name_)
       controls.push_back(control_name.c_str());
@@ -394,6 +400,7 @@ class ControlInjector {
   }
 
   bool enable_injection_ = false;
+  bool enable_imgui_ = true;
 
   std::set<int> buttons_{};
   std::vector<int> buttons_as_ints_{};

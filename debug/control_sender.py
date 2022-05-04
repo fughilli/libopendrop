@@ -130,6 +130,7 @@ class Runner:
 
     def run(self):
         self.inport = self.initialize_device()
+        print("Captured input:", self.inport)
         self.inport.callback = self.inport_callback
 
         while not self.should_exit:
