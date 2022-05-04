@@ -25,6 +25,7 @@ cc_library(
         ":jaw_inner",
         ":jaw_outer",
         ":lo_x",
+        ":camp_therapy",
         ":model",
         ":monkey",
         ":passthrough_vert",
@@ -176,4 +177,10 @@ model_cc_library(
     name = "jaw_inner",
     srcs = ["jaw_inner.obj"],
     scale = 0.707107,
+)
+
+model_cc_library(
+    name = "camp_therapy",
+    srcs = ["camp_therapy.obj"],
+    normalize = True,
 )

@@ -14,13 +14,16 @@ class OutlineModel {
  public:
   enum ModelToDraw {
     kPill = 0,
-    kAlpaca = 1,
-    kStar = 2,
-    kCube = 3,
-    kLoX = 4,
-    kEyeball = 5,
-    kHead = 6,
+    kStar = 1,
+    kCube = 2,
+    kEyeball = 3,
+    kCampTherapy = 4,
+    kHead = 5,
     kDenseLastValue = kHead,
+
+    // Disabled
+    kAlpaca = 99,
+    kLoX,
   };
 
   struct Params {
@@ -72,6 +75,7 @@ class OutlineModel {
   Model head_inner_;
   Model jaw_outer_;
   Model jaw_inner_;
+  Model camp_therapy_;
 };
 
 }  // namespace opendrop

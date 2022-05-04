@@ -5,6 +5,7 @@
 #include "debug/control_injector.h"
 #include "preset/common/alpaca.obj.h"
 #include "preset/common/alpaca_outline.obj.h"
+#include "preset/common/camp_therapy.obj.h"
 #include "preset/common/cube.obj.h"
 #include "preset/common/cube_outline.obj.h"
 #include "preset/common/eyeball_ball.obj.h"
@@ -71,7 +72,9 @@ OutlineModel::OutlineModel(std::shared_ptr<gl::GlProgram> model_program)
       jaw_outer_(jaw_outer_obj::Vertices(), jaw_outer_obj::Normals(),
                  jaw_outer_obj::Uvs(), jaw_outer_obj::Triangles()),
       jaw_inner_(jaw_inner_obj::Vertices(), jaw_inner_obj::Normals(),
-                 jaw_inner_obj::Uvs(), jaw_inner_obj::Triangles())
+                 jaw_inner_obj::Uvs(), jaw_inner_obj::Triangles()),
+      camp_therapy_(camp_therapy_obj::Vertices(), camp_therapy_obj::Normals(),
+                    camp_therapy_obj::Uvs(), camp_therapy_obj::Triangles())
 
 {}
 
@@ -101,7 +104,8 @@ void OutlineModel::Draw(const Params& params) {
   GlBindUniform(model_program_, "model_transform", params.model_transform);
   GlBindUniform(model_program_, "black_alpha", 0.0f);
 
-  switch (params.model_to_draw) {
+  auto model_to_draw = SIGINJECT_ENUM("model_to_draw", params.model_to_draw);
+  switch (model_to_draw) {
     case kCube:
       GlBindUniform(model_program_, "black", true);
       cube_outline_.Draw();
@@ -237,6 +241,24 @@ void OutlineModel::Draw(const Params& params) {
           model_program_, "light_color_b",
           glm::mix(params.color_b, params.bias_color, params.bias_coeff));
       jaw_outer_.Draw();
+    case kCampTherapy:
+      glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+      glLineWidth(50);
+      GlBindUniform(model_program_, "black", true);
+      GlBindUniform(model_program_, "max_negative_z", true);
+      camp_therapy_.Draw();
+      glPolygonMode(GL_FRONT_AND_BACK, GL_POINTS);
+      glPointSize(50);
+      camp_therapy_.Draw();
+      GlBindUniform(model_program_, "max_negative_z", false);
+      GlBindUniform(model_program_, "black", false);
+      glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+      GlBindUniform(model_program_, "light_color_a", params.color_a);
+      GlBindUniform(model_program_, "light_color_b", params.color_b);
+      camp_therapy_.Draw();
+      break;
+    default:
+      LOG(INFO) << "Unknown model to draw: " << model_to_draw;
       break;
   }
 }
