@@ -1,6 +1,7 @@
 package(default_visibility = ["//visibility:public"])
 
 load("@com_google_protobuf//:protobuf.bzl", "py_proto_library")
+load("@subpar//:subpar.bzl", "par_binary")
 
 cc_library(
     name = "proto_port",
@@ -61,8 +62,9 @@ py_proto_library(
     srcs = ["control.proto"],
 )
 
-py_binary(
+par_binary(
     name = "control_sender",
     srcs = ["control_sender.py"],
+    zip_safe = False,
     deps = [":control_py_proto"],
 )

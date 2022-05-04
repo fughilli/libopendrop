@@ -16,9 +16,11 @@ FLAGS = flags.FLAGS
 flags.DEFINE_boolean("list", False,
                      "List available MIDI inputs, and then exit")
 flags.DEFINE_string("input_filter", None, "Regex to filter MIDI inputs by")
+flags.mark_flag_as_required("input_filter")
 flags.DEFINE_boolean("verbose", False, "")
 flags.DEFINE_multi_integer(
     "ports", [9944], "UDP ports on localhost to send control packets to")
+
 
 
 def make_key(msg):
@@ -105,6 +107,10 @@ class Runner:
 
     def initialize_device(self):
         input_names = mido.get_input_names()
+
+        if len(input_names) == 0:
+            print("No available MIDI inputs")
+            exit(1)
 
         input_name = list(
             filter((lambda name: re.match(FLAGS.input_filter, name)),

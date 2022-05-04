@@ -1,9 +1,12 @@
 #!/bin/bash
 
 source=microphone
-run_left=1
-run_right=1
+run_left=0
+run_right=0
 run_manual_controlled=1
+kill_needed=0
+
+pids_to_kill=()
 
 function find_window() {
   name="$1"
@@ -14,6 +17,33 @@ function find_window() {
     <(xdotool search --class "$class" | sort -u)
 }
 
+function handle_term() {
+  for pid in ${pids_to_kill[*]}; do
+    echo "Killing $pid children..."
+    for child_pid in "$(ps -o pid --no-headers --ppid ${pid})"; do
+      if [[ -z $child_pid ]]; then
+        continue
+      fi
+      echo "Killing child $child_pid"
+      kill -9 $child_pid
+    done
+    echo "Killing $pid"
+    kill -9 $pid
+  done
+}
+
+# function wait_term() {
+#   if [[ "${kill_needed}" == 1 ]]; then
+#     for pid in ${pids_to_kill[*]}; do
+#       kill $pid 2> /dev/null
+#     done
+#   fi
+#   trap - TERM INT
+#   for pid in ${pids_to_kill[*]}; do
+#     wait $pid
+#   done
+# }
+
 if [[ $run_left == 1 ]]; then
   SDL_VIDEO_X11_WMCLASS=left_eye ./run_libopendrop.sh \
     -B binaries/libopendrop_latest_ct_eyes_signals_optional \
@@ -22,6 +52,7 @@ if [[ $run_left == 1 ]]; then
     --control_state=$(pwd)/configs/interactive_eye_left.textproto \
     --control_port=9955 \
     --inject &
+  pids_to_kill+="$! "
 fi
 
 if [[ $run_right == 1 ]]; then
@@ -32,18 +63,25 @@ if [[ $run_right == 1 ]]; then
     --control_state=$(pwd)/configs/interactive_eye_right.textproto \
     --control_port=9945 \
     --inject &
+  pids_to_kill+="$! "
 fi
 
 if [[ $run_manual_controlled == 1 ]]; then
   SDL_VIDEO_X11_WMCLASS=manual_control ./run_libopendrop.sh \
-    -B binaries/libopendrop_for_ct_live_default_control_enabled \
+    -B binaries/libopendrop_for_ct_live_ct_sign \
     -s $source \
     --control_state=$(pwd)/configs/mpk_mini_config.textproto &
-  bin_pid=$!
+  pids_to_kill+="$! "
 fi
 
-bazelisk run //debug:control_sender -- --input_filter='.*Feather.*' --ports=9955 --ports=9945 &
-bazelisk run //debug:control_sender -- --input_filter='.*MPK.*' --ports=9944 --ports=9955 --ports=9945 &
+if [[ $run_left == 1 ]] || [[ $run_right == 1 ]]; then
+  ./binaries/control_sender.par --input_filter='.*Feather.*' --ports=9955 --ports=9945 &
+  pids_to_kill+="$! "
+fi
+if [[ $run_left == 1 ]] || [[ $run_right == 1 ]] || [[ $run_manual_controlled == 1 ]]; then
+  ./binaries/control_sender.par --input_filter='.*MPK.*' --ports=9944 --ports=9955 --ports=9945 &
+  pids_to_kill+="$! "
+fi
 
 if [[ $run_left == 1 ]]; then
   while [[ -z $(xdotool search --class "left_eye") ]]; do
@@ -68,28 +106,43 @@ fi
 
 sleep 2
 
-LEFT_WINDOW_ID=$(find_window "OpenDrop Visualizer View" "left_eye")
-RIGHT_WINDOW_ID=$(find_window "OpenDrop Visualizer View" "right_eye")
-MANUAL_WINDOW_ID=$(find_window "OpenDrop Visualizer View" "manual_control")
+if [[ $run_left == 1 ]]; then
+  LEFT_WINDOW_ID=$(find_window "OpenDrop Visualizer View" "left_eye")
+fi
+
+if [[ $run_right == 1 ]]; then
+  RIGHT_WINDOW_ID=$(find_window "OpenDrop Visualizer View" "right_eye")
+fi
+
+if [[ $run_manual_controlled == 1 ]]; then
+  MANUAL_WINDOW_ID=$(find_window "OpenDrop Visualizer View" "manual_control")
+fi
 
 echo $LEFT_WINDOW_ID $RIGHT_WINDOW_ID $MANUAL_WINDOW_ID
 
-i3-msg "[id=\"$MANUAL_WINDOW_ID\"] move container to output HDMI-0"
-i3-msg "[id=\"$MANUAL_WINDOW_ID\"] fullscreen enable"
+if [[ $run_manual_controlled == 1 ]]; then
+  i3-msg "[id=\"$MANUAL_WINDOW_ID\"] move container to output HDMI-0"
+  i3-msg "[id=\"$MANUAL_WINDOW_ID\"] fullscreen enable"
+fi
 
-sleep 2
-i3-msg "[id=\"$LEFT_WINDOW_ID\"] move container to output DP-0.1"
-i3-msg "[id=\"$LEFT_WINDOW_ID\"] fullscreen enable"
+if [[ $run_left == 1 ]]; then
+  sleep 2
+  i3-msg "[id=\"$LEFT_WINDOW_ID\"] move container to output DP-0.1"
+  i3-msg "[id=\"$LEFT_WINDOW_ID\"] fullscreen enable"
+fi
 
-sleep 2
-i3-msg "[id=\"$RIGHT_WINDOW_ID\"] move container to output DP-0.2"
-i3-msg "[id=\"$RIGHT_WINDOW_ID\"] fullscreen enable"
+if [[ $run_right == 1 ]]; then
+  sleep 2
+  i3-msg "[id=\"$RIGHT_WINDOW_ID\"] move container to output DP-0.2"
+  i3-msg "[id=\"$RIGHT_WINDOW_ID\"] fullscreen enable"
+fi
 
-wait
+echo "Pids to kill: ${pids_to_kill[@]}"
+trap 'handle_term' TERM INT
 
-# if [[ $run_manual_controlled == 1 ]]; then
-#   kill $bin_pid
-#   killall libopendrop_for_ct_live
-# fi
+for pid in ${pids_to_kill[*]}; do
+  wait $pid
+done
+#wait_term
 
-killall binaries/*
+echo "Done, exiting"

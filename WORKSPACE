@@ -12,6 +12,13 @@ load(
 )
 
 git_repository(
+    name = "subpar",
+    commit = "15ddc75b94b19ea4f544cf5d3e640cd37a3a8b4b",
+    remote = "https://github.com/fughilli/subpar",
+    shallow_since = "1590903243 -0700",
+)
+
+git_repository(
     name = "com_google_protobuf",
     commit = "70b02861f8e8ba711efd187188dfb930db7bcaba",
     patch_args = ["-p1"],

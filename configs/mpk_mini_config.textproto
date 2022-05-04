@@ -229,8 +229,8 @@ counters_by_name {
   key: "model_to_draw"
   value {
     low: 0
-    high: 5
-    value: 5
+    high: 4
+    value: 4
   }
 }
 counters_by_name {
