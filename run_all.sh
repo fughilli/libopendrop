@@ -1,8 +1,8 @@
 #!/bin/bash
 
 source=microphone
-run_left=0
-run_right=0
+run_left=1
+run_right=1
 run_manual_controlled=1
 kill_needed=0
 

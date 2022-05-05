@@ -75,12 +75,20 @@ control_mappings {
   value: "control_change:0:77:0"
 }
 control_mappings {
+  key: "pills_radius"
+  value: "control_change:0:72:0"
+}
+control_mappings {
   key: "pills_rot_speed_coeff"
   value: "control_change:0:74:0"
 }
 control_mappings {
   key: "pills_zoom_coeff"
   value: "control_change:0:70:0"
+}
+control_mappings {
+  key: "pills_zoom_dir_scale"
+  value: "control_change:0:71:0"
 }
 signals_by_name {
   key: "cube_wreath_border_hue_coeff"
@@ -163,7 +171,7 @@ signals_by_name {
   key: "pills_border_hue_coeff"
   value {
     low: 0
-    high: 3
+    high: 0.5
   }
 }
 signals_by_name {
@@ -188,6 +196,13 @@ signals_by_name {
   }
 }
 signals_by_name {
+  key: "pills_radius"
+  value {
+    low: 0
+    high: 1
+  }
+}
+signals_by_name {
   key: "pills_rot_speed_coeff"
   value {
     low: 0
@@ -196,6 +211,13 @@ signals_by_name {
 }
 signals_by_name {
   key: "pills_zoom_coeff"
+  value {
+    low: -1
+    high: 1
+  }
+}
+signals_by_name {
+  key: "pills_zoom_dir_scale"
   value {
     low: -1
     high: 1
@@ -255,35 +277,35 @@ controls_by_name {
 }
 controls_by_name {
   key: "control_change:0:70:0"
-  value: 0.370078743
+  value: 1
 }
 controls_by_name {
   key: "control_change:0:71:0"
-  value: 0.700787425
+  value: 0.551181078
 }
 controls_by_name {
   key: "control_change:0:72:0"
-  value: 0
+  value: 0.755905509
 }
 controls_by_name {
   key: "control_change:0:73:0"
-  value: 0.535433054
+  value: 0.771653533
 }
 controls_by_name {
   key: "control_change:0:74:0"
-  value: 0.275590539
+  value: 0.92125982
 }
 controls_by_name {
   key: "control_change:0:75:0"
-  value: 0.96062994
+  value: 1
 }
 controls_by_name {
   key: "control_change:0:76:0"
-  value: 0.330708653
+  value: 0
 }
 controls_by_name {
   key: "control_change:0:77:0"
-  value: 0
+  value: 0.55905509
 }
 controls_by_name {
   key: "pitchwheel:0:0:0"
