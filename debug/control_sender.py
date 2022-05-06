@@ -8,6 +8,7 @@ import time
 from typing import Dict, List, Tuple
 
 from absl import flags
+from absl import logging
 
 from debug.control_pb2 import Control, Button
 
@@ -20,7 +21,6 @@ flags.mark_flag_as_required("input_filter")
 flags.DEFINE_boolean("verbose", False, "")
 flags.DEFINE_multi_integer(
     "ports", [9944], "UDP ports on localhost to send control packets to")
-
 
 
 def make_key(msg):
@@ -102,6 +102,7 @@ class Runner:
             control.control[k] = v
         control.buttons.extend(self.buttons)
         self.buttons = []
+        logging.debug("control =", control)
         for server_tuple in self.server_tuples:
             self.socket.sendto(control.SerializeToString(), server_tuple)
 
@@ -155,6 +156,11 @@ def start():
         input_listing = '\n'.join(mido.get_input_names())
         print(f"Available inputs:\n{input_listing:s}")
         return
+
+    if FLAGS.verbose:
+        logging.set_verbosity(logging.DEBUG)
+    else:
+        logging.set_verbosity(logging.INFO)
 
     print("Runner start")
     runner = Runner()
