@@ -10,11 +10,11 @@
 #include "preset/pills/passthrough_frag.fsh.h"
 #include "preset/pills/passthrough_vert.vsh.h"
 #include "preset/pills/warp.fsh.h"
-#include "util/graphics/colors.h"
-#include "util/enums.h"
 #include "third_party/gl_helper.h"
-#include "util/graphics/gl_util.h"
 #include "third_party/glm_helper.h"
+#include "util/enums.h"
+#include "util/graphics/colors.h"
+#include "util/graphics/gl_util.h"
 #include "util/logging/logging.h"
 #include "util/math/math.h"
 #include "util/math/perspective.h"
@@ -26,6 +26,12 @@ namespace opendrop {
 
 namespace {
 constexpr float kScaleFactor = 2.0f;
+
+std::tuple<int, float> CountAndScale(float arg, int max_count) {
+  int n_clusters = 1.0f + std::fmod(arg, max_count);
+  float cluster_scale = (cos(arg * 2.0f * kPi) + 1.0f) / 2.0f;
+  return std::make_tuple(n_clusters, cluster_scale);
+}
 }  // namespace
 
 Pills::Pills(std::shared_ptr<gl::GlProgram> warp_program,
@@ -92,12 +98,6 @@ void Pills::OnUpdateGeometry() {
     depth_output_target_->UpdateGeometry(longer_dimension(),
                                          longer_dimension());
   }
-}
-
-std::tuple<int, float> CountAndScale(float arg, int max_count) {
-  int n_clusters = 1.0f + std::fmod(arg, max_count);
-  float cluster_scale = (cos(arg * 2.0f * kPi) + 1.0f) / 2.0f;
-  return std::make_tuple(n_clusters, cluster_scale);
 }
 
 void Pills::DrawCubes(float power, float bass, float energy, float dt,
