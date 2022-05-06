@@ -7,10 +7,33 @@ buttons: 41
 buttons: 42
 buttons: 43
 buttons: 48
+buttons: 49
+buttons: 50
+buttons: 51
+buttons: 52
+buttons: 53
+buttons: 54
+buttons: 55
+buttons: 56
+buttons: 57
+buttons: 58
+buttons: 59
 buttons: 60
+buttons: 61
+buttons: 62
+buttons: 63
+buttons: 64
 buttons: 65
+buttons: 66
+buttons: 67
+buttons: 68
+buttons: 69
+buttons: 70
+buttons: 71
 buttons: 72
 buttons: 9036
+buttons: 9037
+buttons: 9040
 buttons: 9041
 buttons: 9042
 buttons: 9043
@@ -94,7 +117,7 @@ signals_by_name {
   key: "cube_wreath_border_hue_coeff"
   value {
     low: 0
-    high: 3
+    high: 0.5
   }
 }
 signals_by_name {
@@ -114,7 +137,7 @@ signals_by_name {
 signals_by_name {
   key: "cube_wreath_num_cubes"
   value {
-    low: 1
+    low: 0
     high: 32
   }
 }
@@ -191,7 +214,7 @@ signals_by_name {
 signals_by_name {
   key: "pills_num_cubes"
   value {
-    low: 1
+    low: 0
     high: 32
   }
 }
@@ -225,19 +248,19 @@ signals_by_name {
 }
 button_mappings {
   key: "cube_wreath_texture_enable"
-  value: 9036
+  value: 50
 }
 button_mappings {
   key: "model_to_draw"
-  value: 9042
+  value: 48
 }
 button_mappings {
   key: "next_preset"
-  value: 9043
+  value: 49
 }
 button_mappings {
   key: "pills_texture_enable"
-  value: 9036
+  value: 50
 }
 counters_by_name {
   key: "cube_wreath_texture_enable"
@@ -252,7 +275,7 @@ counters_by_name {
   value {
     low: 0
     high: 4
-    value: 4
+    value: 1
   }
 }
 counters_by_name {
@@ -272,42 +295,46 @@ counters_by_name {
   }
 }
 controls_by_name {
+  key: "aftertouch:9:0:0"
+  value: 0.149606302
+}
+controls_by_name {
   key: "control_change:0:1:0"
   value: 0
 }
 controls_by_name {
   key: "control_change:0:70:0"
-  value: 1
+  value: 0.653543293
 }
 controls_by_name {
   key: "control_change:0:71:0"
-  value: 0.551181078
+  value: 0.811023593
 }
 controls_by_name {
   key: "control_change:0:72:0"
-  value: 0.755905509
+  value: 0.314960629
 }
 controls_by_name {
   key: "control_change:0:73:0"
-  value: 0.771653533
+  value: 0.818897665
 }
 controls_by_name {
   key: "control_change:0:74:0"
-  value: 0.92125982
+  value: 0.393700778
 }
 controls_by_name {
   key: "control_change:0:75:0"
-  value: 1
-}
-controls_by_name {
-  key: "control_change:0:76:0"
   value: 0
 }
 controls_by_name {
+  key: "control_change:0:76:0"
+  value: 0.0629921257
+}
+controls_by_name {
   key: "control_change:0:77:0"
-  value: 0.55905509
+  value: 0.330708653
 }
 controls_by_name {
   key: "pitchwheel:0:0:0"
-  value: 0.500030518
+  value: 0
 }
