@@ -98,13 +98,19 @@ template <typename... Args>
 absl::StatusOr<std::shared_ptr<opendrop::Preset>> GetRandomPresetFromList(
     Args&&... args) {
   return GetRandomPreset<
-      /*opendrop::ShapeBounce, opendrop::Kaleidoscope, opendrop::SimplePreset,
-      opendrop::AlienRorschach, opendrop::TemplatePreset,
-      opendrop::Glowsticks3d, opendrop::Glowsticks3dZoom,
-      opendrop::RotaryTransporter, opendrop::CubeBoom, opendrop::EyeRoll,
-      opendrop::CubeWreath, opendrop::Pills, opendrop::Glowsticks3dZoom*/
-      /*opendrop::GraphPreset*/ opendrop::SpaceWhaleEyeWarp>(
-      std::forward<Args>(args)...);
+      opendrop::ShapeBounce, 
+      opendrop::Kaleidoscope, /* opendrop::SimplePreset,
+                               */
+      //     opendrop::AlienRorschach, /* opendrop::TemplatePreset,
+      //  opendrop::Glowsticks3d, */
+      opendrop::Glowsticks3dZoom,
+      //     opendrop::RotaryTransporter, /*opendrop::CubeBoom,
+      //     opendrop::EyeRoll,*/
+      opendrop::CubeWreath, opendrop::Pills
+      //     /*opendrop::Glowsticks3dZoom,*/
+      //     /*,opendrop::GraphPreset,*/ opendrop::SpaceWhaleEyeWarp
+      //
+      >(std::forward<Args>(args)...);
 }
 
 }  // namespace opendrop

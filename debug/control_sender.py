@@ -102,7 +102,7 @@ class Runner:
             control.control[k] = v
         control.buttons.extend(self.buttons)
         self.buttons = []
-        logging.debug("control =", control)
+        logging.debug("control = %s", control)
         for server_tuple in self.server_tuples:
             self.socket.sendto(control.SerializeToString(), server_tuple)
 

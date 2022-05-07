@@ -46,6 +46,9 @@ class Kaleidoscope : public Preset {
   std::vector<glm::vec2> vertices_;
   Rectangle rectangle_;
   Polyline polyline_;
+
+  float sample_rot_coeff_accum_ = 0.0f;
+  float wiggle_accum_ = 0.0f;
 };
 
 }  // namespace opendrop

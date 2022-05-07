@@ -3,9 +3,9 @@
 
 #include <memory>
 
+#include "third_party/glm_helper.h"
 #include "util/graphics/gl_interface.h"
 #include "util/graphics/gl_render_target.h"
-#include "third_party/glm_helper.h"
 
 namespace gl {
 
@@ -67,6 +67,9 @@ DECLARE_BIND_UNIFORM(glm::mat3);
 DECLARE_BIND_UNIFORM(glm::mat4);
 
 #undef DECLARE_BIND_UNIFORM
+
+#define GL_BIND_LOCAL(program, value) \
+  GlBindUniform(program, "" #value "", value)
 
 }  // namespace gl
 

@@ -86,7 +86,7 @@ ABSL_FLAG(float, transition_cooldown_period, 2.0f,
 ABSL_FLAG(float, solo_cooldown_period, 120.0f,
           "A delay, in seconds, that must elapse in between transitions to "
           "solo presets.");
-ABSL_FLAG(int, max_presets, 2,
+ABSL_FLAG(int, max_presets, 3,
           "Maximum number of presets on the screen at a time.");
 ABSL_FLAG(int, sampling_rate, 44100,
           "Sampling rate to use with the input source, in Hz.");
@@ -397,6 +397,9 @@ extern "C" int main(int argc, char *argv[]) {
 
         if (draw_signal_viewer) {
           ImGui::Begin("OpenDrop Signals Viewer", nullptr, 0);
+        ImGui::Image((ImTextureID)open_drop_controller->render_target()
+                         ->texture_handle(),
+                     ImVec2(900, 900), ImVec2(0, 1), ImVec2(1, 0));
           ImPlot::SetNextAxisLimits(ImAxis_Y1, -1.0f, 1.0f);
           if (ImPlot::BeginPlot("samples")) {
             auto &processor = open_drop_controller->audio_processor();
