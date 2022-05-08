@@ -69,13 +69,13 @@ if [[ $run_manual_controlled == 1 ]]; then
     -s $source \
     --inject \
     --control_state=$(pwd)/configs/mpk_mini_config.textproto \
-    --control_port=9944 &
+    --control_port=9964 &
   pids_to_kill+="$! "
   SDL_VIDEO_X11_WMCLASS=right_main ./run_libopendrop.sh \
     -s $source \
     --inject \
     --control_state=$(pwd)/configs/mpk_mini_config.textproto \
-    --control_port=9945 &
+    --control_port=9965 &
   pids_to_kill+="$! "
 fi
 
@@ -84,7 +84,7 @@ if [[ $run_left == 1 ]] || [[ $run_right == 1 ]]; then
   pids_to_kill+="$! "
 fi
 if [[ $run_left == 1 ]] || [[ $run_right == 1 ]] || [[ $run_manual_controlled == 1 ]]; then
-  ./binaries/control_sender.par --input_filter='.*MPK.*' --ports=9944 --ports=9955 --ports=9945 --ports=9988 &
+  ./binaries/control_sender.par --input_filter='.*MPK.*' --ports=9944 --ports=9965 --ports=9965 --ports=9988 &
   pids_to_kill+="$! "
 fi
 

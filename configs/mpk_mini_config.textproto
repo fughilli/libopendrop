@@ -38,38 +38,6 @@ buttons: 9041
 buttons: 9042
 buttons: 9043
 control_mappings {
-  key: "kaleidoscope_blur"
-  value: "control_change:0:72:0"
-}
-control_mappings {
-  key: "kaleidoscope_blur_distance"
-  value: "control_change:0:70:0"
-}
-control_mappings {
-  key: "kaleidoscope_color_coeff"
-  value: "control_change:0:75:0"
-}
-control_mappings {
-  key: "kaleidoscope_num_divisions"
-  value: "control_change:0:77:0"
-}
-control_mappings {
-  key: "kaleidoscope_sample_rot_coeff"
-  value: "control_change:0:76:0"
-}
-control_mappings {
-  key: "kaleidoscope_sample_scale_coeff"
-  value: "control_change:0:73:0"
-}
-control_mappings {
-  key: "kaleidoscope_warp_rot_coeff"
-  value: "control_change:0:71:0"
-}
-control_mappings {
-  key: "kaleidoscope_wiggle_coeff"
-  value: "control_change:0:74:0"
-}
-control_mappings {
   key: "cube_wreath_border_hue_coeff"
   value: "control_change:0:76:0"
 }
@@ -112,6 +80,38 @@ control_mappings {
 control_mappings {
   key: "glowsticks_zoom_speed"
   value: "control_change:0:70:0"
+}
+control_mappings {
+  key: "kaleidoscope_blur"
+  value: "control_change:0:72:0"
+}
+control_mappings {
+  key: "kaleidoscope_blur_distance"
+  value: "control_change:0:70:0"
+}
+control_mappings {
+  key: "kaleidoscope_color_coeff"
+  value: "control_change:0:75:0"
+}
+control_mappings {
+  key: "kaleidoscope_num_divisions"
+  value: "control_change:0:77:0"
+}
+control_mappings {
+  key: "kaleidoscope_sample_rot_coeff"
+  value: "control_change:0:76:0"
+}
+control_mappings {
+  key: "kaleidoscope_sample_scale_coeff"
+  value: "control_change:0:73:0"
+}
+control_mappings {
+  key: "kaleidoscope_warp_rot_coeff"
+  value: "control_change:0:71:0"
+}
+control_mappings {
+  key: "kaleidoscope_wiggle_coeff"
+  value: "control_change:0:74:0"
 }
 control_mappings {
   key: "pills_border_hue_coeff"
@@ -226,7 +226,7 @@ signals_by_name {
   key: "pills_border_hue_coeff"
   value {
     low: 0
-    high: 0.5
+    high: 3
   }
 }
 signals_by_name {
@@ -246,7 +246,7 @@ signals_by_name {
 signals_by_name {
   key: "pills_num_cubes"
   value {
-    low: 0
+    low: 1
     high: 32
   }
 }
@@ -307,7 +307,7 @@ counters_by_name {
   value {
     low: 0
     high: 4
-    value: 1
+    value: 3
   }
 }
 counters_by_name {

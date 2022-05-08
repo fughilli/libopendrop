@@ -168,7 +168,7 @@ void CubeWreath::OnDrawFrame(
   float zoom_speed = SIGINJECT_OVERRIDE("cube_wreath_zoom_speed",
                                         power / 10.0f + 1.2f, 0.9f, 1.5f);
 
-  int num_cubes = SIGINJECT_OVERRIDE("cube_wreath_num_cubes", 16, 1, 32);
+  int num_cubes = SIGINJECT_OVERRIDE("cube_wreath_num_cubes", 16, 0, 32);
 
   {
     auto depth_output_activation = depth_output_target_->Activate();
@@ -197,7 +197,7 @@ void CubeWreath::OnDrawFrame(
 
     background_hue_ +=
         power *
-        SIGINJECT_OVERRIDE("cube_wreath_border_hue_coeff", 0.1f, 0.0f, 3.0f);
+        SIGINJECT_OVERRIDE("cube_wreath_border_hue_coeff", 0.1f, 0.0f, 0.5f);
     binding_options.border_color = glm::vec4(
         HsvToRgb(glm::vec3(background_hue_, 1,
                            SIGINJECT_OVERRIDE("cube_wreath_border_value_coeff",

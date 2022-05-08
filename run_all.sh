@@ -3,7 +3,7 @@
 source=microphone
 run_left=1
 run_right=1
-run_manual_controlled=1
+run_manual_controlled=0
 kill_needed=0
 
 pids_to_kill=()

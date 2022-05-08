@@ -134,7 +134,10 @@ void Pills::DrawCubes(float power, float bass, float energy, float dt,
     float position_along_ring = static_cast<float>(
         sin(energy) * 5 + ClusterDistribution(i, num_cubes, n_clusters,
                                               cluster_scale, &cluster_coeff));
-    float SIGPLOT_ASSIGN(ring_radius, 0.3f + (sin(energy * 10) + 1) / 6);
+    float SIGPLOT_ASSIGN(
+        ring_radius,
+        SIGINJECT_OVERRIDE("pills_radius", 0.3f + (sin(energy * 10) + 1) / 6,
+                           0.0f, 1.0f));
     ring_radius *= Lerp((0.5f + cluster_coeff * 0.5f), 1.0f, cluster_scale);
     glm::mat4 ring_transform = RingTransform(Directions::kOutOfScreen,
                                              ring_radius, position_along_ring);
@@ -150,9 +153,14 @@ void Pills::DrawCubes(float power, float bass, float energy, float dt,
         // Rotate the set of objects from one side of the screen to the other.
         // Choose the extents such that in the worst case we don't have a gap at
         // either end.
-        glm::vec3((-1.0f + std::fmodf(distribute_coeff + slide_coeff, 2.0f)) *
-                      (static_cast<float>(num_cubes + 1) / (num_cubes - 1)),
-                  0.0f, 0.0f));
+        glm::vec3(
+            Rotate2d(
+                glm::vec2(
+                    (-1.0f + std::fmodf(distribute_coeff + slide_coeff, 2.0f)) *
+                        (static_cast<float>(num_cubes + 1) / (num_cubes - 1)),
+                    0.0f),
+                kPi * 2 * ring_radius),
+            0.0f));
     glm::mat4 locate_transform =
         TransformMix(line_transform, ring_transform, locate_mix_coeff);
     auto transform_components = ExtractTransformComponents(locate_transform);
@@ -209,15 +217,17 @@ void Pills::OnDrawFrame(
       SIGINJECT_OVERRIDE("pills_zoom_coeff", sin(energy * 2), -1.0f, 1.0f));
 
   float SIGPLOT_ASSIGN(trunc_zoom_coeff,
-                       std::clamp(SineEase(zoom_coeff), 0.0f, 1.0f));
+                       std::clamp(SineEase(abs(zoom_coeff)), 0.0f, 1.0f));
 
-  int num_cubes = SIGINJECT_OVERRIDE("pills_num_cubes", 16, 1, 32);
+  int num_cubes = SIGINJECT_OVERRIDE("pills_num_cubes", 16, 0, 32);
 
-  glm::vec3 zoom_vec = glm::vec3(UnitVectorAtAngle(energy * 2) *
-                                     std::sin(energy * 0.3f) * trunc_zoom_coeff,
-                                 0) *
-                           trunc_zoom_coeff +
-                       Directions::kIntoScreen;
+  glm::vec3 zoom_vec =
+      glm::vec3(UnitVectorAtAngle(energy * 2) *
+                    SIGINJECT_OVERRIDE("pills_zoom_dir_scale",
+                                       std::sin(energy * 0.3f), -1.0f, 1.0f),
+                0) *
+          trunc_zoom_coeff +
+      Directions::kIntoScreen;
   glm::vec3 cube_orient_vec = zoom_vec;
   cube_orient_vec.x /= 2;
   cube_orient_vec.y /= 2;
@@ -258,7 +268,7 @@ void Pills::OnDrawFrame(
     GlBindUniform(warp_program_, "model_transform", glm::mat4(1.0f));
     auto binding_options = gl::GlTextureBindingOptions();
     background_hue_ +=
-        power * SIGINJECT_OVERRIDE("pills_border_hue_coeff", 0.1f, 0.0f, 3.0f);
+        power * SIGINJECT_OVERRIDE("pills_border_hue_coeff", 0.1f, 0.0f, 0.5f);
     binding_options.border_color = glm::vec4(
         HsvToRgb(glm::vec3(
             background_hue_, 1,

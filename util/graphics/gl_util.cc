@@ -58,8 +58,8 @@ void GlBindRenderTargetTextureToUniform(
     std::shared_ptr<GlRenderTarget> render_target,
     GlTextureBindingOptions binding_options) {
   if (render_target == nullptr) {
-    LOG(ERROR)
-        << "GlBindRenderTargetTextureToUniform(): render_target is nullptr";
+    // LOG(ERROR)
+    //     << "GlBindRenderTargetTextureToUniform(): render_target is nullptr";
     return;
   }
   glActiveTexture(GL_TEXTURE0 + render_target->texture_unit());

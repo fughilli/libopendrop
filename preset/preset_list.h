@@ -98,7 +98,7 @@ template <typename... Args>
 absl::StatusOr<std::shared_ptr<opendrop::Preset>> GetRandomPresetFromList(
     Args&&... args) {
   return GetRandomPreset<
-      opendrop::ShapeBounce, 
+      //opendrop::ShapeBounce, 
       opendrop::Kaleidoscope, /* opendrop::SimplePreset,
                                */
       //     opendrop::AlienRorschach, /* opendrop::TemplatePreset,
