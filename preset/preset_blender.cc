@@ -114,8 +114,8 @@ void PresetBlender::DrawFrame(
   {
     auto output_activation = output_render_target->Activate();
 
-    unsigned int black_color[4] = {0, 0, 0, 0};
-    glClearBufferuiv(GL_COLOR, 0, black_color);
+    glClearColor(0, 0, 0, 0);
+    glClear(GL_COLOR_BUFFER_BIT);
 
     glBlendEquation(GL_FUNC_ADD);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);

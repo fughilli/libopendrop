@@ -1,9 +1,15 @@
 load("@com_google_protobuf//:protobuf.bzl", "py_proto_library")
+load("//shader:shader_defs.bzl", "shader_cc_library")
 load(
-    "//build/toolchain:cross_compilation.bzl",
+    "//bazel/toolchain:cross_compilation.bzl",
     CROSS_COMPILATION_COPTS = "COPTS",
     CROSS_COMPILATION_DEPS = "DEPS",
     CROSS_COMPILATION_LINKOPTS = "LINKOPTS",
+)
+
+filegroup(
+  name = "debug_files",
+  srcs = [".lldbinit"],
 )
 
 package(default_visibility = ["//:__subpackages__"])
@@ -25,27 +31,11 @@ cc_binary(
     name = "main",
     copts = CROSS_COMPILATION_COPTS,
     linkopts = [
-        "-Wl,-z,notext",
-        "-lSDL2",
-        "-lasound",
-        "-lpulse",
-        "-lX11",
-        "-lXext",
-        "-lXt",
-        "-lsndio",
-        "-lXcursor",
-        "-lXinerama",
-        "-lXrandr",
-        "-lwayland-cursor",
-        "-lwayland-client",
-        "-lwayland-egl",
-        "-lxkbcommon",
-        "-lXxf86vm",
-        "-lXss",
-        "-lXi",
-        "-lGL",
     ] + CROSS_COMPILATION_LINKOPTS,
     linkstatic = 1,
+    data = [
+      ":debug_files",
+    ],
     deps = [
         ":main_lib",
     ] + CROSS_COMPILATION_DEPS,
@@ -58,7 +48,6 @@ cc_library(
     deps = [
         "//application:open_drop_controller",
         "//application:open_drop_controller_interface",
-        "//debug:signal_scope",
         "//preset:preset_list",
         "//util:cleanup",
         "//util/audio:pulseaudio_interface",
@@ -75,6 +64,7 @@ cc_library(
         "@imgui",
         "@imgui//:imgui_backend_opengl2",
         "@imgui//:imgui_backend_sdl",
-        "@implot",
+        "@pulseaudio",
+        "@sdl2",
     ],
 )

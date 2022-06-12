@@ -22,8 +22,8 @@ HEADER_TEMPLATE = ("""#ifndef {guard_symbol}
 #define {guard_symbol}
 
 #include <array>
-#include <glm/vec2.hpp>
-#include <glm/vec3.hpp>
+#include "glm/vec2.hpp"
+#include "glm/vec3.hpp"
 
 namespace {namespace} {{
 

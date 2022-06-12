@@ -56,9 +56,11 @@ GlRenderTargetActivation::GlRenderTargetActivation(
       case GL_FRAMEBUFFER_INCOMPLETE_MULTISAMPLE:
         LOG(ERROR) << "GL_FRAMEBUFFER_INCOMPLETE_MULTISAMPLE";
         break;
+#ifndef __APPLE__
       case GL_FRAMEBUFFER_INCOMPLETE_LAYER_TARGETS:
         LOG(ERROR) << "GL_FRAMEBUFFER_INCOMPLETE_LAYER_TARGETS";
         break;
+#endif
     }
     return;
   }

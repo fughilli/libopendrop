@@ -7,7 +7,7 @@ index 8ab4cb413..6746c9268 100644
  )
  
 +ADDITIONAL_DEPS = [
-+    "@org_llvm_libcxx//:libcxx",
++ #    "@org_llvm_libcxx//:libcxx",
 +]
 +
  GTEST = select({

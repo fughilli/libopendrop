@@ -1,5 +1,5 @@
 load(
-    "//build/toolchain:cross_compilation.bzl",
+    "//bazel/toolchain:cross_compilation.bzl",
     CROSS_COMPILATION_DEPS = "DEPS",
     CROSS_COMPILATION_LINKOPTS = "LINKOPTS",
 )

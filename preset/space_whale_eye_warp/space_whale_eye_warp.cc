@@ -294,7 +294,7 @@ void SpaceWhaleEyeWarp::OnDrawFrame(
     binding_options.sampling_mode = gl::GlTextureSamplingMode::kClampToBorder;
     GlBindRenderTargetTextureToUniform(warp_program_, "last_frame",
                                        back_render_target_, binding_options);
-    GlBindRenderTargetTextureToUniform(warp_program_, "input",
+    GlBindRenderTargetTextureToUniform(warp_program_, "input_texture",
                                        depth_output_target_, binding_options);
     GlBindUniform(warp_program_, "input_enable",
                   transition_controller_.TransitionCount() % 2 == 0);
@@ -339,7 +339,7 @@ void SpaceWhaleEyeWarp::OnDrawFrame(
     GlBindRenderTargetTextureToUniform(composite_program_, "render_target",
                                        front_render_target_,
                                        gl::GlTextureBindingOptions());
-    GlBindRenderTargetTextureToUniform(composite_program_, "input",
+    GlBindRenderTargetTextureToUniform(composite_program_, "input_texture",
                                        depth_output_target_,
                                        gl::GlTextureBindingOptions());
     GlBindUniform(composite_program_, "input_enable",

@@ -42,8 +42,11 @@ SdlGlInterface::SdlGlInterface(SDL_Window* window)
 }
 
 std::shared_ptr<GlContext> SdlGlInterface::AllocateSharedContext() {
-  auto sdl_gl_context = std::make_shared<SdlGlContext>(
-      shared_from_this(), SDL_GL_CreateContext(window_.get()));
+  SDL_GLContext context = SDL_GL_CreateContext(window_.get());
+  if (context == nullptr)
+    LOG(FATAL) << "Failed to create SDL_GLContext: " << SDL_GetError();
+  auto sdl_gl_context =
+      std::make_shared<SdlGlContext>(shared_from_this(), context);
   return sdl_gl_context;
 }
 

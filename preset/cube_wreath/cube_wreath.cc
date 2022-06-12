@@ -206,7 +206,7 @@ void CubeWreath::OnDrawFrame(
     binding_options.sampling_mode = gl::GlTextureSamplingMode::kClampToBorder;
     GlBindRenderTargetTextureToUniform(warp_program_, "last_frame",
                                        back_render_target_, binding_options);
-    GlBindRenderTargetTextureToUniform(warp_program_, "input",
+    GlBindRenderTargetTextureToUniform(warp_program_, "input_texture",
                                        depth_output_target_, binding_options);
 
     glViewport(0, 0, longer_dimension(), longer_dimension());

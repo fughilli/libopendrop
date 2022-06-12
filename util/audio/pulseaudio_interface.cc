@@ -65,7 +65,7 @@ void PulseAudioInterface::StreamReadCallback(pa_stream *new_stream,
     }
 
     if (length == 0 || data == nullptr) {
-      //std::cerr << "Finished" << std::endl;
+      // std::cerr << "Finished" << std::endl;
       return;
     }
 
@@ -175,6 +175,8 @@ void PulseAudioInterface::ContextStateCallback(pa_context *new_context) {
                 << " rate=" << sample_spec_.rate
                 << " channels=" << static_cast<int>(sample_spec_.channels)
                 << std::endl;
+
+      MarkSucceeded();
 
       break;
 

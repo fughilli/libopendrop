@@ -5,7 +5,7 @@
 varying vec2 screen_uv;
 
 uniform sampler2D last_frame;
-uniform sampler2D input;
+uniform sampler2D input_texture;
 uniform ivec2 frame_size;
 uniform vec3 zoom_vec;
 uniform float energy;
@@ -34,7 +34,7 @@ void main() {
   // Mix the fragment color with the previously sampled color. Multiply the
   // sampled result by a value less than unity such that the energy input by the
   // drawn GL primitives dissipates over time.
-  vec4 input_color = input_enable ? texture2D(input, screen_to_tex(screen_uv))
+  vec4 input_color = input_enable ? texture2D(input_texture, screen_to_tex(screen_uv))
                                   : vec4(0, 0, 0, 0);
   vec4 last_color =
       blur_sample_texture(last_frame, texture_uv, frame_size, 0.5);

@@ -82,23 +82,49 @@ add_default_repositories()
 
 http_archive(
     name = "hedron_compile_commands",
-    sha256 = "8043456c9cdb084857628e1edbb92ecd15ea1cef93b9cf08745dd4f716dcc057",
-    strip_prefix = "bazel-compile-commands-extractor-e1e25d8d4827bfc7bf53d1aed35e8e28457ba96d",
-    url = "https://github.com/hedronvision/bazel-compile-commands-extractor/archive/e1e25d8d4827bfc7bf53d1aed35e8e28457ba96d.tar.gz",
+    sha256 = "8603191949837cd01a91a0e78c32488d781de72bcbf455c9cca79ac03160c6de",
+    strip_prefix = "bazel-compile-commands-extractor-d8ff4bd0142f70e0c51b11d6297e97b81136b018",
+    url = "https://github.com/hedronvision/bazel-compile-commands-extractor/archive/d8ff4bd0142f70e0c51b11d6297e97b81136b018.tar.gz",
 )
 
 load("@hedron_compile_commands//:workspace_setup.bzl", "hedron_compile_commands_setup")
 
 hedron_compile_commands_setup()
 
-new_git_repository(
+new_local_repository(
+    name = "sdl2",
+    build_file_content = """
+package(default_visibility = ["//visibility:public"])
+
+cc_library(
+name = "sdl2",
+srcs = ["lib/libSDL2.a"],
+hdrs = glob(["include/**/*.h"]),
+linkopts = [
+  "-framework", "CoreHaptics",
+  "-framework", "ForceFeedback",
+  "-framework", "GameController",
+],
+includes = ["include", "include/SDL2"],
+)
+  """,
+    path = "/opt/homebrew/Cellar/sdl2/2.0.22",
+)
+
+new_local_repository(
     name = "imgui",
     build_file = "@//third_party:imgui.BUILD",
-    commit = "aa8680009248061c83f3d6722ec53c1a320d872b",
-    init_submodules = True,
-    remote = "https://github.com/ocornut/imgui",
-    shallow_since = "1644319784 +0100",
+    path = "/Users/kbalke/Projects/personal/imgui",
 )
+
+# new_git_repository(
+#     name = "imgui",
+#     build_file = "@//third_party:imgui.BUILD",
+#     commit = "4789c7e485244aa6489f89dbb03b19d4ad0ea1ec",
+#     init_submodules = True,
+#     remote = "https://github.com/ocornut/imgui",
+#     shallow_since = "1644319784 +0100",
+# )
 
 new_git_repository(
     name = "implot",
@@ -122,4 +148,66 @@ new_git_repository(
     build_file = "@//third_party:imgui_node_editor.BUILD",
     init_submodules = True,
     remote = "https://github.com/fughilli/imgui-node-editor",
+)
+
+# http_archive(
+#     name = "bazelregistry_sdl2",
+#     sha256 = "735b86e808d78c3a6e7db86c4532140be4ad5d7349feea2dbfef7ea1382c31eb",
+#     strip_prefix = "sdl2-c3efa24f546f0d8be97aaf1609688905e585cd69",
+#     urls = ["https://github.com/bazelregistry/sdl2/archive/c3efa24f546f0d8be97aaf1609688905e585cd69.zip"],
+# )
+
+new_local_repository(
+    name = "glm",
+    build_file_content = """
+package(default_visibility = ["//visibility:public"])
+
+cc_library(
+name = "glm",
+hdrs = glob(["include/**/*.h", "include/**/*.hpp", "include/**/*.inl"]),
+includes = ["include"],
+)
+  """,
+    path = "/opt/homebrew/Cellar/glm/0.9.9.8",
+)
+
+new_local_repository(
+    name = "gl",
+    build_file_content = """
+package(default_visibility = ["//visibility:public"])
+
+genrule(
+name = "copy_lib",
+srcs = ["Libraries/libGL.tbd"],
+outs = ["Libraries/libGL.a"],
+cmd = "cp $(SRCS) $(OUTS)",
+)
+
+cc_library(
+name = "gl",
+srcs = ["Libraries/libGL.a"],
+hdrs = glob(["Headers/**/*.h"]),
+includes = ["Headers"],
+)
+  """,
+    path = "/Library/Developer/CommandLineTools/SDKs/MacOSX11.3.sdk/System/Library/Frameworks/OpenGL.framework/Versions/A",
+)
+
+new_local_repository(
+    name = "pulseaudio",
+    build_file_content = """
+package(default_visibility = ["//visibility:public"])
+
+cc_library(
+name = "pulseaudio",
+srcs = ["lib/libpulse.0.dylib"],
+hdrs = glob(["include/**/*.h"]),
+linkopts = [
+  "-framework", "CoreAudio",
+  "-framework", "AudioToolbox",
+],
+includes = ["include"],
+)
+  """,
+    path = "/opt/homebrew/Cellar/pulseaudio/14.2",
 )

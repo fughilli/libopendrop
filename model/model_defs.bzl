@@ -31,4 +31,5 @@ def model_cc_library(name, srcs, scale = None, normalize = None):
         name = name,
         srcs = [source_file],
         hdrs = [header_file],
+        deps = ["@glm"],
     )

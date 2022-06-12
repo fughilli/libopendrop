@@ -22,7 +22,10 @@ cc_library(
     name = "imgui_backend_sdl",
     srcs = ["backends/imgui_impl_sdl.cpp"],
     hdrs = ["backends/imgui_impl_sdl.h"],
-    deps = [":imgui"],
+    deps = [
+        ":imgui",
+        "@sdl2",
+    ],
 )
 
 cc_library(

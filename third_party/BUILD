@@ -11,9 +11,13 @@ exports_files(
 cc_library(
     name = "gl_helper",
     hdrs = ["gl_helper.h"],
+    deps = ["@gl"],
 )
 
 cc_library(
     name = "glm_helper",
     hdrs = ["glm_helper.h"],
+    deps = [
+        "@glm",
+    ],
 )

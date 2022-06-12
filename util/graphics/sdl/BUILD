@@ -5,5 +5,8 @@ cc_library(
     srcs = ["sdl_gl_interface.cc"],
     hdrs = ["sdl_gl_interface.h"],
     linkstatic = 1,
-    deps = ["//util/graphics:gl_interface"],
+    deps = [
+        "//util/graphics:gl_interface",
+        "@sdl2",
+    ],
 )

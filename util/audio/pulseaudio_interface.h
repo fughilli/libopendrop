@@ -21,7 +21,7 @@
 #ifndef UTIL_AUDIO_PULSEAUDIO_INTERFACE_H_
 #define UTIL_AUDIO_PULSEAUDIO_INTERFACE_H_
 
-#include <pulse/pulseaudio.h>
+#include "pulse/pulseaudio.h"
 
 #include <atomic>
 #include <condition_variable>
