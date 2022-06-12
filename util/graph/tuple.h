@@ -28,13 +28,12 @@ struct TupleStorage {
   constexpr static size_t size = sizeof(T);
 
   // Allocates memory with correct alignment for storing an object of type `T`
-  // and invokes the ructor on it, forwarding any ructor arguments.
+  // and invokes the constructor on it, forwarding any constructor arguments.
   template <typename... Args>
   static std::shared_ptr<uint8_t> Allocate(Args&&... args) {
-    uint8_t* memory =
-        reinterpret_cast<uint8_t*>(std::aligned_alloc(alignment, size));
-    new (memory) T(std::forward<Args>(args)...);
-    return std::shared_ptr<uint8_t>(memory, DestructAndFree<T>);
+    T* memory = new T(std::forward<Args>(args)...);
+    return std::shared_ptr<uint8_t>(reinterpret_cast<uint8_t*>(memory),
+                                    DestructAndFree<T>);
   }
 };
 
@@ -270,6 +269,7 @@ class OpaqueTuple {
   }
   template <size_t index, typename TupleType, typename T1>
   void AssignFromImpl(TupleType tuple) {
+    if (CellIsEmpty(index)) return;
     Ref<T1>(index) = std::get<index>(tuple);
   }
 

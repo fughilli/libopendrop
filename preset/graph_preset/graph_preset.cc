@@ -55,9 +55,7 @@ GraphPreset::GraphPreset(std::shared_ptr<gl::GlTextureManager> texture_manager)
             return std::tuple<Unitary>(a * b);
           });
   graph_builder_.DeclareProduction<std::tuple<Unitary>>(
-      "random", []() -> std::tuple<Unitary> {
-        return 5.0f;
-      });
+      "random", []() -> std::tuple<Unitary> { return 5.0f; });
   // Configure graph.
   graph_builder_.DeclareConversion<std::tuple<Monotonic>, std::tuple<Unitary>>(
       "fast_sinusoid", [](std::tuple<Monotonic> in) -> std::tuple<Unitary> {
@@ -150,7 +148,8 @@ GraphPreset::GraphPreset(std::shared_ptr<gl::GlTextureManager> texture_manager)
 
   evaluation_graph_ =
       graph_builder_
-          .Bridge(ConstructTypes<Monotonic>(), ConstructTypes<Texture>())
+          .Bridge(ConstructTypes<Monotonic, Unitary, Unitary, Unitary>(),
+                  ConstructTypes<Texture>())
           .value();
 
   ax::NodeEditor::Config config{};
