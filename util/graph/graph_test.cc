@@ -2,6 +2,7 @@
 
 #include <cmath>
 #include <tuple>
+#include <string>
 
 #include "googlemock/include/gmock/gmock-matchers.h"
 #include "googlemock/include/gmock/gmock-more-matchers.h"

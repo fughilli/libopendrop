@@ -1,6 +1,8 @@
 #include "util/graphics/gl_interface.h"
 
 #include <iostream>
+#include <memory>
+#include <string>
 
 #include "absl/strings/str_cat.h"
 #include "third_party/gl_helper.h"

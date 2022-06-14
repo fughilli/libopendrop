@@ -41,7 +41,6 @@ cc_library(
     name = "gl_interface",
     srcs = ["gl_interface.cc"],
     hdrs = ["gl_interface.h"],
-    linkstatic = 1,
     deps = [
         "//third_party:gl_helper",
         "//util/logging",

@@ -1,0 +1,41 @@
+Graph construction solving orphaned nodes:
+
+Graph {
+  Ref[InnerGraph] graph;
+  Ref[GraphBuilder] builder;
+  ~Graph() {
+    builder.MaybeGc();
+  }
+}
+
+InnerNode {
+  Ref[Node] node;
+  bool alive;
+}
+
+InnerGraph {
+  List[Ref[InnerNode]] nodes;
+}
+
+GraphBuilder {
+  List[Ref[InnerNode]] nodes;
+  List[Ref[InnerGraph]] inner_graphs;
+
+  Graph Build() {
+    new_graph = ConstructGraph(nodes);
+    inner_graphs.append(new_graph);
+
+    MaybeGc();
+
+    return new_graph;
+  }
+
+  void MaybeGc() {
+    MarkAllNodesUnalive();
+    for (graph in inner_graphs) {
+      graph.MarkNodesVisited();
+    }
+
+    ClearUnaliveNodeRefs();
+  }
+}

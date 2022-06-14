@@ -123,6 +123,7 @@ constexpr int kDummyTypeValue = 999;
 enum ConstructionState {
   kUnconstructed,
   kConstructed,
+  kReconstructed,
   kDestructed,
 };
 
@@ -130,25 +131,60 @@ ConstructionState construction_state = ConstructionState::kUnconstructed;
 
 struct RaiiType {
   constexpr static Type kType = static_cast<Type>(kDummyTypeValue);
-  RaiiType() { construction_state = ConstructionState::kConstructed; }
-  RaiiType(int x) {
-    construction_state = ConstructionState::kConstructed;
-    member_with_default = x;
+  RaiiType() {
+    if (construction_state == ConstructionState::kConstructed) {
+      construction_state = ConstructionState::kReconstructed;
+    } else {
+      construction_state = ConstructionState::kConstructed;
+    }
+    refcount_member = std::make_shared<int>(5);
   }
   ~RaiiType() { construction_state = ConstructionState::kDestructed; }
 
   int member_with_default = 123;
+  std::shared_ptr<int> refcount_member;
 };
 
 TEST(TupleTest, OpaqueTupleInvokesConstructorAndDestructor) {
   construction_state = ConstructionState::kUnconstructed;
 
   ASSERT_EQ(construction_state, ConstructionState::kUnconstructed);
+  std::shared_ptr<int> handle = nullptr;
   {
     auto opaque_tuple = OpaqueTuple::ConstructFromTypes<RaiiType>();
     EXPECT_EQ(construction_state, ConstructionState::kConstructed);
-    EXPECT_EQ(opaque_tuple.Get<RaiiType>(0).member_with_default, 123);
+    EXPECT_EQ(opaque_tuple.Ref<RaiiType>(0).member_with_default, 123);
+    EXPECT_EQ(construction_state, ConstructionState::kConstructed);
+    EXPECT_EQ(opaque_tuple.Ref<RaiiType>(0).refcount_member.use_count(), 1);
+    EXPECT_EQ(construction_state, ConstructionState::kConstructed);
+    handle = opaque_tuple.Ref<RaiiType>(0).refcount_member;
+    EXPECT_EQ(opaque_tuple.Ref<RaiiType>(0).refcount_member.use_count(), 2);
+    EXPECT_EQ(construction_state, ConstructionState::kConstructed);
   }
+  EXPECT_EQ(handle.use_count(), 1);
+  EXPECT_EQ(construction_state, ConstructionState::kDestructed);
+}
+
+TEST(TupleTest, OpaqueTupleGetPerformsCorrectCopyConstruction) {
+  construction_state = ConstructionState::kUnconstructed;
+
+  ASSERT_EQ(construction_state, ConstructionState::kUnconstructed);
+  std::shared_ptr<int> handle = nullptr;
+  {
+    auto opaque_tuple = OpaqueTuple::ConstructFromTypes<RaiiType>();
+    EXPECT_EQ(construction_state, ConstructionState::kConstructed);
+    opaque_tuple.Get<RaiiType>(0);
+    EXPECT_EQ(construction_state, ConstructionState::kDestructed);
+    EXPECT_EQ(opaque_tuple.Get<RaiiType>(0).refcount_member.use_count(), 2);
+    opaque_tuple.Get<RaiiType>(0);
+    opaque_tuple.Get<RaiiType>(0);
+    opaque_tuple.Get<RaiiType>(0);
+    EXPECT_EQ(opaque_tuple.Ref<RaiiType>(0).refcount_member.use_count(), 1);
+    handle = opaque_tuple.Ref<RaiiType>(0).refcount_member;
+    EXPECT_EQ(opaque_tuple.Ref<RaiiType>(0).refcount_member.use_count(), 2);
+    construction_state = ConstructionState::kConstructed;
+  }
+  EXPECT_EQ(handle.use_count(), 1);
   EXPECT_EQ(construction_state, ConstructionState::kDestructed);
 }
 
