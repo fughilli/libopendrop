@@ -14,7 +14,11 @@ namespace opendrop {
 namespace {
 
 TEST(TupleTest, CanConstructOpaqueTuple) {
-  auto opaque_tuple = OpaqueTuple::ConstructFromTypes<Unitary, Monotonic>();
+  std::pair<Type, std::shared_ptr<uint8_t>> types_and_memory[] = {
+      {Type::kUnitary, Unitary::Allocate()},
+      {Type::kMonotonic, Monotonic::Allocate()},
+  };
+  auto opaque_tuple = OpaqueTuple::FromTypesAndMemory(types_and_memory);
 
   EXPECT_THAT(opaque_tuple.Types(),
               ::testing::ElementsAre(Type::kUnitary, Type::kMonotonic));
@@ -27,11 +31,15 @@ TEST(TupleTest, OpaqueTupleDiesOnAccessingEmpty) {
   EXPECT_THAT(opaque_tuple.Types(),
               ::testing::ElementsAre(Type::kUnitary, Type::kMonotonic));
 
-  EXPECT_DEATH({ opaque_tuple.Ref<Unitary>(0) = 0.5f; }, "is nullptr");
+  EXPECT_DEATH({ opaque_tuple.Ref<Unitary>(0) = 0.5f; }, "is null");
 }
 
 TEST(TupleTest, CanStoreInOpaqueTuple) {
-  auto opaque_tuple = OpaqueTuple::ConstructFromTypes<Unitary, Monotonic>();
+  std::pair<Type, std::shared_ptr<uint8_t>> types_and_memory[] = {
+      {Type::kUnitary, Unitary::Allocate()},
+      {Type::kMonotonic, Monotonic::Allocate()},
+  };
+  auto opaque_tuple = OpaqueTuple::FromTypesAndMemory(types_and_memory);
 
   opaque_tuple.Ref<Unitary>(0) = 0.123f;
 
@@ -39,7 +47,11 @@ TEST(TupleTest, CanStoreInOpaqueTuple) {
 }
 
 TEST(TupleTest, OpaqueTupleDiesOnIncorrectGet) {
-  auto opaque_tuple = OpaqueTuple::ConstructFromTypes<Unitary, Monotonic>();
+  std::pair<Type, std::shared_ptr<uint8_t>> types_and_memory[] = {
+      {Type::kUnitary, Unitary::Allocate()},
+      {Type::kMonotonic, Monotonic::Allocate()},
+  };
+  auto opaque_tuple = OpaqueTuple::FromTypesAndMemory(types_and_memory);
 
   EXPECT_DEATH({ opaque_tuple.Ref<Monotonic>(0) = 10.0f; },
                "requesting incorrect type");
@@ -48,8 +60,12 @@ TEST(TupleTest, OpaqueTupleDiesOnIncorrectGet) {
 }
 
 TEST(TupleTest, OpaqueTupleCanBeAssignedFromStdTuple) {
-  auto opaque_tuple =
-      OpaqueTuple::ConstructFromTypes<Unitary, Monotonic, Unitary>();
+  std::pair<Type, std::shared_ptr<uint8_t>> types_and_memory[] = {
+      {Type::kUnitary, Unitary::Allocate()},
+      {Type::kMonotonic, Monotonic::Allocate()},
+      {Type::kUnitary, Unitary::Allocate()},
+  };
+  auto opaque_tuple = OpaqueTuple::FromTypesAndMemory(types_and_memory);
 
   auto tuple = std::tuple<Unitary, Monotonic, Unitary>(0.5f, 25.0f, 0.1f);
   opaque_tuple.AssignFrom(tuple);
@@ -66,7 +82,11 @@ TEST(TupleTest, OpaqueTupleCanBeAssignedFromStdTuple) {
 //
 
 TEST(TupleTest, OpaqueTupleCanAliasOtherTuple) {
-  auto opaque_tuple = OpaqueTuple::ConstructFromTypes<int, float>();
+  std::pair<Type, std::shared_ptr<uint8_t>> types_and_memory[] = {
+      {Type::kInteger, OpaqueStorable<int>::Allocate()},
+      {Type::kFloatGeneric, OpaqueStorable<float>::Allocate()},
+  };
+  auto opaque_tuple = OpaqueTuple::FromTypesAndMemory(types_and_memory);
   auto alias_opaque_tuple = OpaqueTuple::EmptyFromTypes<float, int>();
 
   alias_opaque_tuple.Alias(0, opaque_tuple, 1);
@@ -83,7 +103,11 @@ TEST(TupleTest, OpaqueTupleCanAliasOtherTuple) {
 }
 
 TEST(TupleTest, OpaqueTupleIsAliasOfReturnsExpected) {
-  auto opaque_tuple = OpaqueTuple::ConstructFromTypes<int, float>();
+  std::pair<Type, std::shared_ptr<uint8_t>> types_and_memory[] = {
+      {Type::kInteger, OpaqueStorable<int>::Allocate()},
+      {Type::kFloatGeneric, OpaqueStorable<float>::Allocate()},
+  };
+  auto opaque_tuple = OpaqueTuple::FromTypesAndMemory(types_and_memory);
   auto alias_opaque_tuple = OpaqueTuple::EmptyFromTypes<float, int>();
 
   EXPECT_FALSE(alias_opaque_tuple.IsAliasOf(0, opaque_tuple, 1));
@@ -97,7 +121,11 @@ TEST(TupleTest, OpaqueTupleIsAliasOfReturnsExpected) {
 }
 
 TEST(TupleTest, OpaqueTupleDiesOnIncorrectAliasingTypes) {
-  auto opaque_tuple = OpaqueTuple::ConstructFromTypes<int, float>();
+  std::pair<Type, std::shared_ptr<uint8_t>> types_and_memory[] = {
+      {Type::kInteger, OpaqueStorable<int>::Allocate()},
+      {Type::kFloatGeneric, OpaqueStorable<float>::Allocate()},
+  };
+  auto opaque_tuple = OpaqueTuple::FromTypesAndMemory(types_and_memory);
   auto alias_opaque_tuple = OpaqueTuple::EmptyFromTypes<float, int>();
 
   EXPECT_DEATH({ alias_opaque_tuple.Alias(0, opaque_tuple, 0); },
@@ -105,112 +133,17 @@ TEST(TupleTest, OpaqueTupleDiesOnIncorrectAliasingTypes) {
 }
 
 TEST(TupleTest, OpaqueTupleDiesOnOutOfBoundsIndex) {
-  auto opaque_tuple = OpaqueTuple::ConstructFromTypes<int, float>();
+  std::pair<Type, std::shared_ptr<uint8_t>> types_and_memory[] = {
+      {Type::kInteger, OpaqueStorable<int>::Allocate()},
+      {Type::kFloatGeneric, OpaqueStorable<float>::Allocate()},
+  };
+  auto opaque_tuple = OpaqueTuple::FromTypesAndMemory(types_and_memory);
   auto alias_opaque_tuple = OpaqueTuple::EmptyFromTypes<float, int>();
 
   EXPECT_DEATH({ alias_opaque_tuple.Alias(2, opaque_tuple, 0); },
                "out of bounds");
   EXPECT_DEATH({ alias_opaque_tuple.Alias(0, opaque_tuple, -1); },
                "out of bounds");
-}
-
-//
-// Tests covering constructor/destructor behavior.
-//
-
-constexpr int kDummyTypeValue = 999;
-
-enum ConstructionState {
-  kUnconstructed,
-  kConstructed,
-  kReconstructed,
-  kDestructed,
-};
-
-ConstructionState construction_state = ConstructionState::kUnconstructed;
-
-struct RaiiType {
-  constexpr static Type kType = static_cast<Type>(kDummyTypeValue);
-  RaiiType() {
-    if (construction_state == ConstructionState::kConstructed) {
-      construction_state = ConstructionState::kReconstructed;
-    } else {
-      construction_state = ConstructionState::kConstructed;
-    }
-    refcount_member = std::make_shared<int>(5);
-  }
-  ~RaiiType() { construction_state = ConstructionState::kDestructed; }
-
-  int member_with_default = 123;
-  std::shared_ptr<int> refcount_member;
-};
-
-TEST(TupleTest, OpaqueTupleInvokesConstructorAndDestructor) {
-  construction_state = ConstructionState::kUnconstructed;
-
-  ASSERT_EQ(construction_state, ConstructionState::kUnconstructed);
-  std::shared_ptr<int> handle = nullptr;
-  {
-    auto opaque_tuple = OpaqueTuple::ConstructFromTypes<RaiiType>();
-    EXPECT_EQ(construction_state, ConstructionState::kConstructed);
-    EXPECT_EQ(opaque_tuple.Ref<RaiiType>(0).member_with_default, 123);
-    EXPECT_EQ(construction_state, ConstructionState::kConstructed);
-    EXPECT_EQ(opaque_tuple.Ref<RaiiType>(0).refcount_member.use_count(), 1);
-    EXPECT_EQ(construction_state, ConstructionState::kConstructed);
-    handle = opaque_tuple.Ref<RaiiType>(0).refcount_member;
-    EXPECT_EQ(opaque_tuple.Ref<RaiiType>(0).refcount_member.use_count(), 2);
-    EXPECT_EQ(construction_state, ConstructionState::kConstructed);
-  }
-  EXPECT_EQ(handle.use_count(), 1);
-  EXPECT_EQ(construction_state, ConstructionState::kDestructed);
-}
-
-TEST(TupleTest, OpaqueTupleGetPerformsCorrectCopyConstruction) {
-  construction_state = ConstructionState::kUnconstructed;
-
-  ASSERT_EQ(construction_state, ConstructionState::kUnconstructed);
-  std::shared_ptr<int> handle = nullptr;
-  {
-    auto opaque_tuple = OpaqueTuple::ConstructFromTypes<RaiiType>();
-    EXPECT_EQ(construction_state, ConstructionState::kConstructed);
-    opaque_tuple.Get<RaiiType>(0);
-    EXPECT_EQ(construction_state, ConstructionState::kDestructed);
-    EXPECT_EQ(opaque_tuple.Get<RaiiType>(0).refcount_member.use_count(), 2);
-    opaque_tuple.Get<RaiiType>(0);
-    opaque_tuple.Get<RaiiType>(0);
-    opaque_tuple.Get<RaiiType>(0);
-    EXPECT_EQ(opaque_tuple.Ref<RaiiType>(0).refcount_member.use_count(), 1);
-    handle = opaque_tuple.Ref<RaiiType>(0).refcount_member;
-    EXPECT_EQ(opaque_tuple.Ref<RaiiType>(0).refcount_member.use_count(), 2);
-    construction_state = ConstructionState::kConstructed;
-  }
-  EXPECT_EQ(handle.use_count(), 1);
-  EXPECT_EQ(construction_state, ConstructionState::kDestructed);
-}
-
-//
-// Tests covering `OpaqueTupleFactory`.
-//
-
-TEST(TupleTest, OpaqueTupleFactoryConstructsTupleOfCorrectType) {
-  auto factory = OpaqueTupleFactory::FromTypes<int, float>();
-
-  OpaqueTuple tuple = factory.Construct();
-
-  EXPECT_THAT(tuple.Types(),
-              ::testing::ElementsAre(Type::kInteger, Type::kFloatGeneric));
-}
-
-TEST(TupleTest, OpaqueTupleFactoryConstructsDisjointTuples) {
-  auto factory = OpaqueTupleFactory::FromTypes<int, float>();
-
-  OpaqueTuple tuple_a = factory.Construct(), tuple_b = factory.Construct();
-
-  tuple_a.Ref<int>(0) = 5;
-  tuple_b.Ref<int>(0) = 3;
-
-  EXPECT_EQ(tuple_a.Get<int>(0), 5);
-  EXPECT_EQ(tuple_b.Get<int>(0), 3);
 }
 
 }  // namespace

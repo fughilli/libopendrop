@@ -7,6 +7,7 @@
 #include <tuple>
 
 #include "util/graph/tuple.h"
+#include "util/graph/tuple_factory.h"
 #include "util/graph/types/types.h"
 #include "util/logging/logging.h"
 
@@ -70,10 +71,12 @@ struct Conversion {
       std::tuple<OutputConstructorArgs...>&& output_constructor_args = {})
       : name(name),
         convert(ConversionToOpaqueFunction(convert)),
-        input_factory(OpaqueTupleFactory::FromTypes<InputTupleArgs...>()),
-        output_factory(OpaqueTupleFactory::FromTypes<OutputTupleArgs...>())/*,
-        input_tuple(input_factory.Construct()),
-        output_tuple(output_factory.Construct()) */{}
+        input_types(ConstructTypes<InputTupleArgs...>()),
+        output_types(ConstructTypes<OutputTupleArgs...>()),
+        input_allocator(
+            OpaqueTupleFactory::StorageAndTupleFromTypes<InputTupleArgs...>),
+        output_allocator(
+            OpaqueTupleFactory::StorageAndTupleFromTypes<OutputTupleArgs...>) {}
 
   // Constructs a `Conversion` which produces a value of type
   // std::tuple<OutputTupleArgs...>.
@@ -83,59 +86,29 @@ struct Conversion {
       std::tuple<OutputConstructorArgs...>&& output_constructor_args = {})
       : name(name),
         produce(ProductionToOpaqueFunction(produce)),
-        input_factory(OpaqueTupleFactory::FromEmpty()),
-        output_factory(OpaqueTupleFactory::FromTypes<OutputTupleArgs...>())/*,
-        input_tuple(input_factory.Construct()),
-        output_tuple(output_factory.Construct()) */{}
-
-  // template <typename... InputTupleArgs>
-  // Conversion& Invoke(const std::tuple<InputTupleArgs...>& input) {
-  //   LOG(DEBUG) << "Invoking function for conversion " << name;
-
-  //   input_tuple.AssignFrom(input);
-
-  //   if (output_factory.Types().empty())
-  //     consume(input_tuple);
-  //   else
-  //     convert(input_tuple, output_tuple);
-
-  //   return *this;
-  // }
-
-  // Conversion& Invoke() {
-  //   LOG(DEBUG) << "Invoking function for conversion " << name;
-  //   if (!input_factory.Types().empty())
-  //     LOG(FATAL) << "Input types do not match!";
-  //   produce(output_tuple);
-  //   return *this;
-  // }
-
-  // Conversion& InvokeOpaque(OpaqueTuple& input) {
-  //   LOG(DEBUG) << "Invoking function for conversion " << name;
-  //   convert(input, output_tuple);
-  //   return *this;
-  // }
+        input_types({}),
+        output_types(ConstructTypes<OutputTupleArgs...>()),
+        input_allocator(nullptr),
+        output_allocator(
+            OpaqueTupleFactory::StorageAndTupleFromTypes<OutputTupleArgs...>) {}
 
   Conversion& InvokeOpaque(OpaqueTuple& input, OpaqueTuple& output) {
     LOG(DEBUG) << "Invoking function for conversion " << name;
-    convert(input, output);
+    if (convert != nullptr)
+      convert(input, output);
+    if (produce != nullptr)
+      produce(output);
     return *this;
   }
 
-  // OpaqueTuple& ResultOpaque() { return output_tuple; }
+  const std::vector<Type>& InputTypes() const { return input_types; }
+  const std::vector<Type>& OutputTypes() const { return output_types; }
 
-  // template <typename... OutputTypes>
-  // const std::tuple<OutputTypes...> Result() const {
-  //   LOG(DEBUG) << "Fetching result";
-  //   using OutputTuple = std::tuple<OutputTypes...>;
-  //   if (output_factory.Types() != ConstructTypes<OutputTypes...>())
-  //     LOG(FATAL) << "Output types do not match!";
-  //   return output_tuple.ToTuple<OutputTypes...>();
-  // }
-
-  const std::vector<Type>& InputTypes() const { return input_factory.Types(); }
-  const std::vector<Type>& OutputTypes() const {
-    return output_factory.Types();
+  OpaqueTupleFactoryStorageAndTupleType ConstructInputStorageAndTuple() const {
+    return input_allocator();
+  }
+  OpaqueTupleFactoryStorageAndTupleType ConstructOutputStorageAndTuple() const {
+    return output_allocator();
   }
 
   std::string name;
@@ -143,13 +116,10 @@ struct Conversion {
   std::function<void(OpaqueTuple&)> produce = nullptr;
   std::function<void(OpaqueTuple&)> consume = nullptr;
 
-  OpaqueTupleFactory input_factory;
-  OpaqueTupleFactory output_factory;
+  std::vector<Type> input_types{}, output_types{};
 
-  // Storage for native invocations. For invocations in a graph, dedicated
-  // storage shall be collected from the factories.
-  // OpaqueTuple input_tuple;
-  // OpaqueTuple output_tuple;
+  OpaqueTupleFactoryFnType input_allocator;
+  OpaqueTupleFactoryFnType output_allocator;
 };
 
 std::ostream& operator<<(std::ostream& os, const Conversion& conversion);

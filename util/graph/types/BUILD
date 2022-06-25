@@ -13,9 +13,28 @@ cc_library(
 )
 
 cc_library(
+    name = "opaque_storable",
+    hdrs = ["opaque_storable.h"],
+    deps = ["//util/logging"],
+)
+
+cc_test(
+    name = "opaque_storable_test",
+    srcs = ["opaque_storable_test.cc"],
+    deps = [
+        ":opaque_storable",
+        "@com_googletest//:gtest",
+        "@com_googletest//:gtest_main",
+    ] + CROSS_COMPILATION_DEPS,
+)
+
+cc_library(
     name = "monotonic",
     hdrs = ["monotonic.h"],
-    deps = [":types"],
+    deps = [
+        ":opaque_storable",
+        ":types",
+    ],
 )
 
 cc_library(
@@ -31,6 +50,7 @@ cc_library(
     name = "unitary",
     hdrs = ["unitary.h"],
     deps = [
+        ":opaque_storable",
         ":types",
         "//util/logging",
     ],
@@ -41,6 +61,7 @@ cc_library(
     srcs = ["texture.cc"],
     hdrs = ["texture.h"],
     deps = [
+        ":opaque_storable",
         ":types",
         "//primitive:rectangle",
         "//shader:blit_fsh",

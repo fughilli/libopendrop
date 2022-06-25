@@ -121,55 +121,30 @@ GraphPreset::GraphPreset(std::shared_ptr<gl::GlTextureManager> texture_manager)
             return return_tuple;
           });
 
-  // graph_builder_.DeclareConversion<std::tuple<Texture, Texture, Unitary>,
-  //                                  std::tuple<Texture>>(
-  //     "zoom",
-  //     [this, texture_manager](
-  //         std::tuple<Texture, Texture, Unitary> in) -> std::tuple<Texture> {
-  //       auto& [in_tex_a, in_tex_b, rotation_coeff] = in;
-  //       Texture tex(width(), height(), texture_manager);
+  graph_builder_.DeclareConversion<std::tuple<Texture, Texture, Unitary>,
+                                   std::tuple<Texture>>(
+      "zoom",
+      [this, texture_manager](
+          std::tuple<Texture, Texture, Unitary> in) -> std::tuple<Texture> {
+        auto& [in_tex_a, in_tex_b, rotation_coeff] = in;
+        Texture tex(width(), height(), texture_manager);
 
-  //       auto rt_activation = tex.RenderTarget()->Activate();
-  //       auto shader_activation = zoom->Activate();
+        auto rt_activation = tex.RenderTarget()->Activate();
+        auto shader_activation = zoom->Activate();
 
-  //       GlBindUniform(zoom, "model_transform", glm::mat4(1.0f));
-  //       GlBindRenderTargetTextureToUniform(zoom, "in_tex_a",
-  //                                          in_tex_a.RenderTarget(),
-  //                                          gl::GlTextureBindingOptions());
-  //       GlBindRenderTargetTextureToUniform(zoom, "in_tex_b",
-  //                                          in_tex_b.RenderTarget(),
-  //                                          gl::GlTextureBindingOptions());
-  //       GlBindUniform(zoom, "rotation_coeff", rotation_coeff.value);
+        GlBindUniform(zoom, "model_transform", glm::mat4(1.0f));
+        GlBindRenderTargetTextureToUniform(zoom, "in_tex_a",
+                                           in_tex_a.RenderTarget(),
+                                           gl::GlTextureBindingOptions());
+        GlBindRenderTargetTextureToUniform(zoom, "in_tex_b",
+                                           in_tex_b.RenderTarget(),
+                                           gl::GlTextureBindingOptions());
+        GlBindUniform(zoom, "rotation_coeff", rotation_coeff.value);
 
-  //       Rectangle().Draw();
+        Rectangle().Draw();
 
-  //       return std::make_tuple(tex);
-  //     });
-  // Texture recurse_tex(width(), height(), texture_manager);
-  // graph_builder_.DeclareConversion<std::tuple<Texture>, std::tuple<Texture>>(
-  //     "zoom",
-  //     [this, texture_manager,
-  //      &recurse_tex](std::tuple<Texture> in) -> std::tuple<Texture> {
-  //       auto& [in_tex] = in;
-  //       Texture tex(width(), height(), texture_manager);
-
-  //       auto rt_activation = tex.RenderTarget()->Activate();
-  //       auto shader_activation = zoom->Activate();
-
-  //       GlBindUniform(zoom, "model_transform", glm::mat4(1.0f));
-  //       GlBindRenderTargetTextureToUniform(zoom, "in_tex_a",
-  //                                          in_tex.RenderTarget(),
-  //                                          gl::GlTextureBindingOptions());
-  //       GlBindRenderTargetTextureToUniform(zoom, "in_tex_b",
-  //                                          recurse_tex.RenderTarget(),
-  //                                          gl::GlTextureBindingOptions());
-
-  //       Rectangle().Draw();
-
-  //       recurse_tex = tex;
-
-  //       return std::make_tuple(recurse_tex);
-  //     });
+        return std::make_tuple(tex);
+      });
 
   evaluation_graph_ =
       graph_builder_
@@ -219,12 +194,12 @@ void GraphPreset::OnDrawFrame(
   if (evaluate_) {
     evaluation_graph_.Evaluate(std::tuple<Monotonic, Unitary, Unitary, Unitary>(
         state->energy(), state->bass(), state->mid(), state->treble()));
-    // Texture tex = std::get<0>(evaluation_graph_.Result<Texture>());
+    Texture tex = std::get<0>(evaluation_graph_.Result<Texture>());
 
-    // {
-    //   auto output_activation = output_render_target->Activate();
-    //   Blit(tex);
-    // }
+    {
+      auto output_activation = output_render_target->Activate();
+      Blit(tex);
+    }
 
     // LOG(INFO) << "Exiting scope of `tex`";
   }

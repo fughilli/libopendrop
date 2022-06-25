@@ -27,38 +27,33 @@ namespace opendrop {
 
 struct Node;
 
-using NodePortIndex = std::pair<std::shared_ptr<Node>, int>;
+struct NodePortIndex {
+  std::weak_ptr<Node> node;
+  int index;
+};
 
 enum NodePortIndexDirection { kOutput, kInput };
 
 struct Edge {
-  // The node and `output_tuple` index of the value on this edge.
-  NodePortIndex value_in;
-  // The node and `input_tuple` index of the alias to `value_in`.
-  NodePortIndex alias;
+  // The node and `output_tuple` index that mutates the value on this edge.
+  NodePortIndex in;
+  // The node and `input_tuple` index that accesses the value on this edge..
+  NodePortIndex out;
 };
 
 struct Node : public std::enable_shared_from_this<Node> {
-  Node(std::shared_ptr<Conversion> conversion)
+  Node(std::shared_ptr<Conversion> conversion, OpaqueTuple input_tuple,
+       OpaqueTuple output_tuple)
       : conversion(conversion),
-        // To save on construction/destruction cost for inputs that will
-        // eventually be aliased, we make the input tuple empty.
-        //
-        // If the input needs to be aliased to an empty source (such as the
-        // `io_node.output` that is used as the input tuple for `Graph`), then
-        // we can construct and fill any remaining empty inputs in the node with
-        // ConstructEmptyInputs().
-        input_tuple(conversion->input_factory.Empty()),
-        output_tuple(conversion->output_factory.Construct()) {}
-
-  Node(OpaqueTuple input_tuple, OpaqueTuple output_tuple)
-      : conversion(nullptr),
         input_tuple(input_tuple),
         output_tuple(output_tuple) {}
 
   // Invokes the conversion in this node, passing `input_tuple` and storing the
   // result to `output_tuple`.
-  void Invoke() { conversion->InvokeOpaque(input_tuple, output_tuple); }
+  void Invoke() {
+    if (conversion == nullptr) return;
+    conversion->InvokeOpaque(input_tuple, output_tuple);
+  }
 
   // Validates the input configuration of this node.
   bool ValidateInputEdges() const {
@@ -73,27 +68,26 @@ struct Node : public std::enable_shared_from_this<Node> {
           "satisfied)",
           input_edges.size(), input_tuple.Types().size());
     }
-    for (const Edge& input_edge : input_edges) {
-      const auto& [value_in_node, value_in_index] = input_edge.value_in;
-      const auto& [alias_node, alias_index] = input_edge.alias;
 
-      const Type value_in_type =
-          value_in_node->output_tuple.Types()[value_in_index];
-      const Type alias_type = alias_node->input_tuple.Types()[alias_index];
-      if (value_in_type != alias_type) {
+    for (const Edge& input_edge : input_edges) {
+      const auto& [in_node, in_index] = input_edge.in;
+      const auto& [out_node, out_index] = input_edge.out;
+
+      const Type in_type = in_node.lock()->output_tuple.Types()[in_index];
+      const Type out_type = out_node.lock()->input_tuple.Types()[out_index];
+      if (in_type != out_type) {
         LOG(DEBUG) << absl::StrFormat(
             "ValidateInputEdges(): Types don't match: %s != %s",
-            ToString(value_in_type), ToString(alias_type));
+            ToString(in_type), ToString(out_type));
         return false;
       }
 
-      if (!alias_node->input_tuple.IsAliasOf(
-              alias_index, value_in_node->output_tuple, value_in_index)) {
+      if (!out_node.lock()->input_tuple.IsAliasOf(
+              out_index, in_node.lock()->output_tuple, in_index)) {
         LOG(DEBUG) << absl::StrFormat(
             "ValidateInputEdges(): Input cell %d of type %s is not aliasing "
             "expected cell (expected alias of cell %d of type %s)",
-            alias_index, ToString(alias_type), value_in_index,
-            ToString(value_in_type));
+            out_index, ToString(out_type), in_index, ToString(in_index));
         return false;
       }
     }
@@ -102,7 +96,7 @@ struct Node : public std::enable_shared_from_this<Node> {
 
   // Constructs a `NodePortIndex` from this `Node` and an `index`.
   NodePortIndex PortIndex(int index) {
-    return std::make_pair(shared_from_this(), index);
+    return {.node = shared_from_this(), .index = index};
   }
 
   // Returns the size of the input tuple of this `Node`.
@@ -110,20 +104,6 @@ struct Node : public std::enable_shared_from_this<Node> {
 
   // Returns the size of the output tuple of this `Node`.
   size_t OutputSize() const { return output_tuple.size(); }
-
-  void ConstructEmptyInputs() {
-    CHECK(conversion != nullptr) << "ConstructEmptyInputs(): No factory to "
-                                    "produce constructed inputs with";
-    OpaqueTuple constructed_inputs = conversion->input_factory.Construct();
-
-    for (int i = 0; i < InputSize(); ++i) {
-      if (input_tuple.CellIsEmpty(i))
-        input_tuple.Alias(i, constructed_inputs, i);
-    }
-
-    // Any inputs not aliased are discarded when `constructed_inputs` goes out
-    // of scope here.
-  }
 
   // The conversion performed by this node. The conversion is potentially shared
   // between several nodes.
@@ -133,15 +113,10 @@ struct Node : public std::enable_shared_from_this<Node> {
   // aliases (unless it is the input for the graph).
   OpaqueTuple input_tuple, output_tuple;
 
-  std::vector<Edge> output_edges{};
-  std::vector<Edge> input_edges{};
+  std::vector<Edge> output_edges = {};
+  std::vector<Edge> input_edges = {};
 
   bool alive = false;
-
-  void DestructEdges() {
-    input_edges.clear();
-    output_edges.clear();
-  }
 };
 
 Type NodePortIndexType(const NodePortIndex& port_index,
@@ -162,34 +137,58 @@ std::ostream& operator<<(std::ostream& os, NodePortIndex port_index);
 class InnerGraph {
  public:
   // Constructs a graph from a single conversion.
-  InnerGraph(std::shared_ptr<Conversion> conversion)
-      : io_node(std::make_shared<Node>(
-            /*input_tuple=*/conversion->output_factory.Construct(),
-            /*output_tuple=*/conversion->input_factory.Construct())) {
-    nodes.push_back(std::make_shared<Node>(conversion));
+  InnerGraph(std::shared_ptr<Conversion> conversion) {
+    {
+      auto [storage, tuple] = conversion->ConstructInputStorageAndTuple();
+      input_node = std::make_shared<Node>(/*conversion=*/nullptr,
+                                          /*input_tuple=*/OpaqueTuple{},
+                                          /*output_tuple=*/tuple);
+      opaque_storage.splice(opaque_storage.end(), storage);
+    }
+    {
+      auto [storage, tuple] = conversion->ConstructOutputStorageAndTuple();
+      output_node = std::make_shared<Node>(/*conversion=*/nullptr,
+                                           /*input_tuple=*/tuple,
+                                           /*output_tuple=*/OpaqueTuple{});
+      opaque_storage.splice(opaque_storage.end(), storage);
+    }
 
-    // Alias, including assigning the types.
-    nodes.front()->input_tuple = io_node->output_tuple;
-    io_node->input_tuple = nodes.front()->output_tuple;
+    nodes = {input_node,
+             std::make_shared<Node>(/*conversion=*/conversion,
+                                    /*input_tuple=*/input_node->output_tuple,
+                                    /*output_tuple=*/output_node->input_tuple),
+             output_node};
 
-    // Mark all inputs as satisfied.
-    for (int i = 0; i < InputTypes().size(); ++i) {
-      nodes.front()->input_edges.push_back(
-          Edge{.value_in = std::make_pair(io_node, i),
-               .alias = std::make_pair(nodes.front(), i)});
+    // Build edges.
+    for (int edge = 1; edge <= 2; ++edge) {
+      for (int i = 0; i < nodes[edge]->input_tuple.size(); ++i) {
+        nodes[edge - 1]->output_edges.push_back(
+            Edge{.in = {input_node, i}, .out = {nodes[edge], i}});
+        nodes[edge]->input_edges = nodes[edge - 1]->output_edges;
+      }
     }
   }
 
-  // Constructs an empty graph.
-  InnerGraph()
-      : io_node(std::make_shared<Node>(OpaqueTuple{}, OpaqueTuple{})) {}
+  InnerGraph(absl::Span<const Type> input_types,
+             absl::Span<const Type> output_types) {
+    {
+      auto [storage, tuple] =
+          OpaqueTupleFactory::StorageAndTupleFromTypes(input_types);
+      input_node = std::make_shared<Node>(/*conversion=*/nullptr,
+                                          /*input_tuple=*/OpaqueTuple{},
+                                          /*output_tuple=*/tuple);
+      opaque_storage.splice(opaque_storage.end(), storage);
+    }
+    output_node = std::make_shared<Node>(
+        /*conversion=*/nullptr,
+        /*input_tuple=*/OpaqueTuple::EmptyFromTypes(output_types),
+        /*output_tuple=*/OpaqueTuple{});
 
-  // Constructs an empty graph with the given input/output types.
-  InnerGraph(const std::vector<Type>& input_types,
-             const std::vector<Type>& output_types)
-      : io_node(std::make_shared<Node>(
-            /*input_tuple=*/OpaqueTuple::EmptyFromTypes(output_types),
-            /*output_tuple=*/OpaqueTuple::EmptyFromTypes(input_types))) {}
+    nodes = {input_node, output_node};
+  }
+
+  // Constructs an empty graph.
+  InnerGraph() {}
 
   template <typename... InputTypes>
   void Evaluate(std::tuple<InputTypes...> input) {
@@ -203,28 +202,31 @@ class InnerGraph {
 
     if (nodes.size() < 1) LOG(FATAL) << "No nodes in graph";
 
-    io_node->output_tuple.AssignFrom(input);
+    input_node->output_tuple.AssignFrom(input);
 
     InvokeHelper();
   }
 
   template <typename... OutputTypes>
   std::tuple<OutputTypes...> Result() const {
-    return io_node->input_tuple.ToTuple<OutputTypes...>();
+    return output_node->input_tuple.ToTuple<OutputTypes...>();
   }
 
   const std::vector<Type>& InputTypes() const {
-    return io_node->output_tuple.Types();
+    return input_node->output_tuple.Types();
   }
   const std::vector<Type>& OutputTypes() const {
-    return io_node->input_tuple.Types();
+    return output_node->input_tuple.Types();
   }
 
-  // Input and output tuples of the graph. We store these in a `Node` such that
+  // Input and output tuples of the graph. We store these in `Node`s such that
   // the validator implementation can be simplified.
-  std::shared_ptr<Node> io_node{};
+  std::shared_ptr<Node> input_node = nullptr;
+  std::shared_ptr<Node> output_node = nullptr;
   // List of all nodes in the graph.
   std::vector<std::shared_ptr<Node>> nodes = {};
+
+  std::list<std::shared_ptr<uint8_t>> opaque_storage{};
 
   void ResetEvaluationOrder() { evaluation_ordered_nodes = {}; }
 
@@ -233,8 +235,8 @@ class InnerGraph {
   }
 
   bool HasEmptyInputCells() const {
-    for (int i = 0; i < io_node->output_tuple.size(); ++i)
-      if (io_node->output_tuple.CellIsEmpty(i)) return true;
+    for (int i = 0; i < input_node->output_tuple.size(); ++i)
+      if (input_node->output_tuple.CellIsEmpty(i)) return true;
     return false;
   }
 
@@ -242,7 +244,7 @@ class InnerGraph {
     LOG(INFO) << absl::StrFormat("Mark nodes alive for graph at %d",
                                  reinterpret_cast<intptr_t>(this));
     std::queue<Node*> nodes_to_visit{};
-    nodes_to_visit.push(io_node.get());
+    nodes_to_visit.push(input_node.get());
 
     while (!nodes_to_visit.empty()) {
       Node* current = nodes_to_visit.front();
@@ -252,7 +254,7 @@ class InnerGraph {
       LOG(INFO) << absl::StrFormat("Node at %X is alive",
                                    reinterpret_cast<intptr_t>(current));
       for (auto& edge : current->output_edges) {
-        auto& node = edge.alias.first;
+        auto node = edge.out.node.lock();
         if (!node->alive) {
           nodes_to_visit.push(node.get());
         }
@@ -264,9 +266,15 @@ class InnerGraph {
     evaluation_ordered_nodes.clear();
     nodes.clear();
     LOG(INFO) << "Destructing InnerGraph";
-    LOG(INFO) << "Input tuple state: " << io_node->output_tuple.StateAsString();
-    LOG(INFO) << "Output tuple state: " << io_node->input_tuple.StateAsString();
+    if (input_node != nullptr)
+      LOG(INFO) << "Input tuple state: "
+                << input_node->output_tuple.StateAsString();
+    if (output_node != nullptr)
+      LOG(INFO) << "Output tuple state: "
+                << output_node->input_tuple.StateAsString();
   }
+
+  bool BuildEdgeHelper(NodePortIndex in, NodePortIndex out);
 
  private:
   std::vector<std::shared_ptr<Node>> evaluation_ordered_nodes = {};
@@ -285,13 +293,13 @@ class InnerGraph {
     std::unordered_set<std::shared_ptr<Node>> unevaluated{nodes.begin(),
                                                           nodes.end()};
     std::unordered_set<std::shared_ptr<Node>> evaluated{};
-    evaluated.insert(io_node);
+    evaluated.insert(input_node);
 
     auto count_unsatisfied_inputs =
         [&unevaluated](const std::shared_ptr<Node>& node) -> int {
       int unsatisfied = 0;
       for (Edge edge : node->input_edges) {
-        if (unevaluated.count(edge.value_in.first) != 0) ++unsatisfied;
+        if (unevaluated.count(edge.in.node.lock()) != 0) ++unsatisfied;
       }
       LOG(DEBUG) << "Node " << *node << " has " << unsatisfied
                  << " unsatisfied inputs";
@@ -301,7 +309,7 @@ class InnerGraph {
         [&evaluated](const std::shared_ptr<Node>& node) -> int {
       int satisfied = 0;
       for (Edge edge : node->input_edges) {
-        if (evaluated.count(edge.value_in.first) != 0) ++satisfied;
+        if (evaluated.count(edge.in.node.lock()) != 0) ++satisfied;
       }
       LOG(DEBUG) << "Node " << *node << " has " << satisfied
                  << " satisfied inputs";
@@ -325,9 +333,10 @@ class InnerGraph {
         // use their outputs.
         for (auto& node : evaluated) {
           for (Edge edge : node->output_edges) {
-            if (evaluated.count(edge.alias.first) == 0) {
-              LOG(DEBUG) << "Found unevaluated node: " << edge.alias.first;
-              nodes_to_check.insert(edge.alias.first);
+            auto out_node = edge.out.node.lock();
+            if (evaluated.count(out_node) == 0) {
+              LOG(DEBUG) << "Found unevaluated node: " << out_node;
+              nodes_to_check.insert(out_node);
             }
           }
         }
@@ -337,10 +346,9 @@ class InnerGraph {
           LOG(DEBUG) << "Checking readiness of node " << node;
           bool all_inputs_evaluated = true;
           for (Edge edge : node->input_edges) {
-            LOG(DEBUG) << "Checking reverse edge to node "
-                       << edge.value_in.first;
-            if (evaluated.count(edge.value_in.first) == 0)
-              all_inputs_evaluated = false;
+            auto in_node = edge.in.node.lock();
+            LOG(DEBUG) << "Checking reverse edge to node " << in_node;
+            if (evaluated.count(in_node) == 0) all_inputs_evaluated = false;
           }
 
           LOG(DEBUG) << "Node " << node << " is "
@@ -388,7 +396,8 @@ class InnerGraph {
                  << " inputs satisfied, "
                  << count_unsatisfied_inputs(candidate_node)
                  << " inputs unsatisfied.";
-      if (count_satisfied_inputs(candidate_node) == 0) {
+      if (count_satisfied_inputs(candidate_node) == 0 &&
+          count_unsatisfied_inputs(candidate_node) != 0) {
         LOG(DEBUG) << "Failed to determine evaluation order; maybe the graph "
                       "is ill-formed?";
         return;
@@ -430,7 +439,12 @@ class Graph {
     return inner_graph_->NodesInEvaluationOrder();
   }
 
-  const std::shared_ptr<Node> io_node() const { return inner_graph_->io_node; }
+  const std::shared_ptr<Node> input_node() const {
+    return inner_graph_->input_node;
+  }
+  const std::shared_ptr<Node> output_node() const {
+    return inner_graph_->output_node;
+  }
 
   const std::vector<std::shared_ptr<Node>>& nodes() const {
     return inner_graph_->nodes;
@@ -508,7 +522,6 @@ class GraphBuilder {
 
     for (auto iter = nodes_.begin(); iter != nodes_.end();) {
       if (!(*iter)->alive) {
-        (*iter)->DestructEdges();
         iter = nodes_.erase(iter);
         LOG(INFO) << "Destructed node";
         continue;

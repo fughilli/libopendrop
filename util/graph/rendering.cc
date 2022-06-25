@@ -18,8 +18,9 @@ namespace NE = ax::NodeEditor;
 constexpr int kMaxIoPerConversion = 100;
 
 int IdForNode(const Graph& graph, const std::shared_ptr<Node>& node) {
-  if (node == graph.io_node()) return 1;
-  return 2 + IndexOf<std::shared_ptr<Node>>(graph.nodes(), node);
+  if (node == graph.input_node()) return 1;
+  if (node == graph.output_node()) return 2;
+  return 3 + IndexOf<std::shared_ptr<Node>>(graph.nodes(), node);
 }
 
 struct LinkConfig {
@@ -27,10 +28,10 @@ struct LinkConfig {
   int out_pin_id;
 
   static LinkConfig FromEdge(const Graph& graph, Edge edge) {
-    return {.out_pin_id = IdForNode(graph, edge.value_in.first) * 1000 +
-                          edge.value_in.second,
-            .in_pin_id = IdForNode(graph, edge.alias.first) * 1000 + 100 +
-                         edge.alias.second};
+    return {.in_pin_id = IdForNode(graph, edge.out.node.lock()) * 1000 + 100 +
+                         edge.out.index,
+            .out_pin_id =
+                IdForNode(graph, edge.in.node.lock()) * 1000 + edge.in.index};
   }
 };
 
@@ -104,14 +105,16 @@ void RenderGraph(ax::NodeEditor::EditorContext* context, const Graph& graph) {
       }
       RenderNode(context, *node, IdForNode(graph, node), evaluation_index);
     }
-    RenderNode(context, *graph.io_node(), IdForNode(graph, graph.io_node()),
-               -1);
+    RenderNode(context, *graph.input_node(),
+               IdForNode(graph, graph.input_node()), -1);
+    RenderNode(context, *graph.output_node(),
+               IdForNode(graph, graph.output_node()), -1);
 
     for (const auto& node : graph.nodes()) {
       RenderInputEdges(context, graph, *node, IdForNode(graph, node));
     }
-    RenderInputEdges(context, graph, *graph.io_node(),
-                     IdForNode(graph, graph.io_node()));
+    RenderInputEdges(context, graph, *graph.output_node(),
+                     IdForNode(graph, graph.output_node()));
   }
 
   NE::End();

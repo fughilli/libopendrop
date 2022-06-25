@@ -27,6 +27,20 @@ cc_library(
     ],
 )
 
+cc_library(
+    name = "tuple_factory",
+    hdrs = ["tuple_factory.h"],
+    deps = [
+        ":tuple",
+        "//util/graph/types",
+        "//util/graph/types:opaque_storable",
+        "@com_google_absl//absl/container:flat_hash_map",
+        "//util/graph/types:monotonic",
+        "//util/graph/types:unitary",
+        "//util/graph/types:texture",
+    ],
+)
+
 cc_test(
     name = "tuple_test",
     srcs = ["tuple_test.cc"],
@@ -46,6 +60,7 @@ cc_library(
     hdrs = ["conversion.h"],
     deps = [
         ":tuple",
+        ":tuple_factory",
         "//util/graph/types",
         "//util/logging",
     ],
@@ -56,6 +71,7 @@ cc_test(
     srcs = ["conversion_test.cc"],
     deps = [
         ":conversion",
+        ":tuple_factory",
         "@com_googletest//:gtest",
         "//util/testing:test_main",
         "//util/graph/types",

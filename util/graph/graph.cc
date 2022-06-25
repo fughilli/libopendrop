@@ -59,10 +59,10 @@ std::ostream& operator<<(std::ostream& os, const InnerGraph& graph) {
 
 void PrintStack(const std::list<ConversionSearchRecord>& stack,
                 std::string_view prefix) {
-  LOG(DEBUG) << "Printing stack (" << prefix
+  LOG(INFO) << "Printing stack (" << prefix
              << "): stack.size() = " << stack.size();
   for (const auto& entry : stack) {
-    LOG(DEBUG) << prefix << entry.first << " -> " << entry.second;
+    LOG(INFO) << prefix << entry.first << " -> " << entry.second;
   }
 }
 
@@ -76,7 +76,7 @@ std::ostream& operator<<(std::ostream& os, const std::shared_ptr<Node>& node) {
 }
 std::ostream& operator<<(std::ostream& os, NodePortIndex port_index) {
   const auto& [node, index] = port_index;
-  return os << "\nNodePortIndex(\n    .node = " << *node
+  return os << "\nNodePortIndex(\n    .node = " << *node.lock()
             << ",\n    .index = " << index << ")";
 }
 
@@ -99,64 +99,60 @@ void GraphBuilder::InsertConversion(std::shared_ptr<Conversion> conversion) {
     conversions_by_individual_output_[output_type].push_back(conversion);
 }
 
-bool AliasHelper(NodePortIndex value_in, NodePortIndex alias) {
-  if (NodePortIndexIsNullptr(value_in, kOutput) &&
-      NodePortIndexIsNullptr(alias, kInput)) {
-    if (alias.first->conversion != nullptr) {
-      alias.first->ConstructEmptyInputs();
-    } else {
-      LOG(DEBUG) << "No factory to construct inputs for aliasing " << value_in
-                 << " -> " << alias;
-      return false;
-    }
+bool InnerGraph::BuildEdgeHelper(NodePortIndex in, NodePortIndex out) {
+  auto [out_node, out_index] = std::make_tuple(out.node.lock(), out.index);
+  auto [in_node, in_index] = std::make_tuple(in.node.lock(), in.index);
+
+  if (NodePortIndexIsNullptr(in, kOutput) &&
+      NodePortIndexIsNullptr(out, kInput)) {
+    LOG(INFO) << "Cannot build edge without storage";
+    return false;
   }
 
-  auto& [alias_node, alias_index] = alias;
-  auto& [value_in_node, value_in_index] = value_in;
-
-  if (NodePortIndexIsNullptr(value_in, kOutput)) {
-    value_in_node->output_tuple.Alias(value_in_index, alias_node->input_tuple,
-                                      alias_index);
+  if (NodePortIndexIsNullptr(in, kOutput)) {
+    in_node->output_tuple.Alias(in_index, out_node->input_tuple, out_index);
   } else {
-    alias_node->input_tuple.Alias(alias_index, value_in_node->output_tuple,
-                                  value_in_index);
+    out_node->input_tuple.Alias(out_index, in_node->output_tuple, in_index);
   }
 
-  Edge edge{.value_in = value_in, .alias = alias};
-  alias_node->input_edges.push_back(edge);
-  value_in_node->output_edges.push_back(edge);
+  Edge edge{.in = in, .out = out};
+  out_node->input_edges.push_back(edge);
+  in_node->output_edges.push_back(edge);
   return true;
 }
 
 void PrintSearchState(
     const std::vector<NodePortIndex>& unsatisfied,
     const std::map<Type, std::vector<NodePortIndex>>& available_by_type) {
-  LOG(DEBUG) << "unsatisfied:";
+  LOG(INFO) << "unsatisfied:";
   for (const auto& port_index : unsatisfied) {
-    LOG(DEBUG) << "    " << port_index;
+    LOG(INFO) << "    " << port_index;
   }
 
   for (const auto& [type, available] : available_by_type) {
-    LOG(DEBUG) << "available_by_type[" << type << "]:";
-    for (const auto& port_index : available) LOG(DEBUG) << "    " << port_index;
+    LOG(INFO) << "available_by_type[" << type << "]:";
+    for (const auto& port_index : available) LOG(INFO) << "    " << port_index;
   }
 }
 
 struct Choice {
+  std::list<std::shared_ptr<uint8_t>> new_node_storage{};
+  std::shared_ptr<Node> new_node = nullptr;
   NodePortIndex port_index;
-  bool is_new;
 };
 
 bool Satisfy(InnerGraph& graph, NodePortIndex to_satisfy, Choice choice,
              std::vector<NodePortIndex>& unsatisfied,
              std::map<Type, std::vector<NodePortIndex>>& available_by_type) {
-  if (!AliasHelper(choice.port_index, to_satisfy)) return false;
+  if (!graph.BuildEdgeHelper(choice.port_index, to_satisfy)) return false;
 
-  if (!choice.is_new) return true;
+  if (choice.new_node == nullptr) return true;
 
-  auto& new_node = choice.port_index.first;
+  auto& new_node = choice.new_node;
 
   graph.nodes.push_back(new_node);
+  graph.opaque_storage.splice(graph.opaque_storage.end(),
+                              choice.new_node_storage);
 
   for (int i = 0; i < new_node->InputSize(); ++i) {
     unsatisfied.push_back(new_node->PortIndex(i));
@@ -171,10 +167,10 @@ bool Satisfy(InnerGraph& graph, NodePortIndex to_satisfy, Choice choice,
 absl::StatusOr<Graph> GraphBuilder::Bridge(
     const std::vector<Type>& input_types,
     const std::vector<Type>& output_types) {
-  LOG(DEBUG) << "=========================================================";
-  LOG(DEBUG) << "Bridge(input_types = " << input_types
+  LOG(INFO) << "=========================================================";
+  LOG(INFO) << "Bridge(input_types = " << input_types
              << ", output_types = " << output_types << ")";
-  LOG(DEBUG) << "=========================================================";
+  LOG(INFO) << "=========================================================";
 
   // List of node port inputs which are unsatisfied in the graph.
   std::vector<NodePortIndex> unsatisfied{};
@@ -191,16 +187,16 @@ absl::StatusOr<Graph> GraphBuilder::Bridge(
 
   // Populate `unsatisfied` and `available_by_type` with the node ports from the
   // empty graph.
-  for (int i = 0; i < graph->io_node->InputSize(); ++i) {
-    auto port_index = graph->io_node->PortIndex(i);
+  for (int i = 0; i < graph->output_node->InputSize(); ++i) {
+    auto port_index = graph->output_node->PortIndex(i);
     unsatisfied.push_back(port_index);
   }
-  for (int i = 0; i < graph->io_node->OutputSize(); ++i) {
-    available_by_type[graph->io_node->output_tuple.Types()[i]].push_back(
-        graph->io_node->PortIndex(i));
+  for (int i = 0; i < graph->input_node->OutputSize(); ++i) {
+    available_by_type[graph->input_node->output_tuple.Types()[i]].push_back(
+        graph->input_node->PortIndex(i));
   }
 
-  LOG(DEBUG) << "Before loop";
+  LOG(INFO) << "Before loop";
   PrintSearchState(unsatisfied, available_by_type);
 
   while (!unsatisfied.empty()) {
@@ -217,31 +213,37 @@ absl::StatusOr<Graph> GraphBuilder::Bridge(
 
     const Type to_satisfy_type = NodePortIndexType(to_satisfy, kInput);
 
-    LOG(DEBUG) << "Trying to satisfy type " << to_satisfy_type;
+    LOG(INFO) << "Trying to satisfy type " << to_satisfy_type;
 
     std::vector<Choice> choices{};
     if (Contains(available_by_type, to_satisfy_type)) {
       NodePortIndex matching_available =
           RandomPick<NodePortIndex>(available_by_type[to_satisfy_type]);
-      LOG(DEBUG) << "Found existing available value: " << matching_available;
+      LOG(INFO) << "Found existing available value: " << matching_available;
       if (!graph->HasEmptyInputCells() ||
-          matching_available.first == graph->io_node)
-        choices.push_back({.port_index = matching_available, .is_new = false});
+          matching_available.node.lock() == graph->input_node)
+        choices.push_back({.port_index = matching_available});
     }
 
     // Find a conversion that could satisfy the input, instantiate it, and
     // update the `unsatisfied` and `available_by_type` lists.
     if (Contains(conversions_by_individual_output_, to_satisfy_type)) {
-      auto new_node =
-          std::make_shared<Node>(RandomPick<std::shared_ptr<Conversion>>(
-              conversions_by_individual_output_[to_satisfy_type]));
+      auto conversion = RandomPick<std::shared_ptr<Conversion>>(
+          conversions_by_individual_output_[to_satisfy_type]);
+      auto [output_storage, output_tuple] =
+          conversion->ConstructOutputStorageAndTuple();
+      auto new_node = std::make_shared<Node>(
+          /*conversion=*/conversion, /*input_tuple=*/
+          OpaqueTuple::EmptyFromTypes(conversion->input_types),
+          /*output_tuple=*/output_tuple);
 
       NodePortIndex matching_from_conversion = new_node->PortIndex(
           RandomIndexOf<Type>(new_node->output_tuple.Types(), to_satisfy_type));
-      LOG(DEBUG) << "Satisfying " << to_satisfy_type << " with new node "
+      LOG(INFO) << "Satisfying " << to_satisfy_type << " with new node "
                  << *new_node << " port " << matching_from_conversion;
-      choices.push_back(
-          {.port_index = matching_from_conversion, .is_new = true});
+      choices.push_back({.new_node_storage = output_storage,
+                         .new_node = new_node,
+                         .port_index = matching_from_conversion});
     }
 
     if (!choices.empty()) {
@@ -267,7 +269,8 @@ absl::StatusOr<Graph> GraphBuilder::Bridge(
 
 Type NodePortIndexType(const NodePortIndex& port_index,
                        NodePortIndexDirection dir) {
-  const auto& [node, index] = port_index;
+  const auto [node, index] =
+      std::make_tuple(port_index.node.lock(), port_index.index);
 
   if (dir == kOutput) {
     return node->output_tuple.Types()[index];
@@ -277,7 +280,8 @@ Type NodePortIndexType(const NodePortIndex& port_index,
 
 bool NodePortIndexIsNullptr(const NodePortIndex& port_index,
                             NodePortIndexDirection dir) {
-  const auto& [node, index] = port_index;
+  const auto [node, index] =
+      std::make_tuple(port_index.node.lock(), port_index.index);
 
   if (dir == kOutput) {
     return node->output_tuple.CellIsEmpty(index);

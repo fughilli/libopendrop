@@ -5,6 +5,7 @@
 
 #include <ostream>
 
+#include "util/graph/types/opaque_storable.h"
 #include "absl/strings/str_format.h"
 #include "third_party/glm_helper.h"
 #include "util/graph/types/types.h"
@@ -14,7 +15,7 @@
 
 namespace opendrop {
 
-class Texture {
+class Texture : public OpaqueStorable<Texture> {
  public:
   constexpr static Type kType = Type::kTexture;
 
