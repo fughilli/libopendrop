@@ -71,9 +71,9 @@ struct Conversion {
       : name(name),
         convert(ConversionToOpaqueFunction(convert)),
         input_factory(OpaqueTupleFactory::FromTypes<InputTupleArgs...>()),
-        output_factory(OpaqueTupleFactory::FromTypes<OutputTupleArgs...>()),
+        output_factory(OpaqueTupleFactory::FromTypes<OutputTupleArgs...>())/*,
         input_tuple(input_factory.Construct()),
-        output_tuple(output_factory.Construct()) {}
+        output_tuple(output_factory.Construct()) */{}
 
   // Constructs a `Conversion` which produces a value of type
   // std::tuple<OutputTupleArgs...>.
@@ -84,37 +84,37 @@ struct Conversion {
       : name(name),
         produce(ProductionToOpaqueFunction(produce)),
         input_factory(OpaqueTupleFactory::FromEmpty()),
-        output_factory(OpaqueTupleFactory::FromTypes<OutputTupleArgs...>()),
+        output_factory(OpaqueTupleFactory::FromTypes<OutputTupleArgs...>())/*,
         input_tuple(input_factory.Construct()),
-        output_tuple(output_factory.Construct()) {}
+        output_tuple(output_factory.Construct()) */{}
 
-  template <typename... InputTupleArgs>
-  Conversion& Invoke(const std::tuple<InputTupleArgs...>& input) {
-    LOG(DEBUG) << "Invoking function for conversion " << name;
+  // template <typename... InputTupleArgs>
+  // Conversion& Invoke(const std::tuple<InputTupleArgs...>& input) {
+  //   LOG(DEBUG) << "Invoking function for conversion " << name;
 
-    input_tuple.AssignFrom(input);
+  //   input_tuple.AssignFrom(input);
 
-    if (output_factory.Types().empty())
-      consume(input_tuple);
-    else
-      convert(input_tuple, output_tuple);
+  //   if (output_factory.Types().empty())
+  //     consume(input_tuple);
+  //   else
+  //     convert(input_tuple, output_tuple);
 
-    return *this;
-  }
+  //   return *this;
+  // }
 
-  Conversion& Invoke() {
-    LOG(DEBUG) << "Invoking function for conversion " << name;
-    if (!input_factory.Types().empty())
-      LOG(FATAL) << "Input types do not match!";
-    produce(output_tuple);
-    return *this;
-  }
+  // Conversion& Invoke() {
+  //   LOG(DEBUG) << "Invoking function for conversion " << name;
+  //   if (!input_factory.Types().empty())
+  //     LOG(FATAL) << "Input types do not match!";
+  //   produce(output_tuple);
+  //   return *this;
+  // }
 
-  Conversion& InvokeOpaque(OpaqueTuple& input) {
-    LOG(DEBUG) << "Invoking function for conversion " << name;
-    convert(input, output_tuple);
-    return *this;
-  }
+  // Conversion& InvokeOpaque(OpaqueTuple& input) {
+  //   LOG(DEBUG) << "Invoking function for conversion " << name;
+  //   convert(input, output_tuple);
+  //   return *this;
+  // }
 
   Conversion& InvokeOpaque(OpaqueTuple& input, OpaqueTuple& output) {
     LOG(DEBUG) << "Invoking function for conversion " << name;
@@ -122,16 +122,16 @@ struct Conversion {
     return *this;
   }
 
-  OpaqueTuple& ResultOpaque() { return output_tuple; }
+  // OpaqueTuple& ResultOpaque() { return output_tuple; }
 
-  template <typename... OutputTypes>
-  const std::tuple<OutputTypes...> Result() const {
-    LOG(DEBUG) << "Fetching result";
-    using OutputTuple = std::tuple<OutputTypes...>;
-    if (output_factory.Types() != ConstructTypes<OutputTypes...>())
-      LOG(FATAL) << "Output types do not match!";
-    return output_tuple.ToTuple<OutputTypes...>();
-  }
+  // template <typename... OutputTypes>
+  // const std::tuple<OutputTypes...> Result() const {
+  //   LOG(DEBUG) << "Fetching result";
+  //   using OutputTuple = std::tuple<OutputTypes...>;
+  //   if (output_factory.Types() != ConstructTypes<OutputTypes...>())
+  //     LOG(FATAL) << "Output types do not match!";
+  //   return output_tuple.ToTuple<OutputTypes...>();
+  // }
 
   const std::vector<Type>& InputTypes() const { return input_factory.Types(); }
   const std::vector<Type>& OutputTypes() const {
@@ -148,8 +148,8 @@ struct Conversion {
 
   // Storage for native invocations. For invocations in a graph, dedicated
   // storage shall be collected from the factories.
-  OpaqueTuple input_tuple;
-  OpaqueTuple output_tuple;
+  // OpaqueTuple input_tuple;
+  // OpaqueTuple output_tuple;
 };
 
 std::ostream& operator<<(std::ostream& os, const Conversion& conversion);

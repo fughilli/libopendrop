@@ -4,6 +4,8 @@
 #include <stdint.h>
 
 #include <memory>
+#include <sstream>
+#include <string>
 #include <type_traits>
 #include <utility>
 #include <vector>
@@ -18,6 +20,7 @@ namespace opendrop {
 // Deletes an object of type `T` and frees the associated memory.
 template <typename T>
 void DestructAndFree(void* ptr) {
+  LOG(INFO) << "DestructAndFree() invoked; T = " << typeid(T).name();
   delete reinterpret_cast<T*>(ptr);
 }
 
@@ -226,6 +229,22 @@ class OpaqueTuple {
     CHECK(index >= 0 || index < size()) << "CellIsEmpty(): Index out of bounds";
 
     return cells_[index].buffer == nullptr;
+  }
+
+  std::string StateAsString() const {
+    std::stringstream state_ss;
+    state_ss << absl::StrFormat("OpaqueTuple at %X state is:",
+                                reinterpret_cast<intptr_t>(this))
+             << std::endl;
+    for (auto& cell : cells_) {
+      state_ss << absl::StrFormat(
+                      "Cell with type %s (buffer -> %X, use count = %d)",
+                      ToString(cell.type),
+                      reinterpret_cast<intptr_t>(cell.buffer.get()),
+                      cell.buffer.use_count())
+               << std::endl;
+    }
+    return state_ss.str();
   }
 
  private:

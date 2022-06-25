@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <cmath>
+#include <utility>
 
 #include "preset/graph_preset/model_frag.fsh.h"
 #include "preset/graph_preset/passthrough_vert.vsh.h"
@@ -78,48 +79,72 @@ GraphPreset::GraphPreset(std::shared_ptr<gl::GlTextureManager> texture_manager)
           "colored_rectangle",
           [this, texture_manager](
               std::tuple<Color, Unitary> in) -> std::tuple<Texture> {
-            auto& [color, scale] = in;
-            Texture tex(width(), height(), texture_manager);
+            auto return_tuple = [this, texture_manager,
+                                 in]() -> std::tuple<Texture> {
+              const auto& [color, scale] = in;
+              Texture tex(width(), height(), texture_manager);
 
-            auto rt_activation = tex.RenderTarget()->Activate();
-            auto shader_activation = model->Activate();
+              LOG(INFO) << "inside conversion, immediately after construction: "
+                           "tex has use count "
+                        << tex.RenderTarget().use_count();
 
-            GlBindUniform(model, "model_transform", ScaleTransform(scale));
+              auto rt_activation = tex.RenderTarget()->Activate();
 
-            glClearColor(0, 0, 0, 0);
-            glClear(GL_COLOR_BUFFER_BIT);
+              LOG(INFO) << "inside conversion, render target activated: tex "
+                           "has use count "
+                        << tex.RenderTarget().use_count();
 
-            Rectangle rectangle;
-            rectangle.SetColor(color);
-            rectangle.Draw();
+              auto shader_activation = model->Activate();
 
-            return std::make_tuple(tex);
+              GlBindUniform(model, "model_transform", ScaleTransform(scale));
+
+              glClearColor(0, 0, 0, 0);
+              glClear(GL_COLOR_BUFFER_BIT);
+
+              Rectangle rectangle;
+              rectangle.SetColor(color);
+              rectangle.Draw();
+
+              LOG(INFO) << "inside conversion: tex has use count "
+                        << tex.RenderTarget().use_count();
+              auto return_tuple = std::make_tuple(tex);
+              LOG(INFO) << "inside conversion, after tuple construction: tex "
+                           "has use count "
+                        << tex.RenderTarget().use_count();
+              return return_tuple;
+            }();
+
+            LOG(INFO)
+                << "inside conversion, tex out of scope: use count in tuple is "
+                << std::get<0>(return_tuple).RenderTarget().use_count();
+
+            return return_tuple;
           });
 
-  graph_builder_.DeclareConversion<std::tuple<Texture, Texture, Unitary>,
-                                   std::tuple<Texture>>(
-      "zoom",
-      [this, texture_manager](
-          std::tuple<Texture, Texture, Unitary> in) -> std::tuple<Texture> {
-        auto& [in_tex_a, in_tex_b, rotation_coeff] = in;
-        Texture tex(width(), height(), texture_manager);
+  // graph_builder_.DeclareConversion<std::tuple<Texture, Texture, Unitary>,
+  //                                  std::tuple<Texture>>(
+  //     "zoom",
+  //     [this, texture_manager](
+  //         std::tuple<Texture, Texture, Unitary> in) -> std::tuple<Texture> {
+  //       auto& [in_tex_a, in_tex_b, rotation_coeff] = in;
+  //       Texture tex(width(), height(), texture_manager);
 
-        auto rt_activation = tex.RenderTarget()->Activate();
-        auto shader_activation = zoom->Activate();
+  //       auto rt_activation = tex.RenderTarget()->Activate();
+  //       auto shader_activation = zoom->Activate();
 
-        GlBindUniform(zoom, "model_transform", glm::mat4(1.0f));
-        GlBindRenderTargetTextureToUniform(zoom, "in_tex_a",
-                                           in_tex_a.RenderTarget(),
-                                           gl::GlTextureBindingOptions());
-        GlBindRenderTargetTextureToUniform(zoom, "in_tex_b",
-                                           in_tex_b.RenderTarget(),
-                                           gl::GlTextureBindingOptions());
-        GlBindUniform(zoom, "rotation_coeff", rotation_coeff.value);
+  //       GlBindUniform(zoom, "model_transform", glm::mat4(1.0f));
+  //       GlBindRenderTargetTextureToUniform(zoom, "in_tex_a",
+  //                                          in_tex_a.RenderTarget(),
+  //                                          gl::GlTextureBindingOptions());
+  //       GlBindRenderTargetTextureToUniform(zoom, "in_tex_b",
+  //                                          in_tex_b.RenderTarget(),
+  //                                          gl::GlTextureBindingOptions());
+  //       GlBindUniform(zoom, "rotation_coeff", rotation_coeff.value);
 
-        Rectangle().Draw();
+  //       Rectangle().Draw();
 
-        return std::make_tuple(tex);
-      });
+  //       return std::make_tuple(tex);
+  //     });
   // Texture recurse_tex(width(), height(), texture_manager);
   // graph_builder_.DeclareConversion<std::tuple<Texture>, std::tuple<Texture>>(
   //     "zoom",
@@ -157,7 +182,10 @@ GraphPreset::GraphPreset(std::shared_ptr<gl::GlTextureManager> texture_manager)
   editor_context_ = ax::NodeEditor::CreateEditor(&config);
 }
 
-GraphPreset::~GraphPreset() { ax::NodeEditor::DestroyEditor(editor_context_); }
+GraphPreset::~GraphPreset() {
+  ax::NodeEditor::DestroyEditor(editor_context_);
+  LOG(INFO) << "Disposing GraphPreset";
+}
 
 absl::StatusOr<std::shared_ptr<Preset>> GraphPreset::MakeShared(
     std::shared_ptr<gl::GlTextureManager> texture_manager) {
@@ -171,6 +199,10 @@ void GraphPreset::OnDrawFrame(
     absl::Span<const float> samples, std::shared_ptr<GlobalState> state,
     float alpha, std::shared_ptr<gl::GlRenderTarget> output_render_target) {
   ImGui::Begin("Graph Viewer", nullptr, ImGuiWindowFlags_NoScrollbar);
+  if (ImGui::Button("Clear")) {
+    evaluation_graph_ = Graph(nullptr);
+    graph_builder_.MaybeGc();
+  }
   if (ImGui::Button("Again"))
     evaluation_graph_ =
         graph_builder_
@@ -181,15 +213,20 @@ void GraphPreset::OnDrawFrame(
   RenderGraph(editor_context_, evaluation_graph_);
   ImGui::End();
 
+  texture_manager()->PrintState();
+  graph_builder_.PrintState();
+
   if (evaluate_) {
     evaluation_graph_.Evaluate(std::tuple<Monotonic, Unitary, Unitary, Unitary>(
         state->energy(), state->bass(), state->mid(), state->treble()));
-    Texture tex = std::get<0>(evaluation_graph_.Result<Texture>());
+    // Texture tex = std::get<0>(evaluation_graph_.Result<Texture>());
 
-    {
-      auto output_activation = output_render_target->Activate();
-      Blit(tex);
-    }
+    // {
+    //   auto output_activation = output_render_target->Activate();
+    //   Blit(tex);
+    // }
+
+    // LOG(INFO) << "Exiting scope of `tex`";
   }
 }
 

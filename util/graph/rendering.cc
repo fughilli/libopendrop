@@ -18,8 +18,8 @@ namespace NE = ax::NodeEditor;
 constexpr int kMaxIoPerConversion = 100;
 
 int IdForNode(const Graph& graph, const std::shared_ptr<Node>& node) {
-  if (node == graph.io_node) return 1;
-  return 2 + IndexOf<std::shared_ptr<Node>>(graph.nodes, node);
+  if (node == graph.io_node()) return 1;
+  return 2 + IndexOf<std::shared_ptr<Node>>(graph.nodes(), node);
 }
 
 struct LinkConfig {
@@ -91,25 +91,28 @@ void RenderGraph(ax::NodeEditor::EditorContext* context, const Graph& graph) {
 
   NE::Begin("Graph Viewer", ImVec2(0.0f, 0.0f));
 
-  for (const auto& node : graph.nodes) {
-    int evaluation_index = -1;
-    std::vector<std::shared_ptr<Node>> nodes_in_evaluation_order =
-        graph.NodesInEvaluationOrder();
-    if (std::find(nodes_in_evaluation_order.begin(),
-                  nodes_in_evaluation_order.end(),
-                  node) != nodes_in_evaluation_order.end()) {
-      evaluation_index =
-          IndexOf<std::shared_ptr<Node>>(graph.NodesInEvaluationOrder(), node);
+  if (graph.valid()) {
+    for (const auto& node : graph.nodes()) {
+      int evaluation_index = -1;
+      std::vector<std::shared_ptr<Node>> nodes_in_evaluation_order =
+          graph.NodesInEvaluationOrder();
+      if (std::find(nodes_in_evaluation_order.begin(),
+                    nodes_in_evaluation_order.end(),
+                    node) != nodes_in_evaluation_order.end()) {
+        evaluation_index = IndexOf<std::shared_ptr<Node>>(
+            graph.NodesInEvaluationOrder(), node);
+      }
+      RenderNode(context, *node, IdForNode(graph, node), evaluation_index);
     }
-    RenderNode(context, *node, IdForNode(graph, node), evaluation_index);
-  }
-  RenderNode(context, *graph.io_node, IdForNode(graph, graph.io_node), -1);
+    RenderNode(context, *graph.io_node(), IdForNode(graph, graph.io_node()),
+               -1);
 
-  for (const auto& node : graph.nodes) {
-    RenderInputEdges(context, graph, *node, IdForNode(graph, node));
+    for (const auto& node : graph.nodes()) {
+      RenderInputEdges(context, graph, *node, IdForNode(graph, node));
+    }
+    RenderInputEdges(context, graph, *graph.io_node(),
+                     IdForNode(graph, graph.io_node()));
   }
-  RenderInputEdges(context, graph, *graph.io_node,
-                   IdForNode(graph, graph.io_node));
 
   NE::End();
 

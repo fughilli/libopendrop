@@ -1,4 +1,5 @@
 #include "absl/debugging/failure_signal_handler.h"
+#include "absl/debugging/stacktrace.h"
 #include "googletest/include/gtest/gtest.h"
 
 int main(int argc, char** argv) {

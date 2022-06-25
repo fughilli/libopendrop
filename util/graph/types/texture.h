@@ -5,6 +5,7 @@
 
 #include <ostream>
 
+#include "absl/strings/str_format.h"
 #include "third_party/glm_helper.h"
 #include "util/graph/types/types.h"
 #include "util/graphics/gl_render_target.h"
@@ -22,13 +23,23 @@ class Texture {
   Texture(size_t width, size_t height,
           std::shared_ptr<gl::GlTextureManager> texture_manager)
       : width_(width), height_(height) {
-    auto status_or_render_target =
-        gl::GlRenderTarget::MakeShared(width_, height_, texture_manager);
-    if (!status_or_render_target.ok()) {
-      LOG(ERROR) << status_or_render_target.status();
-      return;
+    {
+      auto status_or_render_target =
+          gl::GlRenderTarget::MakeShared(width_, height_, texture_manager);
+      if (!status_or_render_target.ok()) {
+        LOG(ERROR) << "Texture::Texture(): Render target creation failed: "
+                   << status_or_render_target.status();
+        return;
+      }
+      LOG(INFO)
+          << "Texture::Texture(): status-embedded render target has use count "
+          << status_or_render_target.value().use_count();
+      render_target_ = status_or_render_target.value();
+      LOG(INFO) << "Texture::Texture(): post-assignment use count is "
+                << render_target_.use_count();
     }
-    render_target_ = std::move(status_or_render_target).value();
+    LOG(INFO) << "Texture::Texture(): post-descoping use count is "
+              << render_target_.use_count();
   }
 
   Texture operator-(const Texture& other) const {
@@ -52,6 +63,7 @@ class Texture {
   //
   int ActivateRenderContext() { return 0; }
 
+  std::shared_ptr<gl::GlRenderTarget>& RenderTarget() { return render_target_; }
   std::shared_ptr<gl::GlRenderTarget> RenderTarget() const {
     return render_target_;
   }
@@ -67,10 +79,23 @@ class Texture {
 
   glm::vec4 Color() const { return color_; }
 
+  ~Texture() {
+    LOG(INFO)
+        << "Destructing graph Texture; render_target_ "
+        << ((render_target_ == nullptr)
+                ? "is nullptr"
+                : absl::StrFormat(
+                      "has use count %d and holds {framebuffer_handle_ = %d, "
+                      "depth_buffer_handle_ = %d}",
+                      render_target_.use_count(),
+                      render_target_->framebuffer_handle(),
+                      render_target_->depth_buffer_handle()));
+  }
+
  private:
   glm::vec4 color_ = {};
   size_t width_, height_;
-  std::shared_ptr<gl::GlRenderTarget> render_target_;
+  std::shared_ptr<gl::GlRenderTarget> render_target_ = nullptr;
 };
 
 void Blit(const Texture& texture);

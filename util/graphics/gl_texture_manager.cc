@@ -28,6 +28,11 @@ GlTextureManager::GlTextureManager() : total_texture_units_(0) {
   }
 }
 
+void GlTextureManager::PrintState() const {
+  LOG_N_SEC(1.0, INFO) << "Allocated texture units: "
+                       << MakeAllocationString(allocated_texture_units_);
+}
+
 absl::StatusOr<int> GlTextureManager::Allocate() {
   if (free_texture_units_.empty()) {
     return absl::FailedPreconditionError("No free texture units available.");
@@ -38,10 +43,10 @@ absl::StatusOr<int> GlTextureManager::Allocate() {
 
   allocated_texture_units_[texture_unit] = true;
 
-  LOG(DEBUG) << "Allocated texture unit " << texture_unit;
+  LOG(INFO) << "Allocated texture unit " << texture_unit;
 
-  LOG_N_SEC(1.0, INFO) << "Allocated texture units: "
-                       << MakeAllocationString(allocated_texture_units_);
+  PrintState();
+
   return texture_unit;
 }
 
@@ -51,7 +56,7 @@ void GlTextureManager::Deallocate(int texture_unit) {
   CHECK(allocated_texture_units_[texture_unit])
       << "Texture unit " << texture_unit << " is not allocated.";
 
-  LOG(DEBUG) << "Deallocated texture unit: " << texture_unit;
+  LOG(INFO) << "Deallocated texture unit: " << texture_unit;
   allocated_texture_units_[texture_unit] = false;
   free_texture_units_.push(texture_unit);
 }

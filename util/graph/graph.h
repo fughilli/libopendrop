@@ -7,6 +7,8 @@
 #include <map>
 #include <memory>
 #include <ostream>
+#include <queue>
+#include <set>
 #include <string>
 #include <tuple>
 #include <unordered_set>
@@ -61,12 +63,12 @@ struct Node : public std::enable_shared_from_this<Node> {
   // Validates the input configuration of this node.
   bool ValidateInputEdges() const {
     if (input_edges.size() > input_tuple.Types().size()) {
-      LOG(ERROR) << absl::StrFormat(
+      LOG(DEBUG) << absl::StrFormat(
           "ValidateInputEdges(): Too many input edges (%d > %d)",
           input_edges.size(), input_tuple.Types().size());
     }
     if (input_edges.size() != input_tuple.Types().size()) {
-      LOG(ERROR) << absl::StrFormat(
+      LOG(DEBUG) << absl::StrFormat(
           "ValidateInputEdges(): Not all inputs are satisfied (%d of %d "
           "satisfied)",
           input_edges.size(), input_tuple.Types().size());
@@ -79,7 +81,7 @@ struct Node : public std::enable_shared_from_this<Node> {
           value_in_node->output_tuple.Types()[value_in_index];
       const Type alias_type = alias_node->input_tuple.Types()[alias_index];
       if (value_in_type != alias_type) {
-        LOG(ERROR) << absl::StrFormat(
+        LOG(DEBUG) << absl::StrFormat(
             "ValidateInputEdges(): Types don't match: %s != %s",
             ToString(value_in_type), ToString(alias_type));
         return false;
@@ -87,7 +89,7 @@ struct Node : public std::enable_shared_from_this<Node> {
 
       if (!alias_node->input_tuple.IsAliasOf(
               alias_index, value_in_node->output_tuple, value_in_index)) {
-        LOG(ERROR) << absl::StrFormat(
+        LOG(DEBUG) << absl::StrFormat(
             "ValidateInputEdges(): Input cell %d of type %s is not aliasing "
             "expected cell (expected alias of cell %d of type %s)",
             alias_index, ToString(alias_type), value_in_index,
@@ -133,6 +135,13 @@ struct Node : public std::enable_shared_from_this<Node> {
 
   std::vector<Edge> output_edges{};
   std::vector<Edge> input_edges{};
+
+  bool alive = false;
+
+  void DestructEdges() {
+    input_edges.clear();
+    output_edges.clear();
+  }
 };
 
 Type NodePortIndexType(const NodePortIndex& port_index,
@@ -150,10 +159,10 @@ std::ostream& operator<<(std::ostream& os,
 std::ostream& operator<<(std::ostream& os, NodePortIndex port_index);
 
 // Class used to store a particular graph configuration (and its results).
-class Graph {
+class InnerGraph {
  public:
   // Constructs a graph from a single conversion.
-  Graph(std::shared_ptr<Conversion> conversion)
+  InnerGraph(std::shared_ptr<Conversion> conversion)
       : io_node(std::make_shared<Node>(
             /*input_tuple=*/conversion->output_factory.Construct(),
             /*output_tuple=*/conversion->input_factory.Construct())) {
@@ -172,11 +181,12 @@ class Graph {
   }
 
   // Constructs an empty graph.
-  Graph() : io_node(std::make_shared<Node>(OpaqueTuple{}, OpaqueTuple{})) {}
+  InnerGraph()
+      : io_node(std::make_shared<Node>(OpaqueTuple{}, OpaqueTuple{})) {}
 
   // Constructs an empty graph with the given input/output types.
-  Graph(const std::vector<Type>& input_types,
-        const std::vector<Type>& output_types)
+  InnerGraph(const std::vector<Type>& input_types,
+             const std::vector<Type>& output_types)
       : io_node(std::make_shared<Node>(
             /*input_tuple=*/OpaqueTuple::EmptyFromTypes(output_types),
             /*output_tuple=*/OpaqueTuple::EmptyFromTypes(input_types))) {}
@@ -186,7 +196,8 @@ class Graph {
     auto input_types = ConstructTypes<InputTypes...>();
     if (this->InputTypes() != input_types)
       LOG(FATAL) << absl::StrFormat(
-          "Graph::Evaluate(): Incorrect input type to Evaluate: passed %s, "
+          "InnerGraph::Evaluate(): Incorrect input type to Evaluate: passed "
+          "%s, "
           "expected %s",
           ToString(input_types), ToString(this->InputTypes()));
 
@@ -227,6 +238,36 @@ class Graph {
     return false;
   }
 
+  void MarkNodesAlive() {
+    LOG(INFO) << absl::StrFormat("Mark nodes alive for graph at %d",
+                                 reinterpret_cast<intptr_t>(this));
+    std::queue<Node*> nodes_to_visit{};
+    nodes_to_visit.push(io_node.get());
+
+    while (!nodes_to_visit.empty()) {
+      Node* current = nodes_to_visit.front();
+      nodes_to_visit.pop();
+
+      current->alive = true;
+      LOG(INFO) << absl::StrFormat("Node at %X is alive",
+                                   reinterpret_cast<intptr_t>(current));
+      for (auto& edge : current->output_edges) {
+        auto& node = edge.alias.first;
+        if (!node->alive) {
+          nodes_to_visit.push(node.get());
+        }
+      }
+    }
+  }
+
+  ~InnerGraph() {
+    evaluation_ordered_nodes.clear();
+    nodes.clear();
+    LOG(INFO) << "Destructing InnerGraph";
+    LOG(INFO) << "Input tuple state: " << io_node->output_tuple.StateAsString();
+    LOG(INFO) << "Output tuple state: " << io_node->input_tuple.StateAsString();
+  }
+
  private:
   std::vector<std::shared_ptr<Node>> evaluation_ordered_nodes = {};
 
@@ -238,7 +279,7 @@ class Graph {
 
     for (auto& node : nodes) {
       if (!node->ValidateInputEdges())
-        LOG(FATAL) << "Graph::Evaluate(): Graph incorrectly constructed";
+        LOG(FATAL) << "InnerGraph::Evaluate(): Graph incorrectly constructed";
     }
 
     std::unordered_set<std::shared_ptr<Node>> unevaluated{nodes.begin(),
@@ -348,7 +389,7 @@ class Graph {
                  << count_unsatisfied_inputs(candidate_node)
                  << " inputs unsatisfied.";
       if (count_satisfied_inputs(candidate_node) == 0) {
-        LOG(ERROR) << "Failed to determine evaluation order; maybe the graph "
+        LOG(DEBUG) << "Failed to determine evaluation order; maybe the graph "
                       "is ill-formed?";
         return;
       }
@@ -369,6 +410,38 @@ class Graph {
   }
 };
 
+class Graph {
+ public:
+  Graph() : inner_graph_(std::make_shared<InnerGraph>()) {}
+  explicit Graph(std::shared_ptr<InnerGraph> inner_graph)
+      : inner_graph_(inner_graph) {}
+
+  template <typename... InputTypes>
+  void Evaluate(std::tuple<InputTypes...> input) {
+    inner_graph_->Evaluate<InputTypes...>(input);
+  }
+
+  template <typename... OutputTypes>
+  std::tuple<OutputTypes...> Result() const {
+    return inner_graph_->Result<OutputTypes...>();
+  }
+
+  std::vector<std::shared_ptr<Node>> NodesInEvaluationOrder() const {
+    return inner_graph_->NodesInEvaluationOrder();
+  }
+
+  const std::shared_ptr<Node> io_node() const { return inner_graph_->io_node; }
+
+  const std::vector<std::shared_ptr<Node>>& nodes() const {
+    return inner_graph_->nodes;
+  }
+
+  bool valid() const { return inner_graph_ != nullptr; }
+
+ private:
+  std::shared_ptr<InnerGraph> inner_graph_;
+};
+
 using ConversionPtr = std::shared_ptr<Conversion>;
 using ConversionSearchRecord =
     std::pair<ConversionPtr, std::list<ConversionPtr>>;
@@ -386,7 +459,7 @@ std::ostream& operator<<(
 std::ostream& operator<<(
     std::ostream& os,
     const std::vector<std::shared_ptr<Conversion>>& conversions);
-std::ostream& operator<<(std::ostream& os, const Graph& graph);
+std::ostream& operator<<(std::ostream& os, const InnerGraph& graph);
 void PrintStack(const std::list<ConversionSearchRecord>& stack,
                 std::string_view prefix = "");
 
@@ -401,16 +474,15 @@ class GraphBuilder {
     InsertConversion(conversion);
   }
   template <typename OutputTuple>
-  void DeclareProduction(
-      std::string name,
-      std::function<OutputTuple()> conversion_function) {
+  void DeclareProduction(std::string name,
+                         std::function<OutputTuple()> conversion_function) {
     auto conversion = std::make_shared<Conversion>(name, conversion_function);
 
     InsertConversion(conversion);
   }
 
   Graph Construct(absl::string_view graph_spec) {
-    return Graph(conversions_by_name_[std::string(graph_spec)]);
+    return ConstructGraphHelper(conversions_by_name_[std::string(graph_spec)]);
   }
 
   // Constructs a graph that transforms `InputTypes` into `OutputTypes`. If no
@@ -418,10 +490,54 @@ class GraphBuilder {
   absl::StatusOr<Graph> Bridge(const std::vector<Type>& input_types,
                                const std::vector<Type>& output_types);
 
+  void MaybeGc() {
+    for (auto& node : nodes_) {
+      node->alive = false;
+    }
+
+    for (auto iter = graphs_.begin(); iter != graphs_.end();) {
+      if (iter->use_count() == 1) {
+        iter = graphs_.erase(iter);
+        LOG(INFO) << "Destructed graph";
+        continue;
+      }
+
+      (*iter)->MarkNodesAlive();
+      ++iter;
+    }
+
+    for (auto iter = nodes_.begin(); iter != nodes_.end();) {
+      if (!(*iter)->alive) {
+        (*iter)->DestructEdges();
+        iter = nodes_.erase(iter);
+        LOG(INFO) << "Destructed node";
+        continue;
+      }
+
+      ++iter;
+    }
+  }
+
+  void PrintState() const {
+    LOG_N_SEC(1.0, INFO) << "graphs_.size() = " << graphs_.size()
+                         << ", nodes_.size() = " << nodes_.size();
+  }
+
  private:
   using ConversionVector = std::vector<std::shared_ptr<Conversion>>;
 
+  template <typename... Ts>
+  Graph ConstructGraphHelper(Ts&&... ts) {
+    std::shared_ptr<InnerGraph> inner_graph =
+        std::make_shared<InnerGraph>(std::forward<Ts>(ts)...);
+    graphs_.push_back(inner_graph);
+    return Graph(inner_graph);
+  }
+
   void InsertConversion(std::shared_ptr<Conversion> conversion);
+
+  std::list<std::shared_ptr<InnerGraph>> graphs_;
+  std::set<std::shared_ptr<Node>> nodes_;
 
   std::map<std::string, std::shared_ptr<Conversion>> conversions_by_name_;
   std::map<std::vector<Type>, ConversionVector> conversions_by_input_;

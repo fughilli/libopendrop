@@ -16,6 +16,8 @@ class GlTextureManager {
   absl::StatusOr<int> Allocate();
   void Deallocate(int texture_unit);
 
+  void PrintState() const;
+
  private:
   int total_texture_units_;
   std::mutex texture_unit_mu_;

@@ -14,7 +14,7 @@ struct Unitary {
   Unitary() : value(0) {}
   Unitary(float value) : value(value) {
     if (value < 0 || value > 1)
-      LOG(FATAL) << "Unitary: value must be between 0 and 1, inclusive.";
+      LOG(ERROR) << "Unitary: value must be between 0 and 1, inclusive.";
   }
   operator float() const { return value; }
 };

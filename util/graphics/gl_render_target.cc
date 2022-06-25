@@ -101,12 +101,15 @@ absl::StatusOr<std::shared_ptr<GlRenderTarget>> GlRenderTarget::MakeShared(
     int width, int height, std::shared_ptr<GlTextureManager> texture_manager,
     Options options) {
   ASSIGN_OR_RETURN(auto texture_unit, texture_manager->Allocate());
-  return std::shared_ptr<GlRenderTarget>(new GlRenderTarget(
+  auto return_value = std::shared_ptr<GlRenderTarget>(new GlRenderTarget(
       width, height, texture_unit, texture_manager, options));
+  LOG(INFO) << "GlRenderTarget::MakeShared(): New target has use count "
+            << return_value.use_count();
+  return return_value;
 }
 
 GlRenderTarget::~GlRenderTarget() {
-  LOG(DEBUG) << "Disposing render target";
+  LOG(INFO) << "Disposing render target";
   if (options_.enable_depth) {
     glDeleteTextures(1, &depth_buffer_handle_);
   }
