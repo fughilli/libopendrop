@@ -81,9 +81,11 @@ void RenderNode(ax::NodeEditor::EditorContext* context, const Node& node,
 
 void RenderInputEdges(ax::NodeEditor::EditorContext* context,
                       const Graph& graph, const Node& node, int id) {
-  for (Edge input_edge : node.input_edges) {
+  for (int i = 0; i < node.input_edges.size(); ++i) {
+    Edge input_edge = node.input_edges[i];
     auto link_config = LinkConfig::FromEdge(graph, input_edge);
-    NE::Link(id * 1000 + 200, link_config.in_pin_id, link_config.out_pin_id);
+    NE::Link(id * 1000 + 200 * i, link_config.in_pin_id,
+             link_config.out_pin_id);
   }
 }
 

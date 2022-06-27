@@ -36,6 +36,8 @@ cc_library(
         "//util/graph/types:opaque_storable",
         "@com_google_absl//absl/container:flat_hash_map",
         "//util/graph/types:monotonic",
+        "//util/graph/types:color",
+        "//util/graph/types:samples",
         "//util/graph/types:unitary",
         "//util/graph/types:texture",
     ],

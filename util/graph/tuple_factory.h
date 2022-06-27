@@ -5,8 +5,10 @@
 
 #include "absl/container/flat_hash_map.h"
 #include "util/graph/tuple.h"
+#include "util/graph/types/color.h"
 #include "util/graph/types/monotonic.h"
 #include "util/graph/types/opaque_storable.h"
+#include "util/graph/types/samples.h"
 #include "util/graph/types/texture.h"
 #include "util/graph/types/types.h"
 #include "util/graph/types/unitary.h"
@@ -62,6 +64,8 @@ class OpaqueTupleFactory {
     allocators_by_type_[Type::kMonotonic] = Monotonic::template Allocate<>;
     allocators_by_type_[Type::kUnitary] = Unitary::template Allocate<>;
     allocators_by_type_[Type::kTexture] = Texture::template Allocate<>;
+    allocators_by_type_[Type::kColor] = Color::template Allocate<>;
+    allocators_by_type_[Type::kSamples] = Samples::template Allocate<>;
   }
 
   static OpaqueTupleFactory* GetInstance() {

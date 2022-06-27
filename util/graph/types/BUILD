@@ -29,6 +29,15 @@ cc_test(
 )
 
 cc_library(
+    name = "samples",
+    hdrs = ["samples.h"],
+    deps = [
+        ":opaque_storable",
+        ":types",
+    ],
+)
+
+cc_library(
     name = "monotonic",
     hdrs = ["monotonic.h"],
     deps = [

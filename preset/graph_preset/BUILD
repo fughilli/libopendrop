@@ -10,6 +10,7 @@ cc_library(
     deps = [
         ":model_frag",
         ":passthrough_vert",
+        ":tile_frag",
         ":zoom_frag",
         "//preset",
         "//primitive:polyline",
@@ -28,6 +29,7 @@ cc_library(
         "//util/graphics:gl_render_target",
         "//util/graphics:gl_util",
         "//util/logging",
+        "//util/math:perspective",
         "//util/math:vector",
         "//util/status:status_macros",
         "@imgui",
@@ -43,6 +45,12 @@ shader_cc_library(
 shader_cc_library(
     name = "model_frag",
     srcs = ["model_frag.fsh"],
+)
+
+shader_cc_library(
+    name = "tile_frag",
+    srcs = ["tile_frag.fsh"],
+    deps = ["//preset/common:math"],
 )
 
 shader_cc_library(
