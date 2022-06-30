@@ -395,11 +395,31 @@ extern "C" int main(int argc, char *argv[]) {
 
         ImGui::End();
 
+        {
+          ImGui::Begin("OpenDrop Image Viewer", nullptr, 0);
+          const int width = open_drop_controller->width();
+          const int height = open_drop_controller->height();
+
+          const auto [x_scale, y_scale] =
+              width > height
+                  ? std::make_tuple(
+                        ImVec2(0, 1),
+                        ImVec2(static_cast<float>(height) / width, 0))
+                  : std::make_tuple(
+                        ImVec2(0, static_cast<float>(width) / height),
+                        ImVec2(1, 0));
+          ImGui::Image((ImTextureID)open_drop_controller->render_target()
+                           ->texture_handle(),
+                       ImVec2(900, 900), x_scale, y_scale);
+          ImGui::End();
+        }
+
+        ImGui::Begin("OpenDrop Input Mapper", nullptr, 0);
+        ControlInjector::Inject();
+        ImGui::End();
+
         if (draw_signal_viewer) {
           ImGui::Begin("OpenDrop Signals Viewer", nullptr, 0);
-        ImGui::Image((ImTextureID)open_drop_controller->render_target()
-                         ->texture_handle(),
-                     ImVec2(900, 900), ImVec2(0, 1), ImVec2(1, 0));
           ImPlot::SetNextAxisLimits(ImAxis_Y1, -1.0f, 1.0f);
           if (ImPlot::BeginPlot("samples")) {
             auto &processor = open_drop_controller->audio_processor();
@@ -410,7 +430,6 @@ extern "C" int main(int argc, char *argv[]) {
                              samples_view.size());
             ImPlot::EndPlot();
           }
-          ControlInjector::Inject();
           SignalScope::Plot();
           ImGui::End();
         } else {
