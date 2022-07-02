@@ -7,6 +7,7 @@
 #include "absl/types/span.h"
 #include "util/signal/accumulator.h"
 #include "util/signal/filter.h"
+#include "util/signal/unitizer.h"
 
 namespace opendrop {
 
@@ -50,6 +51,10 @@ class GlobalState {
   float bass() const { return bass_left() + bass_right(); }
   float mid() const { return mid_left() + mid_right(); }
   float treble() const { return treble_left() + treble_right(); }
+
+  float bass_u() const { return bass_u_; }
+  float mid_u() const { return mid_u_; }
+  float treble_u() const { return treble_u_; }
 
   float bass_left_energy() const { return channel_bands_energy_[0][0]; }
   float bass_right_energy() const { return channel_bands_energy_[1][0]; }
@@ -138,6 +143,13 @@ class GlobalState {
       {};
   std::array<std::array<float, kNumFilterBands>, kNumChannels>
       channel_bands_energy_ = {};
+
+  Unitizer bass_unitizer_{Unitizer::Options{}};
+  Unitizer mid_unitizer_{Unitizer::Options{}};
+  Unitizer treble_unitizer_{Unitizer::Options{}};
+  float bass_u_ = 0;
+  float mid_u_ = 0;
+  float treble_u_ = 0;
 };
 
 }  // namespace opendrop

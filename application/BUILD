@@ -8,6 +8,7 @@ cc_library(
     deps = [
         "//util/signal:accumulator",
         "//util/signal:filter",
+        "//util/signal:unitizer",
         "@com_google_absl//absl/types:span",
     ],
 )

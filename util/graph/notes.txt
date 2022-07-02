@@ -39,3 +39,11 @@ GraphBuilder {
     ClearUnaliveNodeRefs();
   }
 }
+
+metafunctions:
+  "zoom": append a transform of the form T_out(T1,T2) with T2<=T_out being a recursive connection.
+  "graft": apply one graph to another by mapping nodes, e.g.:
+           auto iter1 = graph1.find(Type::kTexture, {.constraints=kNotOutputValue});
+           auto iter2 = graph2.find(Type::kTexture);
+           graph1.graft(iter1, iter2);
+  

@@ -63,6 +63,10 @@ void GlobalState::Update(absl::Span<const float> samples, float dt) {
     }
   }
 
+  bass_u_ = bass_unitizer_.Update(bass());
+  mid_u_ = bass_unitizer_.Update(mid());
+  treble_u_ = bass_unitizer_.Update(treble());
+
   if (samples.size() != 0) {
     properties_.power = properties_.power / samples.size();
   }

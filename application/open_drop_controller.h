@@ -41,6 +41,9 @@ class OpenDropController : public OpenDropControllerInterface {
     return samples_view_;
   }
 
+  int width() const { return width_; }
+  int height() const { return height_; }
+
  private:
   const Options options_;
 

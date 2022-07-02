@@ -21,8 +21,10 @@
 #include "util/graphics/colors.h"
 #include "util/graphics/gl_util.h"
 #include "util/logging/logging.h"
+#include "util/math/coefficients.h"
 #include "util/math/perspective.h"
 #include "util/math/vector.h"
+#include "util/math/math.h"
 #include "util/status/status_macros.h"
 
 namespace opendrop {
@@ -65,7 +67,9 @@ GraphPreset::GraphPreset(std::shared_ptr<gl::GlTextureManager> texture_manager)
             return std::tuple<Unitary>(a * b);
           });
   graph_builder_.DeclareProduction<std::tuple<Unitary>>(
-      "random", []() -> std::tuple<Unitary> { return 5.0f; });
+      "random", []() -> std::tuple<Unitary> {
+        return Coefficients::Random<1>(0.0f, 1.0f)[0];
+      });
   graph_builder_
       .DeclareConversion<std::tuple<Monotonic, Unitary>, std::tuple<Monotonic>>(
           "scale_speed",
@@ -84,11 +88,44 @@ GraphPreset::GraphPreset(std::shared_ptr<gl::GlTextureManager> texture_manager)
         return std::tuple<Unitary>(
             Unitary((1.0f + std::cos(std::get<0>(in) * 3)) / 2.0f));
       });
-  graph_builder_.DeclareConversion<std::tuple<Unitary>, std::tuple<Color>>(
-      "color_wheel", [](std::tuple<Unitary> in) -> std::tuple<Color> {
+  graph_builder_.DeclareConversion<std::tuple<Monotonic>, std::tuple<Color>>(
+      "color_wheel", [](std::tuple<Monotonic> in) -> std::tuple<Color> {
         glm::vec4 color =
             glm::vec4(HsvToRgb(glm::vec3(std::get<0>(in), 1.0f, 1.0f)), 1.0f);
         return std::tuple<Color>(color);
+      });
+  graph_builder_.DeclareConversion<
+      std::tuple<Samples, Color, Monotonic, Unitary, Unitary>, std::tuple<Texture>>(
+      "sample_ring",
+      [this, texture_manager](std::tuple<Samples, Color, Monotonic, Unitary, Unitary> in)
+          -> std::tuple<Texture> {
+        const auto& [samples, color, rotation, radius_scale, width_scale] = in;
+        Texture tex(width(), height(), texture_manager);
+
+        auto rt_activation = tex.RenderTarget()->Activate();
+        auto shader_activation = model->Activate();
+
+        GlBindUniform(model, "model_transform",
+                      RotateAround(Directions::kIntoScreen, rotation));
+
+        glClearColor(0, 0, 0, 0);
+        glClear(GL_COLOR_BUFFER_BIT);
+
+        std::vector<glm::vec2> vertices(samples.samples_left.size());
+        for (int i = 0; i < vertices.size(); ++i) {
+          float theta = kPi * 2 * i / vertices.size();
+          vertices[i] = UnitVectorAtAngle(theta);
+          vertices[i] = vertices[i] * (radius_scale + 0.1f * samples.samples_left[i]);
+          // {samples.samples_left[i], samples.samples_right[i]};
+        }
+
+        Polyline polyline;
+        polyline.UpdateVertices(vertices);
+        polyline.UpdateWidth(1 + width_scale * 30);
+        polyline.UpdateColor(color.value);
+        polyline.Draw();
+
+        return std::make_tuple(tex);
       });
   graph_builder_.DeclareConversion<
       std::tuple<Samples, Color, Monotonic, Unitary>, std::tuple<Texture>>(
@@ -200,7 +237,7 @@ GraphPreset::GraphPreset(std::shared_ptr<gl::GlTextureManager> texture_manager)
       [this, texture_manager](
           std::tuple<Texture, Unitary, Unitary> in) -> std::tuple<Texture> {
         auto& [in_tex, sample_scale_x, sample_scale_y] = in;
-        glm::vec2 sample_scale = {sample_scale_x, sample_scale_y};
+        glm::vec2 sample_scale = {sample_scale_x * 10, sample_scale_y * 10};
         Texture tex(width(), height(), texture_manager);
 
         auto rt_activation = tex.RenderTarget()->Activate();
@@ -270,7 +307,8 @@ void GraphPreset::OnDrawFrame(
         std::tuple<Samples, Monotonic, Unitary, Unitary, Unitary>(
             Samples{.samples_left = state->left_channel(),
                     .samples_right = state->right_channel()},
-            state->energy(), state->bass(), state->mid(), state->treble()));
+            state->energy(), state->bass_u(), state->mid_u(),
+            state->treble_u()));
     Texture tex = std::get<0>(evaluation_graph_.Result<Texture>());
 
     {

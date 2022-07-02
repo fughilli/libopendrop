@@ -29,6 +29,8 @@ cc_library(
         "//util/graphics:gl_render_target",
         "//util/graphics:gl_util",
         "//util/logging",
+        "//util/math",
+        "//util/math:coefficients",
         "//util/math:perspective",
         "//util/math:vector",
         "//util/status:status_macros",
