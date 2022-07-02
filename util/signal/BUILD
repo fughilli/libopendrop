@@ -79,3 +79,8 @@ cc_library(
     hdrs = ["transition_controller.h"],
     deps = [":decay_towards"],
 )
+
+cc_library(
+    name = "unitizer",
+    hdrs = ["unitizer.h"],
+)
