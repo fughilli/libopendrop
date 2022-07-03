@@ -4,6 +4,7 @@
 #include <memory>
 
 #include "absl/types/span.h"
+#include "graph.h"
 #include "imgui.h"
 #include "imgui_internal.h"
 #include "imgui_node_editor.h"
@@ -53,28 +54,31 @@ void RenderNode(ax::NodeEditor::EditorContext* context, const Node& node,
 
   ImGui::Text("#%d", evaluation_index);
 
-  ImGui::Columns(2);
-
-  for (size_t i = 0; i < node.input_tuple.Types().size(); ++i) {
-    Type input_type = node.input_tuple.Types()[i];
-    NE::BeginPin(id * 1000 + 100 + i, NE::PinKind::Input);
-    ImGui::PushStyleColor(ImGuiCol_Text,
-                          BoolColor(!node.input_tuple.CellIsEmpty(i)));
-    ImGui::Text("-> %s", ToString(input_type).c_str());
-    ImGui::PopStyleColor();
-    NE::EndPin();
+  for (size_t i = 0; i < std::max(node.input_tuple.Types().size(),
+                                  node.output_tuple.Types().size());
+       ++i) {
+    if (i < node.input_tuple.Types().size()) {
+      Type input_type = node.input_tuple.Types()[i];
+      NE::BeginPin(id * 1000 + 100 + i, NE::PinKind::Input);
+      ImGui::PushStyleColor(ImGuiCol_Text,
+                            BoolColor(!node.input_tuple.CellIsEmpty(i)));
+      ImGui::Text("-> %s", ToString(input_type).c_str());
+      ImGui::PopStyleColor();
+      NE::EndPin();
+    }
+    if (i < node.output_tuple.Types().size()) {
+      Type output_type = node.output_tuple.Types()[i];
+      if (i < node.input_tuple.Types().size()) {
+        ImGui::SameLine();
+      }
+      NE::BeginPin(id * 1000 + i, NE::PinKind::Output);
+      ImGui::PushStyleColor(ImGuiCol_Text,
+                            BoolColor(!node.output_tuple.CellIsEmpty(i)));
+      ImGui::Text("%s ->", ToString(output_type).c_str());
+      ImGui::PopStyleColor();
+      NE::EndPin();
+    }
   }
-  for (size_t i = 0; i < node.output_tuple.Types().size(); ++i) {
-    Type output_type = node.output_tuple.Types()[i];
-    NE::BeginPin(id * 1000 + i, NE::PinKind::Output);
-    ImGui::PushStyleColor(ImGuiCol_Text,
-                          BoolColor(!node.output_tuple.CellIsEmpty(i)));
-    ImGui::Text("%s ->", ToString(output_type).c_str());
-    ImGui::PopStyleColor();
-    NE::EndPin();
-  }
-
-  ImGui::Columns();
 
   NE::EndNode();
 }
