@@ -9,10 +9,12 @@ varying vec3 normal;
 uniform sampler2D in_tex_a;
 uniform sampler2D in_tex_b;
 uniform float rotation_coeff;
+uniform float zoom_coeff;
+uniform vec2 zoom_center;
 
 void main() {
-  vec2 tex_a_uv =
-      screen_to_tex(rotate(screen_uv, (0.5 - rotation_coeff) / 10) * 0.99);
+  vec2 tex_a_uv = screen_to_tex(
+      zoom_towards(rotate(screen_uv, rotation_coeff), zoom_coeff, zoom_center));
   vec2 tex_b_uv = screen_to_tex(screen_uv);
 
   vec4 in_color = texture2D(in_tex_b, tex_b_uv);

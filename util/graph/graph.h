@@ -415,7 +415,12 @@ class InnerGraph {
   void InvokeHelper() {
     MaybeDetermineEvaluationOrder();
 
-    for (auto& node : evaluation_ordered_nodes) node->Invoke();
+    if (!evaluation_ordered_nodes.empty()) {
+      for (auto& node : evaluation_ordered_nodes) node->Invoke();
+      return;
+    }
+
+    for (auto& node : nodes) node->Invoke();
   }
 };
 

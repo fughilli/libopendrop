@@ -22,9 +22,9 @@
 #include "util/graphics/gl_util.h"
 #include "util/logging/logging.h"
 #include "util/math/coefficients.h"
+#include "util/math/math.h"
 #include "util/math/perspective.h"
 #include "util/math/vector.h"
-#include "util/math/math.h"
 #include "util/status/status_macros.h"
 
 namespace opendrop {
@@ -95,9 +95,11 @@ GraphPreset::GraphPreset(std::shared_ptr<gl::GlTextureManager> texture_manager)
         return std::tuple<Color>(color);
       });
   graph_builder_.DeclareConversion<
-      std::tuple<Samples, Color, Monotonic, Unitary, Unitary>, std::tuple<Texture>>(
+      std::tuple<Samples, Color, Monotonic, Unitary, Unitary>,
+      std::tuple<Texture>>(
       "sample_ring",
-      [this, texture_manager](std::tuple<Samples, Color, Monotonic, Unitary, Unitary> in)
+      [this, texture_manager](
+          std::tuple<Samples, Color, Monotonic, Unitary, Unitary> in)
           -> std::tuple<Texture> {
         const auto& [samples, color, rotation, radius_scale, width_scale] = in;
         Texture tex(width(), height(), texture_manager);
@@ -115,13 +117,14 @@ GraphPreset::GraphPreset(std::shared_ptr<gl::GlTextureManager> texture_manager)
         for (int i = 0; i < vertices.size(); ++i) {
           float theta = kPi * 2 * i / vertices.size();
           vertices[i] = UnitVectorAtAngle(theta);
-          vertices[i] = vertices[i] * (radius_scale + 0.1f * samples.samples_left[i]);
+          vertices[i] =
+              vertices[i] * (radius_scale + 0.1f * samples.samples_left[i]);
           // {samples.samples_left[i], samples.samples_right[i]};
         }
 
         Polyline polyline;
         polyline.UpdateVertices(vertices);
-        polyline.UpdateWidth(1 + width_scale * 30);
+        polyline.UpdateWidth(2 + width_scale * 30);
         polyline.UpdateColor(color.value);
         polyline.Draw();
 
@@ -151,7 +154,7 @@ GraphPreset::GraphPreset(std::shared_ptr<gl::GlTextureManager> texture_manager)
 
         Polyline polyline;
         polyline.UpdateVertices(vertices);
-        polyline.UpdateWidth(1 + width_scale * 30);
+        polyline.UpdateWidth(2 + width_scale * 30);
         polyline.UpdateColor(color.value);
         polyline.Draw();
 
@@ -206,12 +209,15 @@ GraphPreset::GraphPreset(std::shared_ptr<gl::GlTextureManager> texture_manager)
         return return_tuple;
       });
 
-  graph_builder_.DeclareConversion<std::tuple<Texture, Texture, Unitary>,
-                                   std::tuple<Texture>>(
+  graph_builder_.DeclareConversion<
+      std::tuple<Texture, Texture, Unitary, Unitary, Unitary, Unitary>,
+      std::tuple<Texture>>(
       "zoom",
       [this, texture_manager](
-          std::tuple<Texture, Texture, Unitary> in) -> std::tuple<Texture> {
-        auto& [in_tex_a, in_tex_b, rotation_coeff] = in;
+          std::tuple<Texture, Texture, Unitary, Unitary, Unitary, Unitary> in)
+          -> std::tuple<Texture> {
+        auto& [in_tex_a, in_tex_b, rotation_coeff, zoom_coeff, zoom_center_x,
+               zoom_center_y] = in;
         Texture tex(width(), height(), texture_manager);
 
         auto rt_activation = tex.RenderTarget()->Activate();
@@ -224,7 +230,12 @@ GraphPreset::GraphPreset(std::shared_ptr<gl::GlTextureManager> texture_manager)
         GlBindRenderTargetTextureToUniform(zoom, "in_tex_b",
                                            in_tex_b.RenderTarget(),
                                            gl::GlTextureBindingOptions());
-        GlBindUniform(zoom, "rotation_coeff", rotation_coeff.value);
+        glm::vec2 zoom_center =
+            glm::vec2(zoom_center_x - 0.5f, zoom_center_y - 0.5f) * 2.0f;
+        GlBindUniform(zoom, "rotation_coeff",
+                      (0.5f - rotation_coeff.value) / 2);
+        GlBindUniform(zoom, "zoom_coeff", Lerp(0.9f, 1.1f, zoom_coeff.value));
+        GlBindUniform(zoom, "zoom_center", zoom_center);
 
         Rectangle().Draw();
 
@@ -237,7 +248,8 @@ GraphPreset::GraphPreset(std::shared_ptr<gl::GlTextureManager> texture_manager)
       [this, texture_manager](
           std::tuple<Texture, Unitary, Unitary> in) -> std::tuple<Texture> {
         auto& [in_tex, sample_scale_x, sample_scale_y] = in;
-        glm::vec2 sample_scale = {sample_scale_x * 10, sample_scale_y * 10};
+        glm::vec2 sample_scale = {Lerp(1.0f, 20.0f, sample_scale_x),
+                                  Lerp(1.0f, 20.0f, sample_scale_y)};
         Texture tex(width(), height(), texture_manager);
 
         auto rt_activation = tex.RenderTarget()->Activate();
@@ -247,7 +259,8 @@ GraphPreset::GraphPreset(std::shared_ptr<gl::GlTextureManager> texture_manager)
         GlBindRenderTargetTextureToUniform(
             tile, "in_tex", in_tex.RenderTarget(),
             gl::GlTextureBindingOptions{
-                .sampling_mode = gl::GlTextureSamplingMode::kMirrorWrap});
+                .sampling_mode = gl::GlTextureSamplingMode::kMirrorWrap,
+                .filtering_mode = gl::GlTextureFilteringMode::kLinear});
         GL_BIND_LOCAL(tile, sample_scale);
 
         Rectangle().Draw();
