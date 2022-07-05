@@ -8,6 +8,8 @@ cc_library(
     hdrs = ["graph_preset.h"],
     linkstatic = 1,
     deps = [
+        ":displace_frag",
+        ":kaleidoscope_frag",
         ":model_frag",
         ":passthrough_vert",
         ":tile_frag",
@@ -58,5 +60,17 @@ shader_cc_library(
 shader_cc_library(
     name = "zoom_frag",
     srcs = ["zoom_frag.fsh"],
+    deps = ["//preset/common:math"],
+)
+
+shader_cc_library(
+    name = "kaleidoscope_frag",
+    srcs = ["kaleidoscope_frag.fsh"],
+    deps = ["//preset/common:math"],
+)
+
+shader_cc_library(
+    name = "displace_frag",
+    srcs = ["displace_frag.fsh"],
     deps = ["//preset/common:math"],
 )

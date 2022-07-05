@@ -4,6 +4,8 @@
 #include <cmath>
 #include <utility>
 
+#include "preset/graph_preset/displace_frag.fsh.h"
+#include "preset/graph_preset/kaleidoscope_frag.fsh.h"
 #include "preset/graph_preset/model_frag.fsh.h"
 #include "preset/graph_preset/passthrough_vert.vsh.h"
 #include "preset/graph_preset/tile_frag.fsh.h"
@@ -35,6 +37,8 @@ constexpr float kScaleFactor = 0.5f;
 std::shared_ptr<gl::GlProgram> model;
 std::shared_ptr<gl::GlProgram> zoom;
 std::shared_ptr<gl::GlProgram> tile;
+std::shared_ptr<gl::GlProgram> kaleidoscope;
+std::shared_ptr<gl::GlProgram> displace;
 
 absl::Status InitGlPrograms() {
   if (model == nullptr) {
@@ -51,6 +55,16 @@ absl::Status InitGlPrograms() {
     ASSIGN_OR_RETURN(tile,
                      gl::GlProgram::MakeShared(passthrough_vert_vsh::Code(),
                                                tile_frag_fsh::Code()));
+  }
+  if (kaleidoscope == nullptr) {
+    ASSIGN_OR_RETURN(kaleidoscope,
+                     gl::GlProgram::MakeShared(passthrough_vert_vsh::Code(),
+                                               kaleidoscope_frag_fsh::Code()));
+  }
+  if (displace == nullptr) {
+    ASSIGN_OR_RETURN(displace,
+                     gl::GlProgram::MakeShared(passthrough_vert_vsh::Code(),
+                                               displace_frag_fsh::Code()));
   }
   return absl::OkStatus();
 }
@@ -165,47 +179,25 @@ GraphPreset::GraphPreset(std::shared_ptr<gl::GlTextureManager> texture_manager)
       "colored_rectangle",
       [this, texture_manager](
           std::tuple<Color, Unitary, Monotonic> in) -> std::tuple<Texture> {
-        auto return_tuple = [this, texture_manager,
-                             in]() -> std::tuple<Texture> {
-          const auto& [color, scale, rotation] = in;
-          Texture tex(width(), height(), texture_manager);
+        const auto& [color, scale, rotation] = in;
+        Texture tex(width(), height(), texture_manager);
 
-          LOG(INFO) << "inside conversion, immediately after construction: "
-                       "tex has use count "
-                    << tex.RenderTarget().use_count();
+        auto rt_activation = tex.RenderTarget()->Activate();
 
-          auto rt_activation = tex.RenderTarget()->Activate();
+        auto shader_activation = model->Activate();
 
-          LOG(INFO) << "inside conversion, render target activated: tex "
-                       "has use count "
-                    << tex.RenderTarget().use_count();
+        GlBindUniform(model, "model_transform",
+                      ScaleTransform(scale) *
+                          RotateAround(Directions::kIntoScreen, rotation));
 
-          auto shader_activation = model->Activate();
+        glClearColor(0, 0, 0, 0);
+        glClear(GL_COLOR_BUFFER_BIT);
 
-          GlBindUniform(model, "model_transform",
-                        ScaleTransform(scale) *
-                            RotateAround(Directions::kIntoScreen, rotation));
+        Rectangle rectangle;
+        rectangle.SetColor(color);
+        rectangle.Draw();
 
-          glClearColor(0, 0, 0, 0);
-          glClear(GL_COLOR_BUFFER_BIT);
-
-          Rectangle rectangle;
-          rectangle.SetColor(color);
-          rectangle.Draw();
-
-          LOG(INFO) << "inside conversion: tex has use count "
-                    << tex.RenderTarget().use_count();
-          auto return_tuple = std::make_tuple(tex);
-          LOG(INFO) << "inside conversion, after tuple construction: tex "
-                       "has use count "
-                    << tex.RenderTarget().use_count();
-          return return_tuple;
-        }();
-
-        LOG(INFO)
-            << "inside conversion, tex out of scope: use count in tuple is "
-            << std::get<0>(return_tuple).RenderTarget().use_count();
-
+        auto return_tuple = std::make_tuple(tex);
         return return_tuple;
       });
 
@@ -224,12 +216,16 @@ GraphPreset::GraphPreset(std::shared_ptr<gl::GlTextureManager> texture_manager)
         auto shader_activation = zoom->Activate();
 
         GlBindUniform(zoom, "model_transform", glm::mat4(1.0f));
-        GlBindRenderTargetTextureToUniform(zoom, "in_tex_a",
-                                           in_tex_a.RenderTarget(),
-                                           gl::GlTextureBindingOptions());
-        GlBindRenderTargetTextureToUniform(zoom, "in_tex_b",
-                                           in_tex_b.RenderTarget(),
-                                           gl::GlTextureBindingOptions());
+        GlBindRenderTargetTextureToUniform(
+            zoom, "in_tex_a", in_tex_a.RenderTarget(),
+            gl::GlTextureBindingOptions{
+                .sampling_mode = gl::GlTextureSamplingMode::kClampToBorder,
+            });
+        GlBindRenderTargetTextureToUniform(
+            zoom, "in_tex_b", in_tex_b.RenderTarget(),
+            gl::GlTextureBindingOptions{
+                .sampling_mode = gl::GlTextureSamplingMode::kClampToBorder,
+            });
         glm::vec2 zoom_center =
             glm::vec2(zoom_center_x - 0.5f, zoom_center_y - 0.5f) * 2.0f;
         GlBindUniform(zoom, "rotation_coeff",
@@ -259,9 +255,58 @@ GraphPreset::GraphPreset(std::shared_ptr<gl::GlTextureManager> texture_manager)
         GlBindRenderTargetTextureToUniform(
             tile, "in_tex", in_tex.RenderTarget(),
             gl::GlTextureBindingOptions{
-                .sampling_mode = gl::GlTextureSamplingMode::kMirrorWrap,
-                .filtering_mode = gl::GlTextureFilteringMode::kLinear});
+                .sampling_mode = gl::GlTextureSamplingMode::kMirrorWrap});
         GL_BIND_LOCAL(tile, sample_scale);
+
+        Rectangle().Draw();
+
+        return std::make_tuple(tex);
+      });
+
+  graph_builder_.DeclareConversion<std::tuple<Texture, Monotonic, Unitary>,
+                                   std::tuple<Texture>>(
+      "kaleidoscope",
+      [this, texture_manager](
+          std::tuple<Texture, Monotonic, Unitary> in) -> std::tuple<Texture> {
+        auto& [in_tex, theta, fragment_count_scale] = in;
+        Texture tex(width(), height(), texture_manager);
+
+        auto rt_activation = tex.RenderTarget()->Activate();
+        auto shader_activation = kaleidoscope->Activate();
+
+        GlBindUniform(kaleidoscope, "model_transform", glm::mat4(1.0f));
+        GlBindRenderTargetTextureToUniform(
+            kaleidoscope, "in_tex", in_tex.RenderTarget(),
+            gl::GlTextureBindingOptions{
+                .sampling_mode = gl::GlTextureSamplingMode::kMirrorWrap});
+        const int num_petals =
+            static_cast<int>(Lerp(1.0f, 16.0f, fragment_count_scale));
+        GL_BIND_LOCAL(kaleidoscope, theta);
+        GL_BIND_LOCAL(kaleidoscope, num_petals);
+
+        Rectangle().Draw();
+
+        return std::make_tuple(tex);
+      });
+
+  graph_builder_.DeclareConversion<std::tuple<Texture, Monotonic, Monotonic>,
+                                   std::tuple<Texture>>(
+      "displace",
+      [this, texture_manager](
+          std::tuple<Texture, Monotonic, Monotonic> in) -> std::tuple<Texture> {
+        auto& [in_tex, displacement_x, displacement_y] = in;
+        Texture tex(width(), height(), texture_manager);
+
+        auto rt_activation = tex.RenderTarget()->Activate();
+        auto shader_activation = displace->Activate();
+
+        GlBindUniform(displace, "model_transform", glm::mat4(1.0f));
+        GlBindRenderTargetTextureToUniform(
+            displace, "in_tex", in_tex.RenderTarget(),
+            gl::GlTextureBindingOptions{
+                .sampling_mode = gl::GlTextureSamplingMode::kMirrorWrap});
+        const glm::vec2 displacement = {displacement_x, displacement_y};
+        GL_BIND_LOCAL(displace, displacement);
 
         Rectangle().Draw();
 
@@ -280,10 +325,7 @@ GraphPreset::GraphPreset(std::shared_ptr<gl::GlTextureManager> texture_manager)
   editor_context_ = ax::NodeEditor::CreateEditor(&config);
 }
 
-GraphPreset::~GraphPreset() {
-  ax::NodeEditor::DestroyEditor(editor_context_);
-  LOG(INFO) << "Disposing GraphPreset";
-}
+GraphPreset::~GraphPreset() { ax::NodeEditor::DestroyEditor(editor_context_); }
 
 absl::StatusOr<std::shared_ptr<Preset>> GraphPreset::MakeShared(
     std::shared_ptr<gl::GlTextureManager> texture_manager) {
@@ -296,6 +338,8 @@ void GraphPreset::OnUpdateGeometry() { glViewport(0, 0, width(), height()); }
 void GraphPreset::OnDrawFrame(
     absl::Span<const float> samples, std::shared_ptr<GlobalState> state,
     float alpha, std::shared_ptr<gl::GlRenderTarget> output_render_target) {
+  LOG_N_SEC(1.0, INFO) << absl::StrFormat("GraphPreset located at %X",
+                                          reinterpret_cast<intptr_t>(this));
   ImGui::Begin("Graph Viewer", nullptr, ImGuiWindowFlags_NoScrollbar);
   if (ImGui::Button("Clear")) {
     evaluation_graph_ = Graph(nullptr);
@@ -328,8 +372,6 @@ void GraphPreset::OnDrawFrame(
       auto output_activation = output_render_target->Activate();
       Blit(tex);
     }
-
-    // LOG(INFO) << "Exiting scope of `tex`";
   }
 }
 
