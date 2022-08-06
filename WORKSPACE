@@ -20,11 +20,11 @@ git_repository(
 
 git_repository(
     name = "com_google_protobuf",
-    commit = "70b02861f8e8ba711efd187188dfb930db7bcaba",
+    commit = "c9869dc7803eb0a21d7e589c40ff4f9288cd34ae",
     patch_args = ["-p1"],
     patches = ["@//third_party:additional_deps.patch"],
     remote = "https://github.com/protocolbuffers/protobuf",
-    shallow_since = "1598416407 -0700",
+    shallow_since = "1658780535 -0700",
 )
 
 load("@com_google_protobuf//:protobuf_deps.bzl", "protobuf_deps")
@@ -33,36 +33,32 @@ protobuf_deps()
 
 git_repository(
     name = "com_google_absl",
-    commit = "60d00a5822bb98f18e40b294554f91ca14fb793a",
+    commit = "0c92330442d6b1be934e0407115c8084250ef347",
     remote = "https://github.com/abseil/abseil-cpp",
-    shallow_since = "1602701537 -0400",
+    shallow_since = "1659719415 -0700",
 )
 
 git_repository(
     name = "com_googletest",
-    commit = "6b74da4757a549563d7c37c8fae3e704662a043b",
+    commit = "5b909beeec178f338be997830b6c31a80cda7a93",
     remote = "https://github.com/google/googletest",
-    shallow_since = "1640621124 -0800",
-)
-
-git_repository(
-    name = "platforms",
-    commit = "fbd0d188dac49fbcab3d2876a2113507e6fc68e9",
-    remote = "https://github.com/bazelbuild/platforms",
-    shallow_since = "1644333305 -0500",
+    shallow_since = "1659635637 -0700",
 )
 
 git_repository(
     name = "com_google_re2",
-    commit = "3be7d1b6b486ecd47b0daa58210051e29fb31122",
+    commit = "a23f85cae66516b22fd35ba7b8f518133e4b68c4",
     remote = "https://github.com/google/re2",
-    shallow_since = "1647366980 +0000",
+    shallow_since = "1659694839 +0000",
 )
+
+load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 
 http_archive(
     name = "rules_python",
-    sha256 = "cd6730ed53a002c56ce4e2f396ba3b3be262fd7cb68339f0377a45e8227fe332",
-    url = "https://github.com/bazelbuild/rules_python/releases/download/0.5.0/rules_python-0.5.0.tar.gz",
+    sha256 = "a3a6e99f497be089f81ec082882e40246bfd435f52f4e82f37e89449b04573f6",
+    strip_prefix = "rules_python-0.10.2",
+    url = "https://github.com/bazelbuild/rules_python/archive/refs/tags/0.10.2.tar.gz",
 )
 
 load("@rules_python//python:pip.bzl", "pip_parse")
@@ -146,8 +142,8 @@ includes = ["include", "include/SDL2"],
 )
 
 new_local_repository(
-  name = "gl",
-  build_file_content = """
+    name = "gl",
+    build_file_content = """
 package(default_visibility = ["//visibility:public"])
 cc_library(
 name = "gl",
