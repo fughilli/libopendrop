@@ -18,25 +18,51 @@ Milkdrop2 or ProjectM.
 ## Building
 
 `libopendrop` builds using Bazel. A nice way to manage Bazel installs is to use
-bazelisk. Install bazelisk:
+bazelisk.
+
+First, install Go:
+
+### Debian, Ubuntu, etc.
 
 ```
 sudo apt-get install golang-go
+```
 
-go get github.com/bazelbuild/bazelisk
+### Fedora
 
-# Put the golang bin directory onto your PATH. The following works for bash:
+```
+sudo dnf install golang-go
+```
+
+Next, put the golang bin directory onto your PATH. The following works for bash:
+
+```
 cat >>~/.bashrc << EOF
 export PATH=\$PATH:\$HOME/go/bin
 EOF
 source ~/.bashrc
 ```
 
+Now we can install bazelisk:
+
+```
+go get github.com/bazelbuild/bazelisk
+```
+
 Next, install the prerequisites for building `libopendrop`:
+
+### Debian, Ubuntu, etc.
 
 ```
 sudo apt-get install libpulse-dev libgl-dev libglm-dev libncurses5-dev \
                      libncurses5 libsdl2-dev python3-pip
+```
+
+### Fedora
+
+```
+sudo dnf install pulseaudio-libs-devel mesa-libGL-devel ncurses-devel \
+                 ncurses SDL2-devel python3-pip
 ```
 
 Use the runner program to build with bazelisk and run against the system audio

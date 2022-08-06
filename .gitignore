@@ -1,0 +1,4 @@
+/bazel-bin
+/bazel-libopendrop
+/bazel-out
+/bazel-testlogs
