@@ -32,6 +32,9 @@ LINKOPTS = select({
 
 DEPS = select({
     "//:pi_build": ["@org_llvm_libcxx//:libcxx"],
-    "//:clang_build": ["@org_llvm_libcxx//:libcxx"],
+    "//:clang_build": [
+        "@org_llvm_libcxx//:libcxx",
+        "@sdl2//:sdl2",
+    ],
     "//conditions:default": [],
 })

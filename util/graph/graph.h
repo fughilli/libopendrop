@@ -37,7 +37,7 @@ enum NodePortIndexDirection { kOutput, kInput };
 struct Edge {
   // The node and `output_tuple` index that mutates the value on this edge.
   NodePortIndex in;
-  // The node and `input_tuple` index that accesses the value on this edge..
+  // The node and `input_tuple` index that accesses the value on this edge.
   NodePortIndex out;
 };
 
@@ -163,7 +163,7 @@ class InnerGraph {
     for (int edge = 1; edge <= 2; ++edge) {
       for (int i = 0; i < nodes[edge]->input_tuple.size(); ++i) {
         nodes[edge - 1]->output_edges.push_back(
-            Edge{.in = {input_node, i}, .out = {nodes[edge], i}});
+            Edge{.in = {nodes[edge - 1], i}, .out = {nodes[edge], i}});
         nodes[edge]->input_edges = nodes[edge - 1]->output_edges;
       }
     }
@@ -286,8 +286,9 @@ class InnerGraph {
     }
 
     for (auto& node : nodes) {
-      if (!node->ValidateInputEdges())
+      if (!node->ValidateInputEdges()) {
         LOG(FATAL) << "InnerGraph::Evaluate(): Graph incorrectly constructed";
+      }
     }
 
     std::unordered_set<std::shared_ptr<Node>> unevaluated{nodes.begin(),

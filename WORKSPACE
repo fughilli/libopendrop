@@ -130,3 +130,31 @@ new_git_repository(
     init_submodules = True,
     remote = "https://github.com/fughilli/imgui-node-editor",
 )
+
+new_local_repository(
+    name = "sdl2",
+    build_file_content = """
+package(default_visibility = ["//visibility:public"])
+cc_library(
+name = "sdl2",
+srcs = ["lib/x86_64-linux-gnu/libSDL2.a"],
+hdrs = glob(["include/SDL2/*.h"]),
+includes = ["include", "include/SDL2"],
+)
+  """,
+    path = "/usr",
+)
+
+new_local_repository(
+  name = "gl",
+  build_file_content = """
+package(default_visibility = ["//visibility:public"])
+cc_library(
+name = "gl",
+srcs = ["lib/x86_64-linux-gnu/libGL.so"],
+hdrs = glob(["include/GL/**/*.h"]),
+includes = ["include", "include/GL"],
+)
+  """,
+    path = "/usr",
+)

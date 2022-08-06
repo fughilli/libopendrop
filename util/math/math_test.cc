@@ -76,15 +76,15 @@ TEST(MathTest, SignProducesExpectedValue) {
 }
 
 TEST(MathTest, IndexToAngleProducesExpectedValue) {
-  EXPECT_NEAR(IndexToAngle(0, 1), 0);
-  EXPECT_NEAR(IndexToAngle(1, 1), 0);
+  EXPECT_NEAR(IndexToAngle(0, 1), 0, kEpsilon);
+  EXPECT_NEAR(IndexToAngle(1, 1), 0, kEpsilon);
 
-  EXPECT_NEAR(IndexToAngle(0, 4), 0);
-  EXPECT_NEAR(IndexToAngle(1, 4), kPi / 2);
-  EXPECT_NEAR(IndexToAngle(2, 4), kPi);
-  EXPECT_NEAR(IndexToAngle(3, 4), 3 * kPi / 4);
+  EXPECT_NEAR(IndexToAngle(0, 4), 0, kEpsilon);
+  EXPECT_NEAR(IndexToAngle(1, 4), kPi / 2, kEpsilon);
+  EXPECT_NEAR(IndexToAngle(2, 4), kPi, kEpsilon);
+  EXPECT_NEAR(IndexToAngle(3, 4), 3 * kPi / 2, kEpsilon);
 
-  EXPECT_NEAR(IndexToAngle(-1, 4), -kPi / 2);
+  EXPECT_NEAR(IndexToAngle(-1, 4), -kPi / 2, kEpsilon);
 }
 
 }  // namespace

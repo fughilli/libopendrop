@@ -91,7 +91,6 @@ GraphPreset::GraphPreset(std::shared_ptr<gl::GlTextureManager> texture_manager)
             auto& [monotonic, scale] = in;
             return std::make_tuple(Monotonic(monotonic * scale * 100));
           });
-  // Configure graph.
   graph_builder_.DeclareConversion<std::tuple<Monotonic>, std::tuple<Unitary>>(
       "fast_sinusoid", [](std::tuple<Monotonic> in) -> std::tuple<Unitary> {
         return std::tuple<Unitary>(
@@ -142,6 +141,7 @@ GraphPreset::GraphPreset(std::shared_ptr<gl::GlTextureManager> texture_manager)
         polyline.UpdateColor(color.value);
         polyline.Draw();
 
+        LOG(INFO) << "Drew into texture at handle " << tex.RenderTarget()->texture_handle();
         return std::make_tuple(tex);
       });
   graph_builder_.DeclareConversion<
@@ -200,7 +200,6 @@ GraphPreset::GraphPreset(std::shared_ptr<gl::GlTextureManager> texture_manager)
         auto return_tuple = std::make_tuple(tex);
         return return_tuple;
       });
-
   graph_builder_.DeclareConversion<
       std::tuple<Texture, Texture, Unitary, Unitary, Unitary, Unitary>,
       std::tuple<Texture>>(
@@ -237,7 +236,6 @@ GraphPreset::GraphPreset(std::shared_ptr<gl::GlTextureManager> texture_manager)
 
         return std::make_tuple(tex);
       });
-
   graph_builder_.DeclareConversion<std::tuple<Texture, Unitary, Unitary>,
                                    std::tuple<Texture>>(
       "tile",
@@ -262,7 +260,6 @@ GraphPreset::GraphPreset(std::shared_ptr<gl::GlTextureManager> texture_manager)
 
         return std::make_tuple(tex);
       });
-
   graph_builder_.DeclareConversion<std::tuple<Texture, Monotonic, Unitary>,
                                    std::tuple<Texture>>(
       "kaleidoscope",
@@ -288,7 +285,6 @@ GraphPreset::GraphPreset(std::shared_ptr<gl::GlTextureManager> texture_manager)
 
         return std::make_tuple(tex);
       });
-
   graph_builder_.DeclareConversion<std::tuple<Texture, Monotonic, Monotonic>,
                                    std::tuple<Texture>>(
       "displace",
@@ -353,8 +349,6 @@ void GraphPreset::OnDrawFrame(
                 ConstructTypes<Texture>())
             .value();
   ImGui::Checkbox("Evaluate?", &evaluate_);
-  RenderGraph(editor_context_, evaluation_graph_);
-  ImGui::End();
 
   texture_manager()->PrintState();
   graph_builder_.PrintState();
@@ -373,6 +367,9 @@ void GraphPreset::OnDrawFrame(
       Blit(tex);
     }
   }
+
+  RenderGraph(editor_context_, evaluation_graph_);
+  ImGui::End();
 }
 
 }  // namespace opendrop

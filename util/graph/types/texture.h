@@ -5,9 +5,9 @@
 
 #include <ostream>
 
-#include "util/graph/types/opaque_storable.h"
 #include "absl/strings/str_format.h"
 #include "third_party/glm_helper.h"
+#include "util/graph/types/opaque_storable.h"
 #include "util/graph/types/types.h"
 #include "util/graphics/gl_render_target.h"
 #include "util/graphics/gl_texture_manager.h"
@@ -32,15 +32,8 @@ class Texture : public OpaqueStorable<Texture> {
                    << status_or_render_target.status();
         return;
       }
-      LOG(INFO)
-          << "Texture::Texture(): status-embedded render target has use count "
-          << status_or_render_target.value().use_count();
       render_target_ = status_or_render_target.value();
-      LOG(INFO) << "Texture::Texture(): post-assignment use count is "
-                << render_target_.use_count();
     }
-    LOG(INFO) << "Texture::Texture(): post-descoping use count is "
-              << render_target_.use_count();
   }
 
   Texture operator-(const Texture& other) const {
@@ -80,18 +73,8 @@ class Texture : public OpaqueStorable<Texture> {
 
   glm::vec4 Color() const { return color_; }
 
-  ~Texture() {
-    LOG(INFO)
-        << "Destructing graph Texture; render_target_ "
-        << ((render_target_ == nullptr)
-                ? "is nullptr"
-                : absl::StrFormat(
-                      "has use count %d and holds {framebuffer_handle_ = %d, "
-                      "depth_buffer_handle_ = %d}",
-                      render_target_.use_count(),
-                      render_target_->framebuffer_handle(),
-                      render_target_->depth_buffer_handle()));
-  }
+  size_t width() const { return width_; }
+  size_t height() const { return height_; }
 
  private:
   glm::vec4 color_ = {};

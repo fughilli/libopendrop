@@ -170,7 +170,7 @@ case $compiler_config in
 esac
 
 if [[ $enable_debug == 1 ]]; then
-  debug_options="-c dbg --copt=-ggdb --copt=-DENABLE_DEBUG_LOGGING"
+  debug_options="-c dbg --copt=-ggdb" # --copt=-DENABLE_DEBUG_LOGGING"
 else
   debug_options=""
 fi
@@ -217,7 +217,8 @@ elif [[ $run_binary == 2 ]]; then
     ${passthrough_args[@]}
 else
   bazel_command="run"
-  trailing_args="-- $options"
+  #trailing_args="--run_under=gdb -- -- $options"
+  trailing_args=" -- $options"
   target="//:main"
   if [[ $build_only == 1 ]]; then
     bazel_command="build"

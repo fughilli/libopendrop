@@ -10,13 +10,13 @@
 #include "imgui_node_editor.h"
 #include "util/container/algorithms.h"
 #include "util/graph/graph.h"
+#include "util/graph/types/texture.h"
+#include "util/graph/types/types.h"
 
 namespace opendrop {
 
 namespace {
 namespace NE = ax::NodeEditor;
-
-constexpr int kMaxIoPerConversion = 100;
 
 int IdForNode(const Graph& graph, const std::shared_ptr<Node>& node) {
   if (node == graph.input_node()) return 1;
@@ -39,6 +39,35 @@ struct LinkConfig {
 ImU32 BoolColor(bool ok) {
   if (ok) return IM_COL32(100, 255, 100, 255);
   return IM_COL32(255, 100, 100, 255);
+}
+
+void RenderPinContent(int index, const OpaqueTuple& tuple) {
+  const Type type = tuple.Types()[index];
+  switch (type) {
+    case Type::kTexture: {
+      const Texture& texture = tuple.Ref<Texture>(index);
+
+      if (texture.RenderTarget() == nullptr) break;
+
+      const size_t width = texture.width();
+      const size_t height = texture.height();
+      const auto [x_scale, y_scale] =
+          width > height
+              ? std::make_tuple(ImVec2(0, 1),
+                                ImVec2(static_cast<float>(height) / width, 0))
+              : std::make_tuple(ImVec2(0, static_cast<float>(width) / height),
+                                ImVec2(1, 0));
+      ImGui::Image((ImTextureID)texture.RenderTarget()->texture_handle(),
+                   ImVec2(50, 50), x_scale, y_scale);
+      LOG(INFO) << "Rendering texture at handle "
+                << texture.RenderTarget()->texture_handle();
+    } break;
+    case Type::kUnitary: {
+      ImGui::Text("(%0.4f)", static_cast<float>(tuple.Ref<Unitary>(index)));
+    } break;
+    default:
+      break;
+  }
 }
 
 }  // namespace
@@ -76,6 +105,7 @@ void RenderNode(ax::NodeEditor::EditorContext* context, const Node& node,
                             BoolColor(!node.output_tuple.CellIsEmpty(i)));
       ImGui::Text("%s ->", ToString(output_type).c_str());
       ImGui::PopStyleColor();
+      RenderPinContent(i, node.output_tuple);
       NE::EndPin();
     }
   }

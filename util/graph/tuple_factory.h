@@ -1,3 +1,6 @@
+#ifndef UTIL_GRAPH_TUPLE_FACTORY_H_
+#define UTIL_GRAPH_TUPLE_FACTORY_H_
+
 #include <memory>
 #include <tuple>
 #include <utility>
@@ -106,3 +109,5 @@ class OpaqueTupleFactory {
 };
 
 }  // namespace opendrop
+
+#endif  // UTIL_GRAPH_TUPLE_FACTORY_H_
