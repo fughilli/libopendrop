@@ -1,37 +1,37 @@
-diff --git a/BUILD b/BUILD
-index 8ab4cb413..6746c9268 100644
---- a/BUILD
-+++ b/BUILD
-@@ -29,6 +29,10 @@ config_setting(
-     },
- )
+diff --git a/BUILD.bazel b/BUILD.bazel
+index 0f6e41e3a..5047e6cf5 100644
+--- a/BUILD.bazel
++++ b/BUILD.bazel
+@@ -20,6 +20,10 @@ licenses(["notice"])
+ 
+ exports_files(["LICENSE"])
  
 +ADDITIONAL_DEPS = [
-+    "@org_llvm_libcxx//:libcxx",
++  "@org_llvm_libcxx//:libcxx",
 +]
 +
- GTEST = select({
-     "//:use_com_google_googletest": [
-         "@com_google_googletest//:gtest",
-@@ -473,7 +477,7 @@ cc_binary(
+ ################################################################################
+ # Protobuf Runtime Library
+ ################################################################################
+@@ -459,7 +463,7 @@ cc_binary(
      srcs = ["src/google/protobuf/compiler/main.cc"],
-     linkopts = LINK_OPTS,
+     linkopts = LINK_OPTS + PROTOC_LINK_OPTS,
      visibility = ["//visibility:public"],
 -    deps = [":protoc_lib"],
 +    deps = [":protoc_lib"] + ADDITIONAL_DEPS,
  )
  
  ################################################################################
-@@ -574,7 +578,7 @@ cc_binary(
-     deps = [
+@@ -624,7 +628,7 @@ cc_binary(
          ":protobuf",
          ":protoc_lib",
--    ] + GTEST,
-+    ] + GTEST + ADDITIONAL_DEPS,
+         "@com_google_googletest//:gtest",
+-    ],
++    ] + ADDITIONAL_DEPS,
  )
  
  cc_test(
-@@ -765,7 +769,7 @@ cc_binary(
+@@ -840,7 +844,7 @@ cc_binary(
      deps = select({
          "//conditions:default": [],
          ":use_fast_cpp_protos": ["//external:python_headers"],
@@ -40,21 +40,12 @@ index 8ab4cb413..6746c9268 100644
  )
  
  cc_binary(
-@@ -789,7 +793,7 @@ cc_binary(
-     deps = [
-         ":protobuf",
-         ":proto_api",
--    ] + select({
-+    ] + ADDITIONAL_DEPS + select({
+@@ -874,7 +878,7 @@ cc_binary(
+     ] + select({
          "//conditions:default": [],
          ":use_fast_cpp_protos": ["//external:python_headers"],
-     }),
-@@ -1176,7 +1180,7 @@ cc_binary(
-         ":binary_json_conformance_suite",
-         ":conformance_test",
-         ":text_format_conformance_suite",
--    ],
-+    ] + ADDITIONAL_DEPS,
+-    }),
++    }) + ADDITIONAL_DEPS,
  )
  
- sh_test(
+ config_setting(
