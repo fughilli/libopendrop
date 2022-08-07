@@ -71,13 +71,9 @@ class SpaceWhaleEyeWarp : public Preset {
   Rectangle rectangle_;
   Polyline polyline_;
 
-  float position_accum_ = 0.0f;
   float background_hue_ = 0;
-  float rot_arg_ = 0.0f;
 
   float zoom_angle_ = 0.0f;
-
-  bool texture_trigger_ = false;
 
   int num_eyeballs_ = 3;
   float energy_coefficient_ = 1.0f;

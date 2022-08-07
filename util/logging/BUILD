@@ -8,7 +8,6 @@ package(default_visibility = ["//:__subpackages__"])
 cc_library(
     name = "logging",
     hdrs = ["logging.h"],
-    linkstatic = 1,
     deps = [
         ":logging_glm_helpers",
         ":logging_helpers",
@@ -21,7 +20,6 @@ cc_library(
 cc_library(
     name = "logging_macros",
     hdrs = ["logging_macros.h"],
-    linkstatic = 1,
     deps = [
       "//util/time:periodic",
     ],

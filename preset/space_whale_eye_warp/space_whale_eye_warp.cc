@@ -25,17 +25,6 @@
 
 namespace opendrop {
 
-namespace {
-constexpr float kScaleFactor = 2.0f;
-
-std::tuple<int, float> CountAndScale(float arg, int max_count) {
-  int n_clusters = 1.0f + std::fmod(arg, max_count);
-  float cluster_scale = (cos(arg * 2.0f * kPi) + 1.0f) / 2.0f;
-  return std::make_tuple(n_clusters, cluster_scale);
-}
-float EstimateBeatPhase(GlobalState& state) { return 0; }
-}  // namespace
-
 SpaceWhaleEyeWarp::SpaceWhaleEyeWarp(
     std::shared_ptr<gl::GlProgram> warp_program,
     std::shared_ptr<gl::GlProgram> composite_program,

@@ -25,8 +25,6 @@
 namespace opendrop {
 
 namespace {
-constexpr float kScaleFactor = 2.0f;
-
 std::tuple<int, float> CountAndScale(float arg, int max_count) {
   int n_clusters = 1.0f + std::fmod(arg, max_count);
   float cluster_scale = (cos(arg * 2.0f * kPi) + 1.0f) / 2.0f;
@@ -115,13 +113,8 @@ void Pills::DrawCubes(float power, float bass, float energy, float dt,
 
   rot_arg_ += rot_speed_coeff * dt;
 
-  glm::mat3x3 look_rotation = OrientTowards(zoom_vec);
-
   float SIGPLOT_ASSIGN(locate_mix_coeff,
                        SineEase(std::clamp(zoom_coeff * 3, 0.0f, 1.0f)));
-  // locate_mix_coeff = 1.0f;
-  float SIGPLOT_ASSIGN(opposite_locate_mix_coeff,
-                       std::clamp(zoom_coeff, -1.0f, 0.0f));
 
   auto [n_clusters, cluster_scale] = CountAndScale(time / 3, 7);
 
@@ -163,21 +156,19 @@ void Pills::DrawCubes(float power, float bass, float energy, float dt,
             0.0f));
     glm::mat4 locate_transform =
         TransformMix(line_transform, ring_transform, locate_mix_coeff);
-    auto transform_components = ExtractTransformComponents(locate_transform);
 
-    model_transform =
-        /*glm::mat4(look_rotation) **/ locate_transform *
-        glm::mat4x4(cube_scale * 0.7, 0, 0, 0,  // Row 1
-                    0, cube_scale * 0.7, 0, 0,  // Row 2
-                    0, 0, cube_scale * 0.7, 0,  // Row 3
-                    0, 0, 0, 1                  // Row 4
-                    ) *
-        glm::rotate(glm::mat4(1.0f), rot_arg_ * 1.0f,
-                    glm::vec3(0.0f, 0.0f, 1.0f)) *
-        glm::rotate(glm::mat4(1.0f), rot_arg_ * 0.7f,
-                    glm::vec3(0.0f, 1.0f, 0.0f)) *
-        glm::rotate(glm::mat4(1.0f), rot_arg_ * 1.5f,
-                    glm::vec3(1.0f, 0.0f, 0.0f));
+    model_transform = locate_transform *
+                      glm::mat4x4(cube_scale * 0.7, 0, 0, 0,  // Row 1
+                                  0, cube_scale * 0.7, 0, 0,  // Row 2
+                                  0, 0, cube_scale * 0.7, 0,  // Row 3
+                                  0, 0, 0, 1                  // Row 4
+                                  ) *
+                      glm::rotate(glm::mat4(1.0f), rot_arg_ * 1.0f,
+                                  glm::vec3(0.0f, 0.0f, 1.0f)) *
+                      glm::rotate(glm::mat4(1.0f), rot_arg_ * 0.7f,
+                                  glm::vec3(0.0f, 1.0f, 0.0f)) *
+                      glm::rotate(glm::mat4(1.0f), rot_arg_ * 1.5f,
+                                  glm::vec3(1.0f, 0.0f, 0.0f));
     const glm::vec4 color_a = glm::vec4(HsvToRgb(glm::vec3(energy, 1, 1)), 1);
     const glm::vec4 color_b =
         glm::vec4(HsvToRgb(glm::vec3(energy + 0.5, 1, 1)), 1);

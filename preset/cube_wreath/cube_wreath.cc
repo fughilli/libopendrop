@@ -21,10 +21,6 @@
 
 namespace opendrop {
 
-namespace {
-constexpr float kScaleFactor = 2.0f;
-}
-
 CubeWreath::CubeWreath(std::shared_ptr<gl::GlProgram> warp_program,
                        std::shared_ptr<gl::GlProgram> composite_program,
                        std::shared_ptr<gl::GlProgram> passthrough_program,

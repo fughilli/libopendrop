@@ -30,9 +30,7 @@
 #include "util/status/status_macros.h"
 
 namespace opendrop {
-
 namespace {
-constexpr float kScaleFactor = 0.5f;
 
 std::shared_ptr<gl::GlProgram> model;
 std::shared_ptr<gl::GlProgram> zoom;
@@ -141,7 +139,8 @@ GraphPreset::GraphPreset(std::shared_ptr<gl::GlTextureManager> texture_manager)
         polyline.UpdateColor(color.value);
         polyline.Draw();
 
-        LOG(INFO) << "Drew into texture at handle " << tex.RenderTarget()->texture_handle();
+        LOG(INFO) << "Drew into texture at handle "
+                  << tex.RenderTarget()->texture_handle();
         return std::make_tuple(tex);
       });
   graph_builder_.DeclareConversion<

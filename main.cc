@@ -121,11 +121,11 @@ void NextPreset(OpenDropController *controller,
   // How many times to attempt to find a preset to add before giving up.
   constexpr int kAttempts = 3;
   int max_presets = absl::GetFlag(FLAGS_max_presets);
-  // if (!force && max_presets > 0) {
-  //   if (controller->preset_blender()->NumPresets() >= max_presets) {
-  //     return;
-  //   }
-  // }
+  if (!force && max_presets > 0) {
+    if (controller->preset_blender()->NumPresets() >= max_presets) {
+      return;
+    }
+  }
   // TODO: Refactor such that preset geometry is configured after attaching to
   // the preset blender.
   float duration = 10;  // Coefficients::Random<1>(5.0f, 10.0f)[0];
@@ -278,7 +278,6 @@ extern "C" int main(int argc, char *argv[]) {
 
     bool auto_transition = absl::GetFlag(FLAGS_auto_transition);
 
-    int imgui_width = 300, imgui_height = 300;
     std::vector<float> interleaved_samples;
     std::vector<int> interleaved_samples_indices;
     while (!exit_event_received) {
@@ -389,9 +388,10 @@ extern "C" int main(int argc, char *argv[]) {
           }
         }
 
-        ImGui::Image((ImTextureID)open_drop_controller->render_target()
-                         ->texture_handle(),
-                     wsize, ImVec2(0, 1), ImVec2(1, 0));
+        ImGui::Image(
+            reinterpret_cast<ImTextureID>(static_cast<intptr_t>(
+                open_drop_controller->render_target()->texture_handle())),
+            wsize, ImVec2(0, 1), ImVec2(1, 0));
 
         ImGui::End();
 
@@ -408,9 +408,10 @@ extern "C" int main(int argc, char *argv[]) {
                   : std::make_tuple(
                         ImVec2(0, static_cast<float>(width) / height),
                         ImVec2(1, 0));
-          ImGui::Image((ImTextureID)open_drop_controller->render_target()
-                           ->texture_handle(),
-                       ImVec2(900, 900), x_scale, y_scale);
+          ImGui::Image(
+              reinterpret_cast<ImTextureID>(static_cast<intptr_t>(
+                  open_drop_controller->render_target()->texture_handle())),
+              ImVec2(900, 900), x_scale, y_scale);
           ImGui::End();
         }
 

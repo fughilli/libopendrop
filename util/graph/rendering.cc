@@ -57,7 +57,8 @@ void RenderPinContent(int index, const OpaqueTuple& tuple) {
                                 ImVec2(static_cast<float>(height) / width, 0))
               : std::make_tuple(ImVec2(0, static_cast<float>(width) / height),
                                 ImVec2(1, 0));
-      ImGui::Image((ImTextureID)texture.RenderTarget()->texture_handle(),
+      ImGui::Image(reinterpret_cast<ImTextureID>(static_cast<intptr_t>(
+                       texture.RenderTarget()->texture_handle())),
                    ImVec2(50, 50), x_scale, y_scale);
       LOG(INFO) << "Rendering texture at handle "
                 << texture.RenderTarget()->texture_handle();
