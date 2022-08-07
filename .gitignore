@@ -1,4 +1,22 @@
-/bazel-bin
-/bazel-libopendrop
-/bazel-out
-/bazel-testlogs
+# (n)vim lock files
+*.swp
+*.swo
+
+# symlink to external directories
+external
+external/*
+
+# Compile commands (output by Hedron)
+compile_commands.json
+
+# Bazel outputs
+bazel-*
+
+# imgui saved state
+imgui.ini
+
+# Misc
+.cache
+.cache/*
+.clangd
+.clangd/*
