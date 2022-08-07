@@ -13,8 +13,8 @@ cc_library(
     srcs = ["outline_model.cc"],
     hdrs = ["outline_model.h"],
     deps = [
-        ":alpaca",
-        ":alpaca_outline",
+        # ":alpaca",
+        # ":alpaca_outline",
         ":cube",
         ":cube_outline",
         ":eyeball_ball",
@@ -95,17 +95,17 @@ model_cc_library(
     normalize = True,
 )
 
-model_cc_library(
-    name = "alpaca_outline",
-    srcs = ["alpaca_outline.obj"],
-    scale = 0.450851,
-)
-
-model_cc_library(
-    name = "alpaca",
-    srcs = ["alpaca.obj"],
-    scale = 0.450851,
-)
+# model_cc_library(
+#     name = "alpaca_outline",
+#     srcs = ["alpaca_outline.obj"],
+#     scale = 0.450851,
+# )
+# 
+# model_cc_library(
+#     name = "alpaca",
+#     srcs = ["alpaca.obj"],
+#     scale = 0.450851,
+# )
 
 model_cc_library(
     name = "star_outline",

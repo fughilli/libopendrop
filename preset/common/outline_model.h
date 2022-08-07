@@ -61,8 +61,8 @@ class OutlineModel {
   Model pill_end_bottom_;
   Model pill_center_;
   Model pill_shadow_;
-  Model alpaca_;
-  Model alpaca_outline_;
+  // Model alpaca_;
+  // Model alpaca_outline_;
   Model star_;
   Model star_outline_;
   Model cube_;

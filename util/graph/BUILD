@@ -108,7 +108,6 @@ cc_test(
         "//util/math",
         "//util/graphics:colors",
         "//util/graphics:gl_util",
-        "//third_party:gl_helper",
         "//third_party:glm_helper",
         ":graph",
         "@com_google_absl//absl/strings",
