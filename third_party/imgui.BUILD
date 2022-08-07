@@ -24,7 +24,7 @@ cc_library(
     hdrs = ["backends/imgui_impl_sdl.h"],
     deps = [
         ":imgui",
-        "@sdl2",
+        "@libopendrop//third_party:sdl_helper",
     ],
 )
 

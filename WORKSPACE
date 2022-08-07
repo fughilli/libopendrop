@@ -74,7 +74,7 @@ install_deps()
 
 git_repository(
     name = "rpi_bazel",
-    commit = "1006f98cd7a1b2d1cfb050c56962981b2d5ce633",
+    commit = "e756f675ff35cc0f896869feb62d993384ad37e0",
     remote = "https://github.com/fughilli/rpi_bazel",
     shallow_since = "1604375754 -0800",
 )
@@ -121,36 +121,21 @@ git_repository(
 
 new_git_repository(
     name = "imgui_node_editor",
-    branch = "master",
     build_file = "@//third_party:imgui_node_editor.BUILD",
+    commit = "ba1e9a2490f8023321a98a941f0fb6a05f2da421",
     init_submodules = True,
     remote = "https://github.com/fughilli/imgui-node-editor",
+    shallow_since = "1650393433 -0700",
 )
 
 new_local_repository(
-    name = "sdl2",
-    build_file_content = """
-package(default_visibility = ["//visibility:public"])
-cc_library(
-name = "sdl2",
-srcs = ["lib/x86_64-linux-gnu/libSDL2.a"],
-hdrs = glob(["include/SDL2/*.h"]),
-includes = ["include", "include/SDL2"],
-)
-  """,
+    name = "host_sdl2",
+    build_file = "//third_party:sdl2.BUILD",
     path = "/usr",
 )
 
 new_local_repository(
-    name = "gl",
-    build_file_content = """
-package(default_visibility = ["//visibility:public"])
-cc_library(
-name = "gl",
-srcs = ["lib/x86_64-linux-gnu/libGL.so"],
-hdrs = glob(["include/GL/**/*.h"]),
-includes = ["include", "include/GL"],
-)
-  """,
+    name = "host_gl",
+    build_file = "//third_party:gl.BUILD",
     path = "/usr",
 )

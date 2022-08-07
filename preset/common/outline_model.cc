@@ -3,8 +3,8 @@
 #include <cmath>
 
 #include "debug/control_injector.h"
-#include "preset/common/alpaca.obj.h"
-#include "preset/common/alpaca_outline.obj.h"
+// #include "preset/common/alpaca.obj.h"
+// #include "preset/common/alpaca_outline.obj.h"
 #include "preset/common/camp_therapy.obj.h"
 #include "preset/common/cube.obj.h"
 #include "preset/common/cube_outline.obj.h"
@@ -43,11 +43,11 @@ OutlineModel::OutlineModel(std::shared_ptr<gl::GlProgram> model_program)
                    pill_center_obj::Uvs(), pill_center_obj::Triangles()),
       pill_shadow_(pill_shadow_obj::Vertices(), pill_shadow_obj::Normals(),
                    pill_shadow_obj::Uvs(), pill_shadow_obj::Triangles()),
-      alpaca_(alpaca_obj::Vertices(), alpaca_obj::Normals(), alpaca_obj::Uvs(),
-              alpaca_obj::Triangles()),
-      alpaca_outline_(alpaca_outline_obj::Vertices(),
-                      alpaca_outline_obj::Normals(), alpaca_outline_obj::Uvs(),
-                      alpaca_outline_obj::Triangles()),
+      //alpaca_(alpaca_obj::Vertices(), alpaca_obj::Normals(), alpaca_obj::Uvs(),
+      //        alpaca_obj::Triangles()),
+      //alpaca_outline_(alpaca_outline_obj::Vertices(),
+      //                alpaca_outline_obj::Normals(), alpaca_outline_obj::Uvs(),
+      //                alpaca_outline_obj::Triangles()),
       star_(star_obj::Vertices(), star_obj::Normals(), star_obj::Uvs(),
             star_obj::Triangles()),
       star_outline_(star_outline_obj::Vertices(), star_outline_obj::Normals(),
@@ -123,14 +123,14 @@ void OutlineModel::Draw(const Params& params) {
       star_.Draw();
       break;
     case kAlpaca:
-      GlBindUniform(model_program_, "black", true);
-      GlBindUniform(model_program_, "max_negative_z", true);
-      alpaca_outline_.Draw();
-      GlBindUniform(model_program_, "black", false);
-      GlBindUniform(model_program_, "max_negative_z", false);
-      GlBindUniform(model_program_, "light_color_a", params.color_a);
-      GlBindUniform(model_program_, "light_color_b", params.color_b);
-      alpaca_.Draw();
+      // GlBindUniform(model_program_, "black", true);
+      // GlBindUniform(model_program_, "max_negative_z", true);
+      // alpaca_outline_.Draw();
+      // GlBindUniform(model_program_, "black", false);
+      // GlBindUniform(model_program_, "max_negative_z", false);
+      // GlBindUniform(model_program_, "light_color_a", params.color_a);
+      // GlBindUniform(model_program_, "light_color_b", params.color_b);
+      // alpaca_.Draw();
       break;
     case kPill:
       GlBindUniform(model_program_, "black", true);

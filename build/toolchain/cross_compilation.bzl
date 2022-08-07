@@ -12,6 +12,8 @@ _PI_VIDEOCORE_COPTS = [
 _PI_SYSROOT_COPTS = [
     "-isystem",
     "external/raspberry_pi/sysroot/usr/include",
+    "-isystem",
+    "external/raspberry_pi/sysroot/usr/include/SDL2",
 ]
 
 COPTS = select({
@@ -22,6 +24,25 @@ COPTS = select({
 
 LINKOPTS = select({
     "//:pi_build": [
+        "-Wl,-z,notext",
+        "-lSDL2",
+        "-lasound",
+        "-lpulse",
+        "-lX11",
+        "-lXext",
+        "-lXt",
+        "-lsndio",
+        "-lXcursor",
+        "-lXinerama",
+        "-lXrandr",
+        "-lwayland-cursor",
+        "-lwayland-client",
+        "-lwayland-egl",
+        "-lxkbcommon",
+        "-lXxf86vm",
+        "-lXss",
+        "-lXi",
+        "-lGL",
         "-Lexternal/raspberry_pi/sysroot/opt/vc/lib",
         "-lbcm_host",
     ],
@@ -34,7 +55,8 @@ DEPS = select({
     "//:pi_build": ["@org_llvm_libcxx//:libcxx"],
     "//:clang_build": [
         "@org_llvm_libcxx//:libcxx",
-        "@sdl2//:sdl2",
+        "//third_party:gl_helper",
+        "//third_party:sdl_helper",
     ],
     "//conditions:default": [],
 })
