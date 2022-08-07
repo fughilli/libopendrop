@@ -38,7 +38,7 @@
   static Periodic<int64_t> periodic_timer_name(                    \
       static_cast<int64_t>(interval * 1000));                      \
   if (periodic_timer_name.IsDue(                                   \
-          duration_cast<std::chrono::milliseconds>(                \
+          std::chrono::duration_cast<std::chrono::milliseconds>(   \
               std::chrono::system_clock::now().time_since_epoch()) \
               .count()))                                           \
   LOG(level)

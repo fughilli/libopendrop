@@ -124,6 +124,7 @@ TEST(InterpolatorTest, WithStepCountZeroFailsWhenDistanceNonzero) {
       {
         auto interpolator =
             Interpolator<float>::WithStepCount(5.0f, 10.0f, 0.0f);
+        (void)interpolator;
       },
       "0 steps");
 }

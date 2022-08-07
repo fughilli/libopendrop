@@ -163,7 +163,6 @@ std::pair<glm::vec2, glm::vec2> Glowsticks3dZoom::ComputeRibbonSegment(
 void Glowsticks3dZoom::OnDrawFrame(
     absl::Span<const float> samples, std::shared_ptr<GlobalState> state,
     float alpha, std::shared_ptr<gl::GlRenderTarget> output_render_target) {
-  float average_power = state->average_power();
   float energy = state->energy();
   float normalized_energy = state->normalized_energy();
   float power = state->power();

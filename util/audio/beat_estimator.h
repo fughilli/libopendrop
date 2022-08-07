@@ -133,7 +133,6 @@ class BeatEstimator {
   bool is_beat_ = false;
   bool is_binned_beat_ = false;
 
-  float triangle_phase_value_ = 0;
   float triangle_phase_target_value_ = 0;
   float triangle_phase_last_beat_value_ = 0;
 };
