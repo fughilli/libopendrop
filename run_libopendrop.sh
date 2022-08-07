@@ -230,7 +230,6 @@ else
     trailing_args=""
   fi
   $bazel_executable $bazel_command $target $compiler_args \
-    --copt=-I/usr/include/SDL2 \
     $debug_options \
     $trailing_args \
     ${passthrough_args[@]}
