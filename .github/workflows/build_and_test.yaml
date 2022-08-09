@@ -25,18 +25,19 @@ jobs:
       with:
         path: "~/.cache/bazel"
         key: bazel
+    - name: Coverage (Host, GCC)
+      run: |
+        bazelisk coverage --combined_report=lcov //...
+    - name: Coveralls
+      uses: coverallsapp/github-action@master
+      with:
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        path-to-lcov: "./bazel-out/_coverage/_coverage_report.dat"
     - name: Build (Host, GCC)
       run: ./run_libopendrop.sh -z
-    - name: Test (Host, GCC)
-      run: ./run_libopendrop.sh -t
     - name: Build (Host, Clang)
       run: ./run_libopendrop.sh -z -c clang
     - name: Test (Host, Clang)
       run: ./run_libopendrop.sh -t -c clang
     - name: Build (Raspberry Pi, Clang)
       run: ./run_libopendrop.sh -z -c pi
-    - name: Coveralls
-      uses: coverallsapp/github-action@master
-      with:
-        github-token: ${{ secrets.GITHUB_TOKEN }}
-        path-to-lcov: "./bazel-out/_coverage/_coverage_report.dat"
