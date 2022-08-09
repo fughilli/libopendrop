@@ -48,9 +48,11 @@ cc_library(
 
 cc_library(
     name = "color",
+    srcs = ["color.cc"],
     hdrs = ["color.h"],
     deps = [
         ":types",
+        ":opaque_storable",
         "//third_party:glm_helper",
     ],
 )

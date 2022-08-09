@@ -1,7 +1,12 @@
 #ifndef UTIL_TESTING_GRAPH_MATCHERS_H_
 #define UTIL_TESTING_GRAPH_MATCHERS_H_
 
+#include <ostream>
+
+#include "absl/strings/str_format.h"
+#include "googlemock/include/gmock/gmock-matchers.h"
 #include "util/graph/graph.h"
+#include "util/graph/types/color.h"
 #include "util/logging/logging.h"
 
 namespace opendrop {

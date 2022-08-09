@@ -5,22 +5,24 @@
 
 #include "absl/strings/str_format.h"
 
-std::ostream& operator<<(std::ostream& os, const glm::vec2& vec) {
+namespace glm {
+
+std::ostream& operator<<(std::ostream& os, const vec2& vec) {
   os << "<" << vec.x << ", " << vec.y << ">";
   return os;
 }
 
-std::ostream& operator<<(std::ostream& os, const glm::vec3& vec) {
+std::ostream& operator<<(std::ostream& os, const vec3& vec) {
   os << "<" << vec.x << ", " << vec.y << ", " << vec.z << ">";
   return os;
 }
 
-std::ostream& operator<<(std::ostream& os, const glm::vec4& vec) {
+std::ostream& operator<<(std::ostream& os, const vec4& vec) {
   os << "<" << vec.x << ", " << vec.y << ", " << vec.z << ", " << vec.w << ">";
   return os;
 }
 
-std::ostream& operator<<(std::ostream& os, const glm::mat4& vec) {
+std::ostream& operator<<(std::ostream& os, const mat4& vec) {
   std::stringstream ss;
 
   constexpr char kFormatStr[] = "| % 10.4f % 10.4f % 10.4f % 10.4f |\n";
@@ -30,3 +32,5 @@ std::ostream& operator<<(std::ostream& os, const glm::mat4& vec) {
                           vec[3][i]);
   return os << ss.str();
 }
+
+}  // namespace glm

@@ -36,28 +36,28 @@ class ControlInjector {
     iter->second = value;
   }
 
-  template <typename T>
-  static T InjectEnum(absl::string_view name, T value) {
-    return static_cast<T>(InjectCounter(name, static_cast<int>(value), 0,
-                                        static_cast<int>(T::kDenseLastValue)));
+  template <typename V>
+  static V InjectEnum(absl::string_view name, V value) {
+    return static_cast<V>(InjectCounter(name, static_cast<int>(value), 0,
+                                        static_cast<int>(V::kDenseLastValue)));
   }
 
   static bool InjectTrigger(absl::string_view name) {
     return instance().InjectTriggerInternal(name);
   }
 
-  template <typename T>
-  static T InjectCounter(absl::string_view name, T value, T low, T high) {
+  template <typename V, typename L, typename H>
+  static V InjectCounter(absl::string_view name, V value, L low, H high) {
     return instance().InjectCounterInternal(name, value, low, high);
   }
 
-  template <typename T>
-  static T InjectSignal(absl::string_view name, T value) {
+  template <typename V>
+  static V InjectSignal(absl::string_view name, V value) {
     return instance().InjectSignalInternal(name, value);
   }
 
-  template <typename T>
-  static T InjectSignalClamp(absl::string_view name, T value, T low, T high) {
+  template <typename V, typename L, typename H>
+  static V InjectSignalClamp(absl::string_view name, V value, L low, H high) {
     const float interpolator_clamped =
         MapValue<float, /*clamp=*/true>(value, low, high, 0.0f, 1.0f);
     return MapValue<float>(
@@ -65,10 +65,10 @@ class ControlInjector {
         low, high);
   }
 
-  template <typename T>
-  static T InjectSignalOverride(absl::string_view name, T value, T low,
-                                T high) {
-    return static_cast<T>(
+  template <typename V, typename L, typename H>
+  static V InjectSignalOverride(absl::string_view name, V value, L low,
+                                H high) {
+    return static_cast<V>(
         instance().InjectSignalInternal(name, value, low, high));
   }
 

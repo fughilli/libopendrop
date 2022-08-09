@@ -141,8 +141,8 @@ TEST(GraphTest, UniqueGraphConversion) {
           [](std::tuple<Monotonic, float, int> in) -> std::tuple<Color> {
             auto& [m, f, i] = in;
 
-            float red = std::fmodf(m * f, 1.0f);
-            float green = std::fmodf(m / i, 1.0f);
+            float red = std::fmod(m * f, 1.0f);
+            float green = std::fmod(m / i, 1.0f);
             return glm::vec4(red, green, 0.0f, 1.0f);
           });
 

@@ -24,14 +24,17 @@ cc_library(
     hdrs = ["graph_matchers.h"],
     deps = [
         "//util/graph",
+        "//util/graph/types:color",
+        "@com_google_absl//absl/strings:str_format",
         "@com_googletest//:gtest",
     ],
 )
 
 cc_library(
-  name = "test_main",
-  srcs = ["test_main.cc"],
-  deps = [
+    name = "test_main",
+    srcs = ["test_main.cc"],
+    deps = [
         "@com_google_absl//absl/debugging:failure_signal_handler",
         "@com_googletest//:gtest",
-  ])
+    ],
+)
