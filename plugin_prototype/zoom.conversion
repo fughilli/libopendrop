@@ -1,0 +1,6 @@
+Shader zoom_shader = ImportShader("zoom.fsh");
+
+Zoom(Texture in[notChildrenOf(out)], Texture recurse[onlyChildrenOf(out)])(Texture out) {
+  zoom_shader.Bind(in=in, recurse=recurse);
+  zoom_shader.RenderInto(out);
+}

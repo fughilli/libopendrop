@@ -1,0 +1,3 @@
+product(Unitary a, Unitary b)(Unitary out) {
+  out = a * b;
+}
