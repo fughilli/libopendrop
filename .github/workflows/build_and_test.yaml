@@ -23,26 +23,31 @@ jobs:
         key: bazel
   build_host_gcc:
     needs: setup_workflow
+    runs-on: ubuntu-latest
     steps:
     - name: Build (Host, GCC)
       run: ./run_libopendrop.sh -z
   test_host_gcc:
     needs: build_host_gcc
+    runs-on: ubuntu-latest
     steps:
     - name: Test (Host, GCC)
       run: ./run_libopendrop.sh -t
   build_host_clang:
     needs: setup_workflow
+    runs-on: ubuntu-latest
     steps:
     - name: Build (Host, Clang)
       run: ./run_libopendrop.sh -z -c clang
   test_host_clang:
     needs: build_host_clang
+    runs-on: ubuntu-latest
     steps:
     - name: Test (Host, Clang)
       run: ./run_libopendrop.sh -t -c clang
   coverage_host_gcc:
     needs: setup_workflow
+    runs-on: ubuntu-latest
     steps:
     - name: Coverage (Host, GCC)
       run: |
@@ -54,6 +59,7 @@ jobs:
         path: genhtml/
   build_rpi_clang:
     needs: setup_workflow
+    runs-on: ubuntu-latest
     steps:
     - name: Build (Raspberry Pi, Clang)
       run: ./run_libopendrop.sh -z -c pi
