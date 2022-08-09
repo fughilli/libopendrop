@@ -5,9 +5,13 @@
 
 #include "third_party/glm_helper.h"
 
-std::ostream& operator<<(std::ostream& os, const glm::vec2& vec);
-std::ostream& operator<<(std::ostream& os, const glm::vec3& vec);
-std::ostream& operator<<(std::ostream& os, const glm::vec4& vec);
-std::ostream& operator<<(std::ostream& os, const glm::mat4& vec);
+namespace glm {
+
+std::ostream& operator<<(std::ostream& os, const vec2& vec);
+std::ostream& operator<<(std::ostream& os, const vec3& vec);
+std::ostream& operator<<(std::ostream& os, const vec4& vec);
+std::ostream& operator<<(std::ostream& os, const mat4& vec);
+
+}  // namespace glm
 
 #endif  // UTIL_LOGGING_LOGGING_GLM_HELPERS_H_

@@ -2,18 +2,24 @@ diff --git a/BUILD.bazel b/BUILD.bazel
 index 0f6e41e3a..5047e6cf5 100644
 --- a/BUILD.bazel
 +++ b/BUILD.bazel
-@@ -20,6 +20,10 @@ licenses(["notice"])
+@@ -20,6 +20,16 @@ licenses(["notice"])
  
  exports_files(["LICENSE"])
  
-+ADDITIONAL_DEPS = [
-+  "@org_llvm_libcxx//:libcxx",
-+]
++ADDITIONAL_DEPS = select({
++  "@libopendrop//:pi_build": [
++    "@org_llvm_libcxx//:libcxx",
++  ],
++  "@libopendrop//:clang_build": [
++    "@org_llvm_libcxx//:libcxx",
++  ],
++  "//conditions:default": []
++})
 +
  ################################################################################
  # Protobuf Runtime Library
  ################################################################################
-@@ -459,7 +463,7 @@ cc_binary(
+@@ -459,7 +469,7 @@ cc_binary(
      srcs = ["src/google/protobuf/compiler/main.cc"],
      linkopts = LINK_OPTS + PROTOC_LINK_OPTS,
      visibility = ["//visibility:public"],
@@ -22,7 +28,7 @@ index 0f6e41e3a..5047e6cf5 100644
  )
  
  ################################################################################
-@@ -624,7 +628,7 @@ cc_binary(
+@@ -624,7 +634,7 @@ cc_binary(
          ":protobuf",
          ":protoc_lib",
          "@com_google_googletest//:gtest",
@@ -31,7 +37,7 @@ index 0f6e41e3a..5047e6cf5 100644
  )
  
  cc_test(
-@@ -840,7 +844,7 @@ cc_binary(
+@@ -840,7 +850,7 @@ cc_binary(
      deps = select({
          "//conditions:default": [],
          ":use_fast_cpp_protos": ["//external:python_headers"],
@@ -40,7 +46,7 @@ index 0f6e41e3a..5047e6cf5 100644
  )
  
  cc_binary(
-@@ -874,7 +878,7 @@ cc_binary(
+@@ -874,7 +884,7 @@ cc_binary(
      ] + select({
          "//conditions:default": [],
          ":use_fast_cpp_protos": ["//external:python_headers"],

@@ -141,7 +141,7 @@ void CubeWreath::DrawCubes(float power, float energy, glm::vec3 zoom_vec,
         .energy = energy,
         .blend_coeff = texture_trigger_ ? 0.3f : 0.0f,
         .model_to_draw = InterpolateEnum<OutlineModel::ModelToDraw>(
-            std::fmodf(energy, 1.0f)),
+            std::fmod(energy, 1.0f)),
     });
   }
 }

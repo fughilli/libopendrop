@@ -1,8 +1,10 @@
 #ifndef UTIL_GRAPH_TYPES_COLOR_H_
 #define UTIL_GRAPH_TYPES_COLOR_H_
 
-#include "util/graph/types/opaque_storable.h"
+#include <ostream>
+
 #include "third_party/glm_helper.h"
+#include "util/graph/types/opaque_storable.h"
 #include "util/graph/types/types.h"
 
 namespace opendrop {
@@ -20,6 +22,8 @@ struct Color : public OpaqueStorable<Color> {
 
   float Length() const { return glm::length(value); }
 };
+
+std::ostream& operator<<(std::ostream& os, const opendrop::Color& color);
 
 }  // namespace opendrop
 

@@ -281,9 +281,9 @@ void SpaceWhaleEyeWarp::OnDrawFrame(
             true /*transition_controller_.TransitionCount() % 2 == 0*/,
             glm::vec3(0.2, 0.15, -0.25));
         DrawWhale(*state, look_zoom_vec, whale_scale,
-                  std::clamp((1 + sin(state->mid_energy() * 200)) / 2 +
-                                 state->mid() * 3,
-                             0.0f, 1.0f));
+                  std::clamp<float>((1 + sin(state->mid_energy() * 200)) / 2 +
+                                        state->mid() * 3,
+                                    0.0f, 1.0f));
       }
     }
 

@@ -1,7 +1,7 @@
 name: Build/Test
 on: [push, pull_request]
 jobs:
-  build_and_test:
+  setup_workflow:
     runs-on: ubuntu-latest
     steps:
     - name: Update installation
@@ -9,7 +9,7 @@ jobs:
         sudo apt-get update
     - name: Install C++ dependencies
       run: |
-        sudo apt-get install -y -qq libpulse-dev libgl-dev libglm-dev libsdl2-dev libncurses5-dev libncurses5
+        sudo apt-get install -y -qq libpulse-dev libgl-dev libglm-dev libsdl2-dev libncurses5-dev libncurses5 lcov
     - name: Checkout
       uses: actions/checkout@v2
       with:
@@ -21,13 +21,39 @@ jobs:
       with:
         path: "~/.cache/bazel"
         key: bazel
+  build_host_gcc:
+    needs: setup_workflow
+    steps:
     - name: Build (Host, GCC)
       run: ./run_libopendrop.sh -z
+  test_host_gcc:
+    needs: build_host_gcc
+    steps:
     - name: Test (Host, GCC)
       run: ./run_libopendrop.sh -t
+  build_host_clang:
+    needs: setup_workflow
+    steps:
     - name: Build (Host, Clang)
       run: ./run_libopendrop.sh -z -c clang
+  test_host_clang:
+    needs: build_host_clang
+    steps:
     - name: Test (Host, Clang)
       run: ./run_libopendrop.sh -t -c clang
+  coverage_host_gcc:
+    needs: setup_workflow
+    steps:
+    - name: Coverage (Host, GCC)
+      run: |
+        bazelisk coverage --combined_report=lcov //...
+        genhtml --output genhtml "$(bazelisk info output_path)/_coverage/_coverage_report.dat"
+    - uses: actions/upload-artifacts@v3
+      with:
+        name: lcov-report
+        path: genhtml/
+  build_rpi_clang:
+    needs: setup_workflow
+    steps:
     - name: Build (Raspberry Pi, Clang)
       run: ./run_libopendrop.sh -z -c pi

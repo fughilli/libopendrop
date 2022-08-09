@@ -18,21 +18,22 @@ cc_library(
         "//:clang_build": [
             "@host_gl//:gl",
         ],
+        "//conditions:default": [
+            "@host_gl//:gl",
+        ],
     }),
 )
 
 cc_library(
     name = "sdl_helper",
-    includes = select({
-        "//:pi_build": [
-        ],
-        "//conditions:default": [],
-    }),
     deps = select({
         "//:pi_build": [
             "@raspberry_pi//sysroot:sdl2",
         ],
         "//:clang_build": [
+            "@host_sdl2//:sdl2",
+        ],
+        "//conditions:default": [
             "@host_sdl2//:sdl2",
         ],
     }),
