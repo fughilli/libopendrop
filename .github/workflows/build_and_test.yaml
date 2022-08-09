@@ -1,7 +1,11 @@
 name: Build/Test
-on: [push, pull_request]
+on:
+  pull_request
+  push:
+    branches:
+      - 'master'
 jobs:
-  setup_workflow:
+  build_and_test:
     runs-on: ubuntu-latest
     steps:
     - name: Update installation
@@ -25,21 +29,12 @@ jobs:
       run: ./run_libopendrop.sh -z
     - name: Test (Host, GCC)
       run: ./run_libopendrop.sh -t
-    - name: Coverage (Host, GCC)
-      run: |
-        bazelisk coverage --combined_report=lcov //...
-        genhtml --output genhtml "$(bazelisk info output_path)/_coverage/_coverage_report.dat"
-        #- name: Build (Host, Clang)
-        #  run: ./run_libopendrop.sh -z -c clang
-        #- name: Test (Host, Clang)
-        #  run: ./run_libopendrop.sh -t -c clang
-        #- name: Build (Raspberry Pi, Clang)
-        #  run: ./run_libopendrop.sh -z -c pi
-        #- name: Upload coverage report
-        #  uses: actions/upload-artifact@v3
-        #  with:
-        #    name: lcov-report
-        #    path: genhtml/
+    - name: Build (Host, Clang)
+      run: ./run_libopendrop.sh -z -c clang
+    - name: Test (Host, Clang)
+      run: ./run_libopendrop.sh -t -c clang
+    - name: Build (Raspberry Pi, Clang)
+      run: ./run_libopendrop.sh -z -c pi
     - name: Coveralls
       uses: coverallsapp/github-action@master
       with:
