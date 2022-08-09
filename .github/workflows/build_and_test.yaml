@@ -21,27 +21,21 @@ jobs:
       with:
         path: "~/.cache/bazel"
         key: bazel
-    steps:
     - name: Build (Host, GCC)
       run: ./run_libopendrop.sh -z
-    steps:
     - name: Test (Host, GCC)
       run: ./run_libopendrop.sh -t
-    steps:
     - name: Coverage (Host, GCC)
       run: |
         bazelisk coverage --combined_report=lcov //...
         genhtml --output genhtml "$(bazelisk info output_path)/_coverage/_coverage_report.dat"
+    - name: Build (Host, Clang)
+      run: ./run_libopendrop.sh -z -c clang
+    - name: Test (Host, Clang)
+      run: ./run_libopendrop.sh -t -c clang
+    - name: Build (Raspberry Pi, Clang)
+      run: ./run_libopendrop.sh -z -c pi
     - uses: actions/upload-artifact@v3
       with:
         name: lcov-report
         path: genhtml/
-    steps:
-    - name: Build (Host, Clang)
-      run: ./run_libopendrop.sh -z -c clang
-    steps:
-    - name: Test (Host, Clang)
-      run: ./run_libopendrop.sh -t -c clang
-    steps:
-    - name: Build (Raspberry Pi, Clang)
-      run: ./run_libopendrop.sh -z -c pi
