@@ -29,13 +29,19 @@ jobs:
       run: |
         bazelisk coverage --combined_report=lcov //...
         genhtml --output genhtml "$(bazelisk info output_path)/_coverage/_coverage_report.dat"
-    - name: Build (Host, Clang)
-      run: ./run_libopendrop.sh -z -c clang
-    - name: Test (Host, Clang)
-      run: ./run_libopendrop.sh -t -c clang
-    - name: Build (Raspberry Pi, Clang)
-      run: ./run_libopendrop.sh -z -c pi
-    - uses: actions/upload-artifact@v3
+        #- name: Build (Host, Clang)
+        #  run: ./run_libopendrop.sh -z -c clang
+        #- name: Test (Host, Clang)
+        #  run: ./run_libopendrop.sh -t -c clang
+        #- name: Build (Raspberry Pi, Clang)
+        #  run: ./run_libopendrop.sh -z -c pi
+        #- name: Upload coverage report
+        #  uses: actions/upload-artifact@v3
+        #  with:
+        #    name: lcov-report
+        #    path: genhtml/
+    - name: Coveralls
+      uses: coverallsapp/github-action@master
       with:
-        name: lcov-report
-        path: genhtml/
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        path-to-lcov: "./bazel-out/_coverage/_coverage_report.dat"
