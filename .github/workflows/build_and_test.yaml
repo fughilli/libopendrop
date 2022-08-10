@@ -22,12 +22,27 @@ jobs:
         path: "~/.cache/bazel"
         key: bazel
     - name: Build (Host, GCC)
-      run: ./run_libopendrop.sh -z
+      run: ./run_libopendrop.sh -z --profile=/tmp/profile_gcc_host.gz
+    - name: Upload build profile (Host, GCC)
+      uses: actions/upload-artifact@v3
+      with:
+        name: profile-gcc-host
+        path: /tmp/profile_gcc_host.gz
     - name: Test (Host, GCC)
       run: ./run_libopendrop.sh -t
     - name: Build (Host, Clang)
-      run: ./run_libopendrop.sh -z -c clang
+      run: ./run_libopendrop.sh -z -c clang --profile=/tmp/profile_clang_host.gz
+    - name: Upload build profile (Host, Clang)
+      uses: actions/upload-artifact@v3
+      with:
+        name: profile-gcc-host
+        path: /tmp/profile_clang_host.gz
     - name: Test (Host, Clang)
       run: ./run_libopendrop.sh -t -c clang
     - name: Build (Raspberry Pi, Clang)
-      run: ./run_libopendrop.sh -z -c pi
+      run: ./run_libopendrop.sh -z -c pi --profile=/tmp/profile_clang_rpi.gz
+    - name: Upload build profile (Raspberry Pi, Clang)
+      uses: actions/upload-artifact@v3
+      with:
+        name: profile-gcc-host
+        path: /tmp/profile_clang_rpi.gz
