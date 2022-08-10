@@ -35,7 +35,7 @@ jobs:
     - name: Upload build profile (Host, Clang)
       uses: actions/upload-artifact@v3
       with:
-        name: profile-gcc-host
+        name: profile-clang-host
         path: /tmp/profile_clang_host.gz
     - name: Test (Host, Clang)
       run: ./run_libopendrop.sh -t -c clang
@@ -44,5 +44,5 @@ jobs:
     - name: Upload build profile (Raspberry Pi, Clang)
       uses: actions/upload-artifact@v3
       with:
-        name: profile-gcc-host
+        name: profile-clang-rpi
         path: /tmp/profile_clang_rpi.gz
