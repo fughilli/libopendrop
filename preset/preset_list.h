@@ -97,7 +97,7 @@ absl::StatusOr<std::shared_ptr<opendrop::Preset>> GetRandomPreset(
 template <typename... Args>
 absl::StatusOr<std::shared_ptr<opendrop::Preset>> GetRandomPresetFromList(
     Args&&... args) {
-  return GetRandomPreset<Kaleidoscope, Pills, Glowsticks3dZoom, CubeWreath>(
+  return GetRandomPreset<GraphPreset/*, Kaleidoscope, Pills, Glowsticks3dZoom, CubeWreath*/>(
       std::forward<Args>(args)...);
 }
 

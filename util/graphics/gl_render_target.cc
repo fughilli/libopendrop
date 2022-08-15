@@ -14,7 +14,7 @@ GlRenderTargetActivation::GlRenderTargetActivation(
   // Configure the backing texture.
   glBindFramebuffer(GL_FRAMEBUFFER, render_target_->framebuffer_handle());
   glBindRenderbuffer(GL_RENDERBUFFER, render_target_->renderbuffer_handle());
-  LOG(INFO) << "Bound framebuffer " << render_target_->framebuffer_handle()
+  LOG(DEBUG) << "Bound framebuffer " << render_target_->framebuffer_handle()
              << " and renderbuffer " << render_target_->renderbuffer_handle();
 
   glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D,
@@ -103,13 +103,10 @@ absl::StatusOr<std::shared_ptr<GlRenderTarget>> GlRenderTarget::MakeShared(
   ASSIGN_OR_RETURN(auto texture_unit, texture_manager->Allocate());
   auto return_value = std::shared_ptr<GlRenderTarget>(new GlRenderTarget(
       width, height, texture_unit, texture_manager, options));
-  LOG(INFO) << "GlRenderTarget::MakeShared(): New target has use count "
-            << return_value.use_count();
   return return_value;
 }
 
 GlRenderTarget::~GlRenderTarget() {
-  LOG(INFO) << "Disposing render target with texture handle: " << texture_handle_;
   if (options_.enable_depth) {
     glDeleteTextures(1, &depth_buffer_handle_);
   }

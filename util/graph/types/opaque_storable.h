@@ -12,8 +12,6 @@ template <typename Derived>
 struct OpaqueStorable {
   // Deletes an object of type `T` and frees the associated memory.
   static void DestructAndFree(void* ptr) {
-    LOG(INFO) << "DestructAndFree() invoked; Derived = "
-              << typeid(Derived).name();
     delete reinterpret_cast<Derived*>(ptr);
   }
 

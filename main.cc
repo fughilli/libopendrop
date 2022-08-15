@@ -328,6 +328,9 @@ extern "C" int main(int argc, char *argv[]) {
                 case SDLK_w:
                   LOG(INFO) << "Whitelist";
                   break;
+                case SDLK_s:
+                  LOG(INFO) << "Shuffle graph";
+                  break;
               }
               break;
             case SDL_MOUSEMOTION:
@@ -352,6 +355,7 @@ extern "C" int main(int argc, char *argv[]) {
         ImGui_ImplSDL2_NewFrame();
         ImGui::NewFrame();
 
+        ImGui::SetNextWindowPos({0,0}, ImGuiCond_Once);
         ImGui::Begin(
             "OpenDrop Visualizer View", nullptr,
             ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoScrollbar);
