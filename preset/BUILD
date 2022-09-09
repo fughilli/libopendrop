@@ -3,18 +3,19 @@ package(default_visibility = ["//:__subpackages__"])
 PRESET_DEPS_LIST = [
     "//preset/alien_rorschach",
     "//preset/cube_boom",
+    "//preset/cube_wreath",
+    "//preset/eye_roll",
+    "//preset/fluid_preset",
     "//preset/glowsticks_3d",
     "//preset/glowsticks_3d_zoom",
-    "//preset/kaleidoscope",
-    "//preset/rotary_transporter",
-    "//preset/simple_preset",
-    "//preset/template_preset",
-    "//preset/shape_bounce",
-    "//preset/eye_roll",
-    "//preset/cube_wreath",
-    "//preset/pills",
     "//preset/graph_preset",
+    "//preset/kaleidoscope",
+    "//preset/pills",
+    "//preset/rotary_transporter",
+    "//preset/shape_bounce",
+    "//preset/simple_preset",
     "//preset/space_whale_eye_warp",
+    "//preset/template_preset",
 ]
 
 cc_library(

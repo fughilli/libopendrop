@@ -24,6 +24,7 @@
 #include "preset/simple_preset/simple_preset.h"
 #include "preset/space_whale_eye_warp/space_whale_eye_warp.h"
 #include "preset/template_preset/template_preset.h"
+#include "preset/fluid_preset/fluid_preset.h"
 
 namespace opendrop {
 
@@ -97,7 +98,7 @@ absl::StatusOr<std::shared_ptr<opendrop::Preset>> GetRandomPreset(
 template <typename... Args>
 absl::StatusOr<std::shared_ptr<opendrop::Preset>> GetRandomPresetFromList(
     Args&&... args) {
-  return GetRandomPreset<Kaleidoscope, Pills, Glowsticks3dZoom, CubeWreath>(
+  return GetRandomPreset<FluidPreset/*Kaleidoscope, Pills, Glowsticks3dZoom, CubeWreath*/>(
       std::forward<Args>(args)...);
 }
 

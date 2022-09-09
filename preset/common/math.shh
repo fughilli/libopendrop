@@ -49,6 +49,32 @@ vec4 shift_hue(vec4 color, float hue) {
               color.w);
 }
 
+vec4 hsv_to_rgb(vec4 hsv) {
+  // C = V x Sv
+  float c = clamp(hsv.y, 0.0, 1.0) * clamp(hsv.z, 0.0, 1.0);
+
+  // H' = H/60deg
+  // X = chroma x (1 - |H' mod 2 - 1|)
+  float x = c * (1.0 - abs(mod(hsv.x * 6.0, 2.0) - 1.0));
+
+  switch (int(mod(floor(hsv.x * 6)), 6)) {
+    case 0:
+      return vec3(c, x, 0.0);
+    case 1:
+      return vec3(x, c, 0.0);
+    case 2:
+      return vec3(0.0, c, x);
+    case 3:
+      return vec3(0.0, x, c);
+    case 4:
+      return vec3(x, 0.0, c);
+    case 5:
+      return vec3(c, 0.0, x);
+    default:
+      return vec3(0.0, 0.0, 0.0);
+  }
+}
+
 float sin_product_range(float coeff_a, float coeff_b, float min, float max,
                         float arg) {
   return sin_product(coeff_a, coeff_b, arg) * (max - min) + min;
