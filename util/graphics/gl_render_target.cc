@@ -14,8 +14,6 @@ GlRenderTargetActivation::GlRenderTargetActivation(
   // Configure the backing texture.
   glBindFramebuffer(GL_FRAMEBUFFER, render_target_->framebuffer_handle());
   glBindRenderbuffer(GL_RENDERBUFFER, render_target_->renderbuffer_handle());
-  LOG(INFO) << "Bound framebuffer " << render_target_->framebuffer_handle()
-             << " and renderbuffer " << render_target_->renderbuffer_handle();
 
   glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D,
                          render_target_->texture_handle(), 0);

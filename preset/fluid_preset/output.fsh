@@ -14,7 +14,7 @@ void main() {
   vec2 velocity = cell.xy;
   float pressure = cell.z;
 
-  float angle = atan2(velocity);
+  float angle = atan(velocity.y, velocity.x);
 
-  gl_FragColor = hsv_to_rgb(vec4(angle, pressure, length(velocity)));
+  gl_FragColor = cell; //vec4(hsv_to_rgb(vec3(angle, pressure, length(velocity))), 1.0);
 }

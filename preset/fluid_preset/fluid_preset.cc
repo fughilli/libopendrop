@@ -79,13 +79,19 @@ void FluidPreset::OnDrawFrame(
 
     input_program_->Use();
 
-    std::array<glm::vec2, 2> vertices = {
-        UnitVectorAtAngle(energy) * 0.1f,
-        UnitVectorAtAngle(energy + kPi) * 0.1f,
+    gl::GlBindUniform(input_program_, "input_frame_size",
+                      glm::ivec2(width(), height()));
+    gl::GlBindRenderTargetTextureToUniform(input_program_, "input_frame",
+                                           back_render_target_,
+                                           gl::GlTextureBindingOptions());
+
+    const std::array<glm::vec2, 2> vertices = {
+        UnitVectorAtAngle(energy) * 0.3f,
+        UnitVectorAtAngle(energy + kPi) * 0.3f,
     };
-    auto color =
+    const auto color =
         UnitVectorAtAngle(energy + kPi / 2) / 2.0f + glm::vec2(0.5, 0.5);
-    Polyline polyline(glm::vec3(color, 0), vertices, 5);
+    Polyline polyline(glm::vec3(1,1,1), vertices, 20);
 
     polyline.Draw();
   }
