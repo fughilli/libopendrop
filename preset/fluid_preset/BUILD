@@ -8,10 +8,7 @@ cc_library(
     hdrs = ["fluid_preset.h"],
     linkstatic = 1,
     deps = [
-        ":fluid",
-        ":input",
-        ":output",
-        ":passthrough",
+        ":common_vertex",
         "//preset",
         "//primitive:polyline",
         "//primitive:rectangle",
@@ -29,24 +26,60 @@ cc_library(
 )
 
 shader_cc_library(
-    name = "passthrough",
-    srcs = ["passthrough.vsh"],
+    name = "common_vertex",
+    srcs = ["common_vertex.vsh"],
+)
+
+shader_cc_library(
+    name = "curl",
+    srcs = ["curl.fsh"],
+    deps = ["//preset/common:math"],
+)
+
+shader_cc_library(
+    name = "vorticity",
+    srcs = ["vorticity.fsh"],
+    deps = ["//preset/common:math"],
+)
+
+shader_cc_library(
+    name = "divergence",
+    srcs = ["divergence.fsh"],
+    deps = ["//preset/common:math"],
+)
+
+shader_cc_library(
+    name = "clear",
+    srcs = ["clear.fsh"],
+    deps = ["//preset/common:math"],
+)
+
+shader_cc_library(
+    name = "pressure",
+    srcs = ["pressure.fsh"],
+    deps = ["//preset/common:math"],
+)
+
+shader_cc_library(
+    name = "gradient_subtract",
+    srcs = ["gradient_subtract.fsh"],
+    deps = ["//preset/common:math"],
+)
+
+shader_cc_library(
+    name = "advection",
+    srcs = ["advection.fsh"],
+    deps = ["//preset/common:math"],
+)
+
+shader_cc_library(
+    name = "blit",
+    srcs = ["blit.fsh"],
+    deps = ["//preset/common:math"],
 )
 
 shader_cc_library(
     name = "input",
     srcs = ["input.fsh"],
-    deps = ["//preset/common:math"],
-)
-
-shader_cc_library(
-    name = "output",
-    srcs = ["output.fsh"],
-    deps = ["//preset/common:math"],
-)
-
-shader_cc_library(
-    name = "fluid",
-    srcs = ["fluid.fsh"],
     deps = ["//preset/common:math"],
 )

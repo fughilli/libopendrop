@@ -5,7 +5,7 @@
 varying vec2 screen_uv;
 
 uniform sampler2D input_frame;
-uniform ivec2 input_frame_size;
+uniform ivec2 size;
 
 void main() {
   vec2 texture_uv = screen_to_tex(screen_uv);

@@ -5,6 +5,7 @@
 #include <mutex>
 
 #include "absl/status/statusor.h"
+#include "third_party/gl_helper.h"
 #include "third_party/glm_helper.h"
 #include "util/graphics/gl_interface.h"
 #include "util/graphics/gl_texture_manager.h"
@@ -24,12 +25,18 @@ class GlRenderTargetActivation {
 
 class GlRenderTarget : public std::enable_shared_from_this<GlRenderTarget> {
  public:
+  enum class TextureType {
+    kUnsignedByte,
+    kHalfFloat,
+  };
   // Construction options for GlRenderTarget.
   struct Options {
     // Whether or not to support a depth buffer for the render target. When
     // `true`, there will be a depth buffer attachment and associated texture
     // allocated for the render target.
     bool enable_depth = false;
+
+    TextureType type = TextureType::kUnsignedByte;
   };
 
   static absl::StatusOr<std::shared_ptr<GlRenderTarget>> MakeShared(
@@ -49,7 +56,8 @@ class GlRenderTarget : public std::enable_shared_from_this<GlRenderTarget> {
   int texture_unit() const { return texture_unit_; }
   unsigned int renderbuffer_handle() const { return renderbuffer_handle_; }
   unsigned int framebuffer_handle() const { return framebuffer_handle_; }
-  unsigned int texture_handle() const { return texture_handle_; }
+  unsigned int texture_handle() const { return front_texture_handle_; }
+  unsigned int back_texture_handle() const { return back_texture_handle_; }
   unsigned int depth_buffer_handle() const { return depth_buffer_handle_; }
   const Options& options() const { return options_; }
   int width() {
@@ -66,18 +74,31 @@ class GlRenderTarget : public std::enable_shared_from_this<GlRenderTarget> {
   }
 
   bool swap_texture_unit(GlRenderTarget* other);
+  // Swap front/back textures.
+  bool swap();
 
  private:
   GlRenderTarget(int width, int height, int texture_unit,
                  std::shared_ptr<GlTextureManager> texture_manager,
                  Options options);
 
+  GLuint GlTextureType() {
+    switch (options_.type) {
+      case TextureType::kHalfFloat:
+        return GL_HALF_FLOAT;
+      case TextureType::kUnsignedByte:
+        return GL_UNSIGNED_BYTE;
+    }
+    return {};
+  }
+
   std::mutex render_target_mu_;
   int width_, height_;
   int texture_unit_;
   unsigned int framebuffer_handle_;
   unsigned int renderbuffer_handle_;
-  unsigned int texture_handle_;
+  unsigned int front_texture_handle_;
+  unsigned int back_texture_handle_;
   unsigned int depth_buffer_handle_;
 
   std::shared_ptr<GlTextureManager> texture_manager_;

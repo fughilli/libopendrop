@@ -22,12 +22,7 @@ class FluidPreset : public Preset {
   std::string name() const override { return "FluidPreset"; }
 
  protected:
-  FluidPreset(std::shared_ptr<gl::GlProgram> input_program,
-              std::shared_ptr<gl::GlProgram> fluid_program,
-              std::shared_ptr<gl::GlProgram> output_program,
-              std::shared_ptr<gl::GlRenderTarget> front_render_target,
-              std::shared_ptr<gl::GlRenderTarget> back_render_target,
-              std::shared_ptr<gl::GlTextureManager> texture_manager);
+  FluidPreset(std::shared_ptr<gl::GlTextureManager> texture_manager);
 
   void OnDrawFrame(
       absl::Span<const float> samples, std::shared_ptr<GlobalState> state,
@@ -36,14 +31,27 @@ class FluidPreset : public Preset {
   void OnUpdateGeometry() override;
 
  private:
-  std::shared_ptr<gl::GlProgram> input_program_;
-  std::shared_ptr<gl::GlProgram> fluid_program_;
-  std::shared_ptr<gl::GlProgram> output_program_;
-  std::shared_ptr<gl::GlRenderTarget> front_render_target_;
-  std::shared_ptr<gl::GlRenderTarget> back_render_target_;
+  // curl, vorticity, divergence, clear, pressure, gradient subtract, advection, blit
+  std::array<std::shared_ptr<gl::GlProgram>, 9> programs_;
+  // dye, velocity, divergence, curl, pressure
+  std::array<std::shared_ptr<gl::GlRenderTarget>, 5> render_targets_;
+
+  // curl program:
+  //   [size, velocity] -> curl
+  // vorticity program:
+  //   [size, velocity, curl, curl_coeff, dt] -> velocity
+  // divergence program:
+  //   [size, velocity] -> divergence
+  // clear pressure tex
+  // pressure program (50x):
+  //   [size, divergence, prev_pressure] -> pressure
+  // gradient subtract program:
+  //   [size, pressure, prev_velocity] -> velocity
+  // advection program:
+  //   [size, velocity, prev_velocity, dissipation, dt] -> velocity
+  //   [size, velocity, prev_dye, dissipation, dt] -> dye
 
   std::vector<glm::vec2> vertices_;
-  Rectangle rectangle_;
   Polyline polyline_;
 };
 
