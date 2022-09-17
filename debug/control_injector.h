@@ -271,6 +271,10 @@ class ControlInjector {
           if (button_mapping->second == button.channel()) counter.Increment();
         }
       }
+
+      std::string control_str;
+      google::protobuf::TextFormat::PrintToString(control, &control_str);
+      LOG(DEBUG) << control_str;
     }
 
     if (!enable_imgui_) return;
