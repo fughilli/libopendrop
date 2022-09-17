@@ -27,9 +27,6 @@ config_setting(
 
 compile_pip_requirements(
     name = "requirements",
-    # env = {
-    #     "PIP_CONFIG_FILE": "~/.pip/pip.conf",
-    # },
     extra_args = [
         "--allow-unsafe",
         "--no-emit-index-url",
