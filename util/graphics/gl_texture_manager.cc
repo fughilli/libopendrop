@@ -56,7 +56,7 @@ void GlTextureManager::Deallocate(int texture_unit) {
   CHECK(allocated_texture_units_[texture_unit])
       << "Texture unit " << texture_unit << " is not allocated.";
 
-  // LOG(INFO) << "Deallocated texture unit: " << texture_unit;
+  LOG(DEBUG) << "Deallocated texture unit: " << texture_unit;
   allocated_texture_units_[texture_unit] = false;
   free_texture_units_.push(texture_unit);
 }
