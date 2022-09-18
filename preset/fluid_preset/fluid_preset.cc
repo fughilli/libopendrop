@@ -38,12 +38,12 @@ absl::StatusOr<std::shared_ptr<Preset>> FluidPreset::MakeShared(
 FluidPreset::FluidPreset(std::shared_ptr<gl::GlTextureManager> texture_manager)
     : Preset(texture_manager) {
   render_targets_[0] =
-      gl::GlRenderTarget::MakeShared(0, 0, texture_manager).ValueOrDie();
+      gl::GlRenderTarget::MakeShared(0, 0, texture_manager).value();
   for (int i = 1; i < render_targets_.size(); ++i) {
     render_targets_[i] = gl::GlRenderTarget::MakeShared(
                              0, 0, texture_manager,
                              {.type = GlRenderTarget::TextureType::kHalfFloat})
-                             .ValueOrDie();
+                             .value();
   }
 
   int i = 0;
@@ -52,7 +52,7 @@ FluidPreset::FluidPreset(std::shared_ptr<gl::GlTextureManager> texture_manager)
         clear_fsh::Code(), pressure_fsh::Code(), gradient_subtract_fsh::Code(),
         advection_fsh::Code(), blit_fsh::Code(), input_fsh::Code()}) {
     programs_[i++] =
-        gl::GlProgram::MakeShared(common_vertex_vsh::Code(), code).ValueOrDie();
+        gl::GlProgram::MakeShared(common_vertex_vsh::Code(), code).value();
   }
 }
 
@@ -68,7 +68,7 @@ void FluidPreset::OnUpdateGeometry() {
 void FluidPreset::OnDrawFrame(
     absl::Span<const float> samples, std::shared_ptr<GlobalState> state,
     float alpha, std::shared_ptr<gl::GlRenderTarget> output_render_target) {
-  auto& [dye_target, curl_target, velocity_target, divergene_target,
+  auto& [dye_target, curl_target, velocity_target, divergence_target,
          pressure_target] = render_targets_;
   auto& [curl_program, vorticity_program, divergence_program, clear_program,
          pressure_program, gradient_subtract_program, advection_program,
