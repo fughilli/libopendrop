@@ -1,18 +1,35 @@
 #version 120
 
-varying vec2 screen_uv;
+precision mediump float;
+precision mediump sampler2D;
+
+varying vec2 texture_uv;
+varying vec2 l_uv;
+varying vec2 r_uv;
+varying vec2 u_uv;
+varying vec2 d_uv;
 uniform sampler2D velocity;
-uniform vec2 size;
 
 void main() {
-  vec2 texture_uv = screen_to_tex(screen_uv);
+  float l = texture2D(velocity, l_uv).x;
+  float r = texture2D(velocity, r_uv).x;
+  float u = texture2D(velocity, u_uv).y;
+  float d = texture2D(velocity, d_uv).y;
+  vec2 c = texture2D(velocity, texture_uv).xy;
 
-  vec2 tex_size = vec2(1,1) / size;
-  float lx = texture2D(velocity,texture_uv - vec2(tex_size.x, 0)).x;
-  float rx = texture2D(velocity,texture_uv + vec2(tex_size.x, 0)).x;
-  float ty = texture2D(velocity,texture_uv - vec2(0, tex_size.y)).y;
-  float by = texture2D(velocity,texture_uv + vec2(0, tex_size.y)).y;
+  if (l_uv.x < 0.0) {
+    l = -c.x;
+  }
+  if (r_uv.x > 1.0) {
+    r = -c.x;
+  }
+  if (u_uv.y > 1.0) {
+    u = -c.y;
+  }
+  if (d_uv.y < 0.0) {
+    d = -c.y;
+  }
 
-  vec2 c = texture2d(velocity, texture_uv).xy;
-  if (
+  float divergence = ((r - l) + (u - d)) / 2.0;
+  gl_FragColor = vec4(divergence, 0.0, 0.0, 1.0);
 }

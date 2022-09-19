@@ -84,9 +84,11 @@ GlRenderTarget::GlRenderTarget(
   // Create a new framebuffer.
   glGenFramebuffers(1, &framebuffer_handle_);
   LOG(DEBUG) << "Generated framebuffer: " << framebuffer_handle_;
-  // Generate a backing texture.
+  // Generate backing textures.
   glGenTextures(1, &front_texture_handle_);
-  LOG(DEBUG) << "Generated texture: " << front_texture_handle_;
+  LOG(DEBUG) << "Generated front texture: " << front_texture_handle_;
+  glGenTextures(1, &back_texture_handle_);
+  LOG(DEBUG) << "Generated back texture: " << back_texture_handle_;
 
   if (options_.enable_depth) {
     glGenTextures(1, &depth_buffer_handle_);
@@ -133,18 +135,18 @@ void GlRenderTarget::UpdateGeometry(int width, int height) {
   for (auto handle : {front_texture_handle_, back_texture_handle_}) {
     glBindTexture(GL_TEXTURE_2D, handle);
     LOG(DEBUG) << "Bound RGBA texture: " << handle;
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width_, height_, 0, GL_RGBA,
-                 GlTextureType(), 0);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexImage2D(GL_TEXTURE_2D, 0, GlTextureInternalFormat(), width_, height_,
+                 0, GL_RGBA, GlTextureType(), 0);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
   }
   if (options_.enable_depth) {
     glBindTexture(GL_TEXTURE_2D, depth_buffer_handle_);
     LOG(DEBUG) << "Bound depth texture: " << depth_buffer_handle_;
     glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH24_STENCIL8, width_, height_, 0,
                  GL_DEPTH_STENCIL, GL_UNSIGNED_INT_24_8, 0);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
   }
   glBindTexture(GL_TEXTURE_2D, 0);
   LOG(DEBUG) << "Unbound texture";
@@ -164,9 +166,7 @@ bool GlRenderTarget::swap_texture_unit(GlRenderTarget* other) {
     return false;
   }
 
-  int intermediate_texture_handle = other->front_texture_handle_;
-  other->front_texture_handle_ = front_texture_handle_;
-  front_texture_handle_ = intermediate_texture_handle;
+  std::swap(front_texture_handle_, other->front_texture_handle_);
   return true;
 }
 

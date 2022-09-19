@@ -1,12 +1,11 @@
 #version 120
 
-uniform sampler2D source_texture;
-uniform float alpha;
-varying vec2 screen_uv;
+precision highp float;
+precision highp sampler2D;
 
-vec2 screen_to_tex(vec2 screen_uv) { return (screen_uv + vec2(1., 1.)) * 0.5; }
+varying vec2 texture_uv;
+uniform sampler2D source_texture;
 
 void main() {
-  vec2 tex_uv = screen_to_tex(screen_uv);
-  gl_FragColor = texture2D(source_texture, tex_uv) * alpha;
+  gl_FragColor = vec4(texture2D(source_texture, texture_uv).xyz / 10.0 + 0.5, 1.0);
 }

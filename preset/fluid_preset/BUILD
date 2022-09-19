@@ -31,12 +31,14 @@ cc_library(
         "//util/math",
         "//util/math:vector",
         "//util/status:status_macros",
+        "//debug:control_injector",
     ],
 )
 
 shader_cc_library(
     name = "common_vertex",
     srcs = ["common_vertex.vsh"],
+    deps = ["//preset/common:math"],
 )
 
 shader_cc_library(

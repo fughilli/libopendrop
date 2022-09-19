@@ -92,6 +92,16 @@ class GlRenderTarget : public std::enable_shared_from_this<GlRenderTarget> {
     return {};
   }
 
+  GLuint GlTextureInternalFormat() {
+    switch (options_.type) {
+      case TextureType::kHalfFloat:
+        return GL_RGBA16F;
+      case TextureType::kUnsignedByte:
+        return GL_RGBA;
+    }
+    return {};
+  }
+
   std::mutex render_target_mu_;
   int width_, height_;
   int texture_unit_;

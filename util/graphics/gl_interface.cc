@@ -5,6 +5,7 @@
 #include <string>
 
 #include "absl/strings/str_cat.h"
+#include "absl/strings/str_format.h"
 #include "third_party/gl_helper.h"
 #include "util/logging/logging.h"
 
@@ -103,12 +104,14 @@ absl::StatusOr<std::shared_ptr<gl::GlProgram>> GlProgram::MakeShared(
   std::string error_string = "";
   if (!vertex_shader.Compile(&error_string)) {
     return absl::InvalidArgumentError(
-        absl::StrCat("Failed to compile vertex shader: ", error_string));
+        absl::StrCat("Failed to compile vertex shader: ", error_string,
+                     "\ncode: ", vertex_code));
   }
   gl::GlShader fragment_shader(gl::GlShaderType::kFragment, fragment_code);
   if (!fragment_shader.Compile(&error_string)) {
     return absl::InvalidArgumentError(
-        absl::StrCat("Failed to compile fragment shader: ", error_string));
+        absl::StrCat("Failed to compile fragment shader: ", error_string,
+                     "\ncode: ", fragment_code));
   }
 
   if (!gl_program->Attach(vertex_shader)

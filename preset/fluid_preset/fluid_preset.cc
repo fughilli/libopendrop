@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <cmath>
 
+#include "debug/control_injector.h"
 #include "preset/fluid_preset/advection.fsh.h"
 #include "preset/fluid_preset/blit.fsh.h"
 #include "preset/fluid_preset/clear.fsh.h"
@@ -31,8 +32,7 @@ constexpr float kScaleFactor = 0.5f;
 
 absl::StatusOr<std::shared_ptr<Preset>> FluidPreset::MakeShared(
     std::shared_ptr<gl::GlTextureManager> texture_manager) {
-  return std::shared_ptr<FluidPreset>(new FluidPreset(
-      input_program, fluid_program, output_program, texture_manager));
+  return std::shared_ptr<FluidPreset>(new FluidPreset(texture_manager));
 }
 
 FluidPreset::FluidPreset(std::shared_ptr<gl::GlTextureManager> texture_manager)
@@ -40,10 +40,10 @@ FluidPreset::FluidPreset(std::shared_ptr<gl::GlTextureManager> texture_manager)
   render_targets_[0] =
       gl::GlRenderTarget::MakeShared(0, 0, texture_manager).value();
   for (int i = 1; i < render_targets_.size(); ++i) {
-    render_targets_[i] = gl::GlRenderTarget::MakeShared(
-                             0, 0, texture_manager,
-                             {.type = GlRenderTarget::TextureType::kHalfFloat})
-                             .value();
+    gl::GlRenderTarget::Options options;
+    options.type = gl::GlRenderTarget::TextureType::kHalfFloat;
+    render_targets_[i] =
+        gl::GlRenderTarget::MakeShared(0, 0, texture_manager, options).value();
   }
 
   int i = 0;
@@ -74,19 +74,82 @@ void FluidPreset::OnDrawFrame(
          pressure_program, gradient_subtract_program, advection_program,
          blit_program, input_program] = programs_;
 
-  {
+  if (SIGINJECT_TRIGGER("insert_velocity")) {
     auto velocity_activation = velocity_target->Activate();
     input_program->Use();
 
-    std::array<glm::vec2, 2> points = {
-        UnitVectorAtAngle(state->energy()) * 0.2f,
-        UnitVectorAtAngle(state->energy() + kPi) * 0.2f};
-    glm::vec2 color = UnitVectorAtAngle(state->energy() + kPi / 2.0f);
-    Polyline polyline(glm::vec3(color, 0.0f), points, /*width=*/20);
-    polyline.Draw();
+    gl::GlBindUniform(input_program, "size", glm::ivec2(width(), height()));
+    gl::GlBindRenderTargetTextureToUniform(input_program, "last_frame",
+                                           velocity_target, {.back = true});
+    gl::GlBindUniform(input_program, "splat_center",
+                      glm::vec2(SIGINJECT_OVERRIDE("posx", 0.0f, -1.0f, 1.0f),
+                                SIGINJECT_OVERRIDE("posy", 0.0f, -1.0f, 1.0f)));
+    gl::GlBindUniform(input_program, "splat_velocity",
+                      UnitVectorAtAngle(state->energy() * 10) * 1000.0f);
+
+    Rectangle().Draw();
+
+    // float angle = state->energy() * 10;
+
+    // std::array<glm::vec2, 2> points = {UnitVectorAtAngle(angle) * 0.2f,
+    //                                   UnitVectorAtAngle(angle + kPi) * 0.2f};
+    // glm::vec2 color = UnitVectorAtAngle(angle + kPi / 2.0f) * 10.0f;
+    // Polyline polyline(glm::vec3(color, 0.0f), points, /*width=*/4);
+    // polyline.Draw();
 
     velocity_target->swap();
-  }
+  }  // Looks good.
+
+  // if (SIGINJECT_TRIGGER("clear_all")) {
+  //  {
+  //    auto pressure_activation = pressure_target->Activate();
+  //    clear_program->Use();
+  //    Rectangle().Draw();
+  //    pressure_target->swap();
+  //  }
+  //  {
+  //    auto velocity_activation = velocity_target->Activate();
+  //    clear_program->Use();
+  //    Rectangle().Draw();
+  //    velocity_target->swap();
+  //  }
+  //  {
+  //    auto curl_activation = curl_target->Activate();
+  //    clear_program->Use();
+  //    Rectangle().Draw();
+  //    curl_target->swap();
+  //  }
+  //  {
+  //    auto divergence_activation = divergence_target->Activate();
+  //    clear_program->Use();
+  //    Rectangle().Draw();
+  //    divergence_target->swap();
+  //  }
+  //  {
+  //    auto pressure_activation = pressure_target->Activate();
+  //    clear_program->Use();
+  //    Rectangle().Draw();
+  //    pressure_target->swap();
+  //  }
+  //  {
+  //    auto velocity_activation = velocity_target->Activate();
+  //    clear_program->Use();
+  //    Rectangle().Draw();
+  //    velocity_target->swap();
+  //  }
+  //  {
+  //    auto curl_activation = curl_target->Activate();
+  //    clear_program->Use();
+  //    Rectangle().Draw();
+  //    curl_target->swap();
+  //  }
+  //  {
+  //    auto divergence_activation = divergence_target->Activate();
+  //    clear_program->Use();
+  //    Rectangle().Draw();
+  //    divergence_target->swap();
+  //  }
+  //}
 
   {
     auto curl_activation = curl_target->Activate();
@@ -103,7 +166,7 @@ void FluidPreset::OnDrawFrame(
     vorticity_program->Use();
     gl::GlBindUniform(vorticity_program, "size", glm::ivec2(width(), height()));
     gl::GlBindUniform(vorticity_program, "curl_coeff", 1.0f);
-    gl::GlBindUniform(vorticity_program, "dt", state->dt());
+    gl::GlBindUniform(vorticity_program, "dt", state->dt() * 10);
     gl::GlBindRenderTargetTextureToUniform(vorticity_program, "velocity",
                                            velocity_target, {.back = true});
     gl::GlBindRenderTargetTextureToUniform(vorticity_program, "curl",
@@ -128,17 +191,18 @@ void FluidPreset::OnDrawFrame(
     clear_program->Use();
     Rectangle().Draw();
     pressure_target->swap();
+  }
 
+  for (int i = 0; i < 20; ++i) {
+    auto pressure_activation = pressure_target->Activate();
     pressure_program->Use();
     gl::GlBindUniform(pressure_program, "size", glm::ivec2(width(), height()));
-    for (int i = 0; i < 20; ++i) {
-      gl::GlBindRenderTargetTextureToUniform(pressure_program, "divergence",
-                                             divergence_target, {.back = true});
-      gl::GlBindRenderTargetTextureToUniform(pressure_program, "pressure",
-                                             pressure_target, {.back = true});
-      Rectangle().Draw();
-      pressure_target->swap();
-    }
+    gl::GlBindRenderTargetTextureToUniform(pressure_program, "divergence",
+                                           divergence_target, {.back = true});
+    gl::GlBindRenderTargetTextureToUniform(pressure_program, "pressure",
+                                           pressure_target, {.back = true});
+    Rectangle().Draw();
+    pressure_target->swap();
   }
 
   {
@@ -158,28 +222,15 @@ void FluidPreset::OnDrawFrame(
     auto velocity_activation = velocity_target->Activate();
     advection_program->Use();
     gl::GlBindUniform(advection_program, "size", glm::ivec2(width(), height()));
-    gl::GlBindUniform(advection_program, "dissipation", 0.99f);
-    gl::GlBindUniform(advection_program, "dt", state->dt());
+    gl::GlBindUniform(advection_program, "dissipation", 0.1f);
+    gl::GlBindUniform(advection_program, "dt", state->dt() * 10);
     gl::GlBindRenderTargetTextureToUniform(advection_program, "velocity",
                                            velocity_target, {.back = true});
-    gl::GlBindRenderTargetTextureToUniform(advection_program, "source",
-                                           velocity_target, {.back = true});
+    gl::GlBindRenderTargetTextureToUniform(
+        advection_program, "source", velocity_target,
+        {.sampling_mode = gl::GlTextureSamplingMode::kWrap, .back = true});
     Rectangle().Draw();
     velocity_target->swap();
-  }
-
-  {
-    auto dye_activation = dye_target->Activate();
-    advection_program->Use();
-    gl::GlBindUniform(advection_program, "size", glm::ivec2(width(), height()));
-    gl::GlBindUniform(advection_program, "dissipation", 0.99f);
-    gl::GlBindUniform(advection_program, "dt", state->dt());
-    gl::GlBindRenderTargetTextureToUniform(advection_program, "velocity",
-                                           velocity_target, {.back = true});
-    gl::GlBindRenderTargetTextureToUniform(advection_program, "source",
-                                           dye_target, {.back = true});
-    Rectangle().Draw();
-    dye_target->swap();
   }
 
   {
@@ -187,15 +238,28 @@ void FluidPreset::OnDrawFrame(
 
     blit_program->Use();
 
-    gl::GlBindUniform(blit_program, "render_target_size",
-                      glm::ivec2(width(), height()));
-    // gl::GlBindRenderTargetTextureToUniform(blit_program, "render_target",
+    gl::GlBindUniform(blit_program, "size", glm::ivec2(width(), height()));
+    // gl::GlBindRenderTargetTextureToUniform(blit_program, "source_texture",
     //                                       dye_target, {.back = true});
-    gl::GlBindRenderTargetTextureToUniform(blit_program, "render_target",
+    gl::GlBindRenderTargetTextureToUniform(blit_program, "source_texture",
                                            velocity_target, {.back = true});
 
     Rectangle().Draw();
   }
+
+  //{
+  //  auto dye_activation = dye_target->Activate();
+  //  advection_program->Use();
+  //  gl::GlBindUniform(advection_program, "size", glm::ivec2(width(),
+  //  height())); gl::GlBindUniform(advection_program, "dissipation", 0.0f);
+  //  gl::GlBindUniform(advection_program, "dt", state->dt());
+  //  gl::GlBindRenderTargetTextureToUniform(advection_program, "velocity",
+  //                                         velocity_target, {.back = true});
+  //  gl::GlBindRenderTargetTextureToUniform(advection_program, "source",
+  //                                         dye_target, {.back = true});
+  //  Rectangle().Draw();
+  //  dye_target->swap();
+  //}
 }
 
 }  // namespace opendrop
