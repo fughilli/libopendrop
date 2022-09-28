@@ -98,58 +98,7 @@ void FluidPreset::OnDrawFrame(
     // polyline.Draw();
 
     velocity_target->swap();
-  }  // Looks good.
-
-  // if (SIGINJECT_TRIGGER("clear_all")) {
-  //  {
-  //    auto pressure_activation = pressure_target->Activate();
-  //    clear_program->Use();
-  //    Rectangle().Draw();
-  //    pressure_target->swap();
-  //  }
-  //  {
-  //    auto velocity_activation = velocity_target->Activate();
-  //    clear_program->Use();
-  //    Rectangle().Draw();
-  //    velocity_target->swap();
-  //  }
-  //  {
-  //    auto curl_activation = curl_target->Activate();
-  //    clear_program->Use();
-  //    Rectangle().Draw();
-  //    curl_target->swap();
-  //  }
-  //  {
-  //    auto divergence_activation = divergence_target->Activate();
-  //    clear_program->Use();
-  //    Rectangle().Draw();
-  //    divergence_target->swap();
-  //  }
-  //  {
-  //    auto pressure_activation = pressure_target->Activate();
-  //    clear_program->Use();
-  //    Rectangle().Draw();
-  //    pressure_target->swap();
-  //  }
-  //  {
-  //    auto velocity_activation = velocity_target->Activate();
-  //    clear_program->Use();
-  //    Rectangle().Draw();
-  //    velocity_target->swap();
-  //  }
-  //  {
-  //    auto curl_activation = curl_target->Activate();
-  //    clear_program->Use();
-  //    Rectangle().Draw();
-  //    curl_target->swap();
-  //  }
-  //  {
-  //    auto divergence_activation = divergence_target->Activate();
-  //    clear_program->Use();
-  //    Rectangle().Draw();
-  //    divergence_target->swap();
-  //  }
-  //}
+  }
 
   {
     auto curl_activation = curl_target->Activate();
