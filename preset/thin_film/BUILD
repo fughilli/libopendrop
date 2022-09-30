@@ -10,6 +10,7 @@ cc_library(
     deps = [
         ":bubble",
         ":passthrough",
+        "//debug:control_injector",
         "//preset",
         "//primitive:polyline",
         "//primitive:rectangle",
@@ -21,6 +22,7 @@ cc_library(
         "//util/graphics:gl_util",
         "//util/logging",
         "//util/math:vector",
+        "//util/signal:filter",
         "//util/status:status_macros",
     ],
 )

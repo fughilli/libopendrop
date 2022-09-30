@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <cmath>
 
+#include "debug/control_injector.h"
 #include "preset/thin_film/bubble.fsh.h"
 #include "preset/thin_film/passthrough.vsh.h"
 #include "third_party/gl_helper.h"
@@ -10,8 +11,8 @@
 #include "util/graphics/colors.h"
 #include "util/graphics/gl_util.h"
 #include "util/logging/logging.h"
-#include "util/status/status_macros.h"
 #include "util/math/vector.h"
+#include "util/status/status_macros.h"
 
 namespace opendrop {
 
@@ -45,6 +46,25 @@ void ThinFilm::OnDrawFrame(
 
     gl::GlBindUniform(thin_film_program_, "pole",
                       UnitVectorAtAngle(energy * 2.0f) / 2.0f);
+
+    gl::GlBindUniform(thin_film_program_, "rotate_coeff",
+                      rot_filter_->ProcessSample(SIGINJECT_OVERRIDE(
+                          "thin_film_rotate_coeff", 0.0f, 0.0f, 1.0f)));
+    gl::GlBindUniform(
+        thin_film_program_, "phase_x_coeff",
+        SIGINJECT_OVERRIDE("thin_film_phase_x_coeff", 0.0f, 0.0f, 1.0f));
+    gl::GlBindUniform(
+        thin_film_program_, "phase_y_coeff",
+        SIGINJECT_OVERRIDE("thin_film_phase_y_coeff", 0.0f, 0.0f, 1.0f));
+    gl::GlBindUniform(
+        thin_film_program_, "ripple_hue",
+        SIGINJECT_OVERRIDE("thin_film_ripple_hue", 0.0f, 0.0f, 1.0f));
+    gl::GlBindUniform(
+        thin_film_program_, "min_value_coeff",
+        SIGINJECT_OVERRIDE("thin_film_min_value_coeff", 0.0f, 0.0f, 1.0f));
+    gl::GlBindUniform(
+        thin_film_program_, "fisheye_coeff",
+        SIGINJECT_OVERRIDE("thin_film_fisheye_coeff", 0.0f, 0.0f, 1.0f));
 
     glViewport(0, 0, width(), height());
     rectangle_.Draw();

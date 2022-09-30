@@ -11,6 +11,7 @@
 #include "util/graphics/gl_interface.h"
 #include "util/graphics/gl_render_target.h"
 #include "util/graphics/gl_texture_manager.h"
+#include "util/signal/filter.h"
 
 namespace opendrop {
 
@@ -34,6 +35,9 @@ class ThinFilm : public Preset {
   std::shared_ptr<gl::GlProgram> thin_film_program_;
 
   Rectangle rectangle_;
+
+  std::shared_ptr<IirFilter> rot_filter_ =
+      IirSinglePoleFilter(0.01, IirSinglePoleFilterType::kLowpass);
 };
 
 }  // namespace opendrop
