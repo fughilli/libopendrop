@@ -37,6 +37,7 @@ struct GlTextureBindingOptions {
   GlTextureSamplingMode sampling_mode = GlTextureSamplingMode::kClamp;
   GlTextureFilteringMode filtering_mode = GlTextureFilteringMode::kLinear;
   glm::vec4 border_color = glm::vec4(0, 0, 0, 0);
+  bool back = false;
 };
 
 void GlClear(glm::vec4 color);

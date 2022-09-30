@@ -63,7 +63,11 @@ void GlBindRenderTargetTextureToUniform(
     return;
   }
   glActiveTexture(GL_TEXTURE0 + render_target->texture_unit());
-  glBindTexture(GL_TEXTURE_2D, render_target->texture_handle());
+  if (binding_options.back) {
+    glBindTexture(GL_TEXTURE_2D, render_target->back_texture_handle());
+  } else {
+    glBindTexture(GL_TEXTURE_2D, render_target->texture_handle());
+  }
 
   ConfigureBindingOptions(binding_options);
 
