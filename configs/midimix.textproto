@@ -1,0 +1,102 @@
+control_mappings {
+  key: "thin_film_fisheye_coeff"
+  value: "control_change:0:50:0"
+}
+control_mappings {
+  key: "thin_film_min_value_coeff"
+  value: "control_change:0:46:0"
+}
+control_mappings {
+  key: "thin_film_phase_x_coeff"
+  value: "control_change:0:20:0"
+}
+control_mappings {
+  key: "thin_film_phase_y_coeff"
+  value: "control_change:0:24:0"
+}
+control_mappings {
+  key: "thin_film_ripple_hue"
+  value: "control_change:0:28:0"
+}
+control_mappings {
+  key: "thin_film_rotate_coeff"
+  value: "control_change:0:16:0"
+}
+signals_by_name {
+  key: "thin_film_fisheye_coeff"
+  value {
+    low: 0
+    high: 1
+  }
+}
+signals_by_name {
+  key: "thin_film_min_value_coeff"
+  value {
+    low: 0
+    high: 1
+  }
+}
+signals_by_name {
+  key: "thin_film_phase_x_coeff"
+  value {
+    low: 0
+    high: 1
+  }
+}
+signals_by_name {
+  key: "thin_film_phase_y_coeff"
+  value {
+    low: 0
+    high: 1
+  }
+}
+signals_by_name {
+  key: "thin_film_ripple_hue"
+  value {
+    low: 0
+    high: 1
+  }
+}
+signals_by_name {
+  key: "thin_film_rotate_coeff"
+  value {
+    low: 0
+    high: 1
+  }
+}
+counters_by_name {
+  key: "next_preset"
+  value {
+    low: 0
+    high: 0
+    value: 0
+  }
+}
+controls_by_name {
+  key: "control_change:0:16:0"
+  value: 0.527559042
+}
+controls_by_name {
+  key: "control_change:0:20:0"
+  value: 0.527559042
+}
+controls_by_name {
+  key: "control_change:0:24:0"
+  value: 1
+}
+controls_by_name {
+  key: "control_change:0:28:0"
+  value: 0.228346452
+}
+controls_by_name {
+  key: "control_change:0:46:0"
+  value: 1
+}
+controls_by_name {
+  key: "control_change:0:47:0"
+  value: 0
+}
+controls_by_name {
+  key: "control_change:0:50:0"
+  value: 0.937007844
+}
