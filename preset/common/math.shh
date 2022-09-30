@@ -4,6 +4,28 @@
 const float kPi = 3.141592653589793;
 const float kEpsilon = 1e-6;
 
+// Folds a value in the range [0, 1] a number of times over on the number line.
+// E.g., for 2 `folds`:
+//
+//   1|
+//    |    ^
+// O  |   / \
+// U  |  /   \
+// T  | /     \
+//    |/       \
+//   0+-----------
+//    0         1
+//       IN
+//
+// `folds` can be any positive real value ([0, +inf]).
+float fold(float value, float folds) {
+  float triangle_value = mod(value * folds, 2);
+  if (triangle_value < 1) {
+    return triangle_value;
+  }
+  return 2 - triangle_value;
+}
+
 float safe_sqrt(float value) {
   if (value < 1) {
     return 1;
@@ -120,6 +142,12 @@ vec2 uv_warp_spiral(vec2 uv, float aspect_ratio) {
 // Warps a UV coordinate by a fisheye effect.
 vec2 uv_warp_fisheye(vec2 uv, float fisheye_coeff) {
   return uv * mix(1, length(uv), fisheye_coeff);
+}
+
+// Warps a UV coordinate by folding it over itself a number of times.
+vec2 uv_warp_fold(vec2 uv, vec2 center, vec2 folds) {
+  return vec2(fold(abs(uv.x - center.x), folds.x),
+              fold(abs(uv.y - center.y), folds.y));
 }
 
 // Limits the minimum magnitude of a value. Limit policy is selectable with the

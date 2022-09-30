@@ -40,6 +40,9 @@ void ThinFilm::OnDrawFrame(
   float energy = state->energy();
   float power = state->power();
 
+  // Write a test to assert that rendering is done into the back buffer (zero
+  // frame delay to presentation).
+  // output_render_target->swap();
   {
     auto output_activation = output_render_target->Activate();
     thin_film_program_->Use();
@@ -47,6 +50,8 @@ void ThinFilm::OnDrawFrame(
     gl::GlBindUniform(thin_film_program_, "pole",
                       UnitVectorAtAngle(energy * 2.0f) / 2.0f);
 
+    gl::GlBindRenderTargetTextureToUniform(
+        thin_film_program_, "last_frame", output_render_target, {.back = true});
     gl::GlBindUniform(thin_film_program_, "rotate_coeff",
                       rot_filter_->ProcessSample(SIGINJECT_OVERRIDE(
                           "thin_film_rotate_coeff", 0.0f, 0.0f, 1.0f)));
@@ -60,14 +65,21 @@ void ThinFilm::OnDrawFrame(
         thin_film_program_, "ripple_hue",
         SIGINJECT_OVERRIDE("thin_film_ripple_hue", 0.0f, 0.0f, 1.0f));
     gl::GlBindUniform(
+        thin_film_program_, "shift_hue_coeff",
+        SIGINJECT_OVERRIDE("thin_film_shift_hue_coeff", 0.0f, 0.0f, 1.0f));
+    gl::GlBindUniform(
         thin_film_program_, "min_value_coeff",
         SIGINJECT_OVERRIDE("thin_film_min_value_coeff", 0.0f, 0.0f, 1.0f));
     gl::GlBindUniform(
         thin_film_program_, "fisheye_coeff",
         SIGINJECT_OVERRIDE("thin_film_fisheye_coeff", 0.0f, 0.0f, 1.0f));
+    gl::GlBindUniform(thin_film_program_, "folds_coeff",
+                      folds_filter_->ProcessSample(SIGINJECT_OVERRIDE(
+                          "thin_film_folds_coeff", 0.0f, 0.02f, 1.5f)));
 
     glViewport(0, 0, width(), height());
     rectangle_.Draw();
+    output_render_target->swap();
   }
 }
 

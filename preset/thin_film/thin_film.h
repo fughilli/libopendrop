@@ -38,6 +38,8 @@ class ThinFilm : public Preset {
 
   std::shared_ptr<IirFilter> rot_filter_ =
       IirSinglePoleFilter(0.01, IirSinglePoleFilterType::kLowpass);
+  std::shared_ptr<IirFilter> folds_filter_ =
+      IirSinglePoleFilter(0.05, IirSinglePoleFilterType::kLowpass);
 };
 
 }  // namespace opendrop
