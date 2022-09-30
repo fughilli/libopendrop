@@ -40,6 +40,13 @@ class ThinFilm : public Preset {
       IirSinglePoleFilter(0.01, IirSinglePoleFilterType::kLowpass);
   std::shared_ptr<IirFilter> folds_filter_ =
       IirSinglePoleFilter(0.05, IirSinglePoleFilterType::kLowpass);
+
+  bool invert_screen_ = false;
+  bool invert_hue_ = false;
+  bool invert_coords_ = false;
+  bool invert_recursive_coords_ = false;
+  bool swap_coords_ = false;
+  bool swap_recursive_coords_ = false;
 };
 
 }  // namespace opendrop

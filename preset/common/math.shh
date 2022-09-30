@@ -150,6 +150,22 @@ vec2 uv_warp_fold(vec2 uv, vec2 center, vec2 folds) {
               fold(abs(uv.y - center.y), folds.y));
 }
 
+vec2 uv_warp_invert(vec2 uv, bool invert) {
+  if (invert) {
+    return -uv;
+  } else {
+    return uv;
+  }
+}
+
+vec2 uv_warp_swap(vec2 uv, bool swap) {
+  if (swap) {
+    return uv.yx;
+  } else {
+    return uv;
+  }
+}
+
 // Limits the minimum magnitude of a value. Limit policy is selectable with the
 // `policy` argument. The sign of the return value is the same as `value`.
 const int kLimitMinMagnitudePolicy_Absolute = 0;

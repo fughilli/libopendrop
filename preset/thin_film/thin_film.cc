@@ -47,6 +47,25 @@ void ThinFilm::OnDrawFrame(
     auto output_activation = output_render_target->Activate();
     thin_film_program_->Use();
 
+    if (SIGINJECT_TRIGGER("invert_screen")) {
+      invert_screen_ = !invert_screen_;
+    }
+    if (SIGINJECT_TRIGGER("invert_hue")) {
+      invert_hue_ = !invert_hue_;
+    }
+    if (SIGINJECT_TRIGGER("invert_coords")) {
+      invert_coords_ = !invert_coords_;
+    }
+    if (SIGINJECT_TRIGGER("invert_recursive_coords")) {
+      invert_recursive_coords_ = !invert_recursive_coords_;
+    }
+    if (SIGINJECT_TRIGGER("swap_coords")) {
+      swap_coords_ = !swap_coords_;
+    }
+    if (SIGINJECT_TRIGGER("swap_recursive_coords")) {
+      swap_recursive_coords_ = !swap_recursive_coords_;
+    }
+
     gl::GlBindUniform(thin_film_program_, "pole",
                       UnitVectorAtAngle(energy * 2.0f) / 2.0f);
 
@@ -76,6 +95,20 @@ void ThinFilm::OnDrawFrame(
     gl::GlBindUniform(thin_film_program_, "folds_coeff",
                       folds_filter_->ProcessSample(SIGINJECT_OVERRIDE(
                           "thin_film_folds_coeff", 0.0f, 0.02f, 1.5f)));
+    gl::GlBindUniform(
+        thin_film_program_, "force_mix_coeff",
+        SIGINJECT_OVERRIDE("thin_film_force_mix_coeff", 0.0f, 0.02f, 1.5f));
+    gl::GlBindUniform(
+        thin_film_program_, "mix_prescale_coeff",
+        SIGINJECT_OVERRIDE("thin_film_mix_prescale_coeff", 0.0f, 0.0f, 1.5f));
+    gl::GlBindUniform(thin_film_program_, "invert_screen", invert_screen_);
+    gl::GlBindUniform(thin_film_program_, "invert_hue", invert_hue_);
+    gl::GlBindUniform(thin_film_program_, "invert_coords", invert_coords_);
+    gl::GlBindUniform(thin_film_program_, "invert_recursive_coords",
+                      invert_recursive_coords_);
+    gl::GlBindUniform(thin_film_program_, "swap_coords", swap_coords_);
+    gl::GlBindUniform(thin_film_program_, "swap_recursive_coords",
+                      swap_recursive_coords_);
 
     glViewport(0, 0, width(), height());
     rectangle_.Draw();
