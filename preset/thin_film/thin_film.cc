@@ -92,9 +92,12 @@ void ThinFilm::OnDrawFrame(
     gl::GlBindUniform(
         thin_film_program_, "fisheye_coeff",
         SIGINJECT_OVERRIDE("thin_film_fisheye_coeff", 0.0f, 0.0f, 1.0f));
-    gl::GlBindUniform(thin_film_program_, "folds_coeff",
-                      folds_filter_->ProcessSample(SIGINJECT_OVERRIDE(
-                          "thin_film_folds_coeff", 0.0f, 0.02f, 1.5f)));
+    gl::GlBindUniform(
+        thin_film_program_, "folds_coeff",
+        folds_filter_->ProcessSample(
+            SIGINJECT_OVERRIDE("thin_film_folds_coeff", 0.0f, 0.02f, 1.5f) +
+            SIGINJECT_OVERRIDE("thin_film_folds_fine_coeff", 0.0f, -0.05f,
+                               0.05f)));
     gl::GlBindUniform(
         thin_film_program_, "force_mix_coeff",
         SIGINJECT_OVERRIDE("thin_film_force_mix_coeff", 0.0f, 0.02f, 1.5f));
