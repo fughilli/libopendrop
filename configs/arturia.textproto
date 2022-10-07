@@ -1,0 +1,363 @@
+buttons: 1
+buttons: 4
+buttons: 7
+buttons: 9
+buttons: 10
+buttons: 13
+buttons: 16
+buttons: 19
+buttons: 64
+buttons: 65
+buttons: 66
+buttons: 67
+buttons: 68
+buttons: 69
+control_mappings {
+  key: "thin_film_fisheye_coeff"
+  value: "control_change:0:93:0"
+}
+control_mappings {
+  key: "thin_film_folds_coeff"
+  value: "control_change:0:75:0"
+}
+control_mappings {
+  key: "thin_film_folds_fine_coeff"
+  value: "control_change:0:72:0"
+}
+control_mappings {
+  key: "thin_film_force_mix_coeff"
+  value: "control_change:0:114:0"
+}
+control_mappings {
+  key: "thin_film_min_value_coeff"
+  value: "control_change:0:77:0"
+}
+control_mappings {
+  key: "thin_film_mix_prescale_coeff"
+  value: "control_change:0:18:0"
+}
+control_mappings {
+  key: "thin_film_phase_x_coeff"
+  value: "control_change:0:74:0"
+}
+control_mappings {
+  key: "thin_film_phase_y_coeff"
+  value: "control_change:0:71:0"
+}
+control_mappings {
+  key: "thin_film_ripple_hue"
+  value: "control_change:0:76:0"
+}
+control_mappings {
+  key: "thin_film_rotate_coeff"
+  value: "control_change:0:10:0"
+}
+control_mappings {
+  key: "thin_film_shift_hue_coeff"
+  value: "control_change:0:73:0"
+}
+signals_by_name {
+  key: "thin_film_fisheye_coeff"
+  value {
+    low: 0
+    high: 1
+  }
+}
+signals_by_name {
+  key: "thin_film_folds_coeff"
+  value {
+    low: 0.02
+    high: 1.5
+  }
+}
+signals_by_name {
+  key: "thin_film_folds_fine_coeff"
+  value {
+    low: -0.05
+    high: 0.05
+  }
+}
+signals_by_name {
+  key: "thin_film_force_mix_coeff"
+  value {
+    low: 0.02
+    high: 1.5
+  }
+}
+signals_by_name {
+  key: "thin_film_min_value_coeff"
+  value {
+    low: 0
+    high: 1
+  }
+}
+signals_by_name {
+  key: "thin_film_mix_prescale_coeff"
+  value {
+    low: 0
+    high: 1.5
+  }
+}
+signals_by_name {
+  key: "thin_film_phase_x_coeff"
+  value {
+    low: 0
+    high: 1
+  }
+}
+signals_by_name {
+  key: "thin_film_phase_y_coeff"
+  value {
+    low: 0
+    high: 1
+  }
+}
+signals_by_name {
+  key: "thin_film_ripple_hue"
+  value {
+    low: 0
+    high: 1
+  }
+}
+signals_by_name {
+  key: "thin_film_rotate_coeff"
+  value {
+    low: 0
+    high: 1
+  }
+}
+signals_by_name {
+  key: "thin_film_shift_hue_coeff"
+  value {
+    low: 0
+    high: 1
+  }
+}
+button_mappings {
+  key: "invert_coords"
+  value: 66
+}
+button_mappings {
+  key: "invert_hue"
+  value: 65
+}
+button_mappings {
+  key: "invert_recursive_coords"
+  value: 67
+}
+button_mappings {
+  key: "invert_screen"
+  value: 64
+}
+button_mappings {
+  key: "swap_coords"
+  value: 68
+}
+button_mappings {
+  key: "swap_recursive_coords"
+  value: 69
+}
+counters_by_name {
+  key: "invert_coords"
+  value {
+    low: 0
+    high: 0
+    value: 0
+  }
+}
+counters_by_name {
+  key: "invert_hue"
+  value {
+    low: 0
+    high: 0
+    value: 0
+  }
+}
+counters_by_name {
+  key: "invert_recursive_coords"
+  value {
+    low: 0
+    high: 0
+    value: 0
+  }
+}
+counters_by_name {
+  key: "invert_screen"
+  value {
+    low: 0
+    high: 0
+    value: 0
+  }
+}
+counters_by_name {
+  key: "next_preset"
+  value {
+    low: 0
+    high: 0
+    value: 0
+  }
+}
+counters_by_name {
+  key: "swap_coords"
+  value {
+    low: 0
+    high: 0
+    value: 0
+  }
+}
+counters_by_name {
+  key: "swap_recursive_coords"
+  value {
+    low: 0
+    high: 0
+    value: 0
+  }
+}
+controls_by_name {
+  key: "control_change:0:10:0"
+  value: 0.779527545
+}
+controls_by_name {
+  key: "control_change:0:114:0"
+  value: 0.606299222
+}
+controls_by_name {
+  key: "control_change:0:16:0"
+  value: 0.22047244
+}
+controls_by_name {
+  key: "control_change:0:17:0"
+  value: 0.511811
+}
+controls_by_name {
+  key: "control_change:0:18:0"
+  value: 0.740157485
+}
+controls_by_name {
+  key: "control_change:0:20:0"
+  value: 0.535433054
+}
+controls_by_name {
+  key: "control_change:0:21:0"
+  value: 0.732283473
+}
+controls_by_name {
+  key: "control_change:0:24:0"
+  value: 0.496063
+}
+controls_by_name {
+  key: "control_change:0:25:0"
+  value: 0.51968503
+}
+controls_by_name {
+  key: "control_change:0:28:0"
+  value: 0.51968503
+}
+controls_by_name {
+  key: "control_change:0:29:0"
+  value: 0.511811
+}
+controls_by_name {
+  key: "control_change:0:46:0"
+  value: 0.496063
+}
+controls_by_name {
+  key: "control_change:0:47:0"
+  value: 0.456692904
+}
+controls_by_name {
+  key: "control_change:0:48:0"
+  value: 0.267716527
+}
+controls_by_name {
+  key: "control_change:0:49:0"
+  value: 0
+}
+controls_by_name {
+  key: "control_change:0:50:0"
+  value: 0.51968503
+}
+controls_by_name {
+  key: "control_change:0:51:0"
+  value: 0.511811
+}
+controls_by_name {
+  key: "control_change:0:54:0"
+  value: 0.496063
+}
+controls_by_name {
+  key: "control_change:0:55:0"
+  value: 0.496063
+}
+controls_by_name {
+  key: "control_change:0:58:0"
+  value: 0.496063
+}
+controls_by_name {
+  key: "control_change:0:59:0"
+  value: 0.503937
+}
+controls_by_name {
+  key: "control_change:0:71:0"
+  value: 0.448818892
+}
+controls_by_name {
+  key: "control_change:0:72:0"
+  value: 0.0866141766
+}
+controls_by_name {
+  key: "control_change:0:73:0"
+  value: 0.0393700786
+}
+controls_by_name {
+  key: "control_change:0:74:0"
+  value: 0.22047244
+}
+controls_by_name {
+  key: "control_change:0:75:0"
+  value: 0.354330719
+}
+controls_by_name {
+  key: "control_change:0:76:0"
+  value: 0.897637784
+}
+controls_by_name {
+  key: "control_change:0:77:0"
+  value: 1
+}
+controls_by_name {
+  key: "control_change:0:79:0"
+  value: 1
+}
+controls_by_name {
+  key: "control_change:0:7:0"
+  value: 0.708661437
+}
+controls_by_name {
+  key: "control_change:0:93:0"
+  value: 0
+}
+controls_by_name {
+  key: "polytouch:0:0:64"
+  value: 0.00787401572
+}
+controls_by_name {
+  key: "polytouch:0:0:65"
+  value: 0.00787401572
+}
+controls_by_name {
+  key: "polytouch:0:0:66"
+  value: 0.00787401572
+}
+controls_by_name {
+  key: "polytouch:0:0:67"
+  value: 0.00787401572
+}
+controls_by_name {
+  key: "polytouch:0:0:68"
+  value: 0.00787401572
+}
+controls_by_name {
+  key: "polytouch:0:0:69"
+  value: 0.00787401572
+}

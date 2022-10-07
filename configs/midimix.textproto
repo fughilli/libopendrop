@@ -1,0 +1,273 @@
+buttons: 1
+buttons: 4
+buttons: 7
+buttons: 9
+buttons: 10
+buttons: 13
+buttons: 16
+buttons: 19
+control_mappings {
+  key: "thin_film_fisheye_coeff"
+  value: "control_change:0:50:0"
+}
+control_mappings {
+  key: "thin_film_folds_coeff"
+  value: "control_change:0:58:0"
+}
+control_mappings {
+  key: "thin_film_folds_fine_coeff"
+  value: "control_change:0:59:0"
+}
+control_mappings {
+  key: "thin_film_force_mix_coeff"
+  value: "control_change:0:17:0"
+}
+control_mappings {
+  key: "thin_film_min_value_coeff"
+  value: "control_change:0:46:0"
+}
+control_mappings {
+  key: "thin_film_mix_prescale_coeff"
+  value: "control_change:0:21:0"
+}
+control_mappings {
+  key: "thin_film_phase_x_coeff"
+  value: "control_change:0:20:0"
+}
+control_mappings {
+  key: "thin_film_phase_y_coeff"
+  value: "control_change:0:24:0"
+}
+control_mappings {
+  key: "thin_film_ripple_hue"
+  value: "control_change:0:28:0"
+}
+control_mappings {
+  key: "thin_film_rotate_coeff"
+  value: "control_change:0:16:0"
+}
+control_mappings {
+  key: "thin_film_shift_hue_coeff"
+  value: "control_change:0:54:0"
+}
+signals_by_name {
+  key: "thin_film_fisheye_coeff"
+  value {
+    low: 0
+    high: 1
+  }
+}
+signals_by_name {
+  key: "thin_film_folds_coeff"
+  value {
+    low: 0.02
+    high: 1.5
+  }
+}
+signals_by_name {
+  key: "thin_film_folds_fine_coeff"
+  value {
+    low: -0.05
+    high: 0.05
+  }
+}
+signals_by_name {
+  key: "thin_film_force_mix_coeff"
+  value {
+    low: 0.02
+    high: 1.5
+  }
+}
+signals_by_name {
+  key: "thin_film_min_value_coeff"
+  value {
+    low: 0
+    high: 1
+  }
+}
+signals_by_name {
+  key: "thin_film_mix_prescale_coeff"
+  value {
+    low: 0
+    high: 1.5
+  }
+}
+signals_by_name {
+  key: "thin_film_phase_x_coeff"
+  value {
+    low: 0
+    high: 1
+  }
+}
+signals_by_name {
+  key: "thin_film_phase_y_coeff"
+  value {
+    low: 0
+    high: 1
+  }
+}
+signals_by_name {
+  key: "thin_film_ripple_hue"
+  value {
+    low: 0
+    high: 1
+  }
+}
+signals_by_name {
+  key: "thin_film_rotate_coeff"
+  value {
+    low: 0
+    high: 1
+  }
+}
+signals_by_name {
+  key: "thin_film_shift_hue_coeff"
+  value {
+    low: 0
+    high: 1
+  }
+}
+button_mappings {
+  key: "invert_coords"
+  value: 7
+}
+button_mappings {
+  key: "invert_hue"
+  value: 4
+}
+button_mappings {
+  key: "invert_recursive_coords"
+  value: 10
+}
+button_mappings {
+  key: "invert_screen"
+  value: 1
+}
+button_mappings {
+  key: "swap_coords"
+  value: 13
+}
+button_mappings {
+  key: "swap_recursive_coords"
+  value: 16
+}
+counters_by_name {
+  key: "invert_coords"
+  value {
+    low: 0
+    high: 0
+    value: 0
+  }
+}
+counters_by_name {
+  key: "invert_hue"
+  value {
+    low: 0
+    high: 0
+    value: 0
+  }
+}
+counters_by_name {
+  key: "invert_recursive_coords"
+  value {
+    low: 0
+    high: 0
+    value: 0
+  }
+}
+counters_by_name {
+  key: "invert_screen"
+  value {
+    low: 0
+    high: 0
+    value: 0
+  }
+}
+counters_by_name {
+  key: "next_preset"
+  value {
+    low: 0
+    high: 0
+    value: 0
+  }
+}
+counters_by_name {
+  key: "swap_coords"
+  value {
+    low: 0
+    high: 0
+    value: 0
+  }
+}
+counters_by_name {
+  key: "swap_recursive_coords"
+  value {
+    low: 0
+    high: 0
+    value: 0
+  }
+}
+controls_by_name {
+  key: "control_change:0:16:0"
+  value: 0.11811024
+}
+controls_by_name {
+  key: "control_change:0:17:0"
+  value: 0.346456707
+}
+controls_by_name {
+  key: "control_change:0:20:0"
+  value: 0
+}
+controls_by_name {
+  key: "control_change:0:21:0"
+  value: 0.858267725
+}
+controls_by_name {
+  key: "control_change:0:24:0"
+  value: 0.338582665
+}
+controls_by_name {
+  key: "control_change:0:25:0"
+  value: 0.40157479
+}
+controls_by_name {
+  key: "control_change:0:28:0"
+  value: 0.330708653
+}
+controls_by_name {
+  key: "control_change:0:29:0"
+  value: 0.228346452
+}
+controls_by_name {
+  key: "control_change:0:46:0"
+  value: 0.338582665
+}
+controls_by_name {
+  key: "control_change:0:47:0"
+  value: 0.425196856
+}
+controls_by_name {
+  key: "control_change:0:50:0"
+  value: 0.905511796
+}
+controls_by_name {
+  key: "control_change:0:51:0"
+  value: 0.267716527
+}
+controls_by_name {
+  key: "control_change:0:54:0"
+  value: 1
+}
+controls_by_name {
+  key: "control_change:0:55:0"
+  value: 0.716535449
+}
+controls_by_name {
+  key: "control_change:0:58:0"
+  value: 0.299212605
+}
+controls_by_name {
+  key: "control_change:0:59:0"
+  value: 0.771653533
+}
