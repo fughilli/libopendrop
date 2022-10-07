@@ -21,6 +21,7 @@ flags.mark_flag_as_required("input_filter")
 flags.DEFINE_boolean("verbose", False, "")
 flags.DEFINE_multi_integer(
     "ports", [9944], "UDP ports on localhost to send control packets to")
+flags.DEFINE_integer("device_index", 0, "Device index to pick from the listing")
 
 
 def make_key(msg):
@@ -115,7 +116,7 @@ class Runner:
 
         input_name = list(
             filter((lambda name: re.match(FLAGS.input_filter, name)),
-                   input_names))[0]
+                   input_names))[FLAGS.device_index]
 
         print(f"Opening input: \"{input_name:s}\"")
 
@@ -153,7 +154,7 @@ runner = None
 def start():
     global runner
     if FLAGS.list:
-        input_listing = '\n'.join(mido.get_input_names())
+        input_listing = '\n'.join(f"[{index}:2d]: name" for index, name in enumerate(mido.get_input_names()))
         print(f"Available inputs:\n{input_listing:s}")
         return
 
