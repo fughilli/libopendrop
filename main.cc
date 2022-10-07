@@ -475,7 +475,7 @@ extern "C" int main(int argc, char *argv[]) {
 
       static int counter = 0;
       ++counter;
-      if (counter == 100) {
+      if (counter == 1000) {
         LOG(INFO) << "Draw time: " << draw_time
                   << "\tFrame time: " << frame_time << "\tFPS: " << 1 / prev_dt;
         counter = 0;
