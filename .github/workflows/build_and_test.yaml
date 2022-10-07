@@ -1,5 +1,9 @@
 name: Build/Test
-on: [push, pull_request]
+on:
+  pull_request:
+  push:
+    branches:
+      - 'master'
 jobs:
   build_and_test:
     runs-on: ubuntu-latest
@@ -9,7 +13,7 @@ jobs:
         sudo apt-get update
     - name: Install C++ dependencies
       run: |
-        sudo apt-get install -y -qq libpulse-dev libgl-dev libglm-dev libsdl2-dev libncurses5-dev libncurses5
+        sudo apt-get install -y -qq libpulse-dev libgl-dev libglm-dev libsdl2-dev libncurses5-dev libncurses5 lcov
     - name: Checkout
       uses: actions/checkout@v2
       with:
@@ -21,6 +25,14 @@ jobs:
       with:
         path: "~/.cache/bazel"
         key: bazel
+    - name: Coverage (Host, GCC)
+      run: |
+        bazelisk coverage --combined_report=lcov //...
+    - name: Coveralls
+      uses: coverallsapp/github-action@master
+      with:
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        path-to-lcov: "./bazel-out/_coverage/_coverage_report.dat"
     - name: Build (Host, GCC)
       run: ./run_libopendrop.sh -z --profile=/tmp/profile_gcc_host.gz
     - name: Upload build profile (Host, GCC)

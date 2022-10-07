@@ -68,6 +68,10 @@ pip_parse(
     requirements_lock = "//:requirements.txt",
 )
 
+load("@rules_python//python/pip_install:repositories.bzl", "pip_install_dependencies")
+
+pip_install_dependencies()
+
 load("@py_deps//:requirements.bzl", "install_deps")
 
 install_deps()

@@ -253,8 +253,8 @@ void Glowsticks3dZoom::OnDrawFrame(
   zoom_angle_ += sin(state->bass_energy() * state->dt() * 10) * state->bass() *
                  state->dt() * 10;
 
-  glm::vec2 zoom_vec =
-      -UnitVectorAtAngle(zoom_angle_) * (1.5f + sin(energy * 3.0f));
+  glm::vec2 zoom_vec = -UnitVectorAtAngle(zoom_angle_) *
+                       static_cast<float>(1.5f + sin(energy * 3.0f));
 
   {
     auto front_activation = front_render_target_->Activate();

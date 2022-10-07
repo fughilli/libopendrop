@@ -5,6 +5,10 @@ load(
     CROSS_COMPILATION_DEPS = "DEPS",
     CROSS_COMPILATION_LINKOPTS = "LINKOPTS",
 )
+load(
+    "@rules_python//python/pip_install:requirements.bzl",
+    "compile_pip_requirements",
+)
 
 package(default_visibility = ["//:__subpackages__"])
 
@@ -19,6 +23,14 @@ config_setting(
 config_setting(
     name = "clang_build",
     values = {"compiler": "clang"},
+)
+
+compile_pip_requirements(
+    name = "requirements",
+    extra_args = [
+        "--allow-unsafe",
+        "--no-emit-index-url",
+    ],
 )
 
 cc_binary(

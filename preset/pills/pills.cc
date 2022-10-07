@@ -149,7 +149,7 @@ void Pills::DrawCubes(float power, float bass, float energy, float dt,
         glm::vec3(
             Rotate2d(
                 glm::vec2(
-                    (-1.0f + std::fmodf(distribute_coeff + slide_coeff, 2.0f)) *
+                    (-1.0f + std::fmod(distribute_coeff + slide_coeff, 2.0f)) *
                         (static_cast<float>(num_cubes + 1) / (num_cubes - 1)),
                     0.0f),
                 kPi * 2 * ring_radius),
@@ -185,8 +185,8 @@ void Pills::DrawCubes(float power, float bass, float energy, float dt,
         .alpha = 1,
         .energy = energy,
         .blend_coeff = texture_trigger_ ? 0.3f : 0.0f,
-        .model_to_draw = InterpolateEnum<OutlineModel::ModelToDraw>(
-            std::fmodf(energy, 1.0f)),
+        .model_to_draw =
+            InterpolateEnum<OutlineModel::ModelToDraw>(std::fmod(energy, 1.0f)),
     });
   }
 }
