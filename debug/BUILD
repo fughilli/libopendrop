@@ -1,6 +1,7 @@
 package(default_visibility = ["//visibility:public"])
 
 load("@com_google_protobuf//:protobuf.bzl", "py_proto_library")
+load("@py_deps//:requirements.bzl", "requirement")
 load("@subpar//:subpar.bzl", "par_binary")
 
 cc_library(
@@ -66,5 +67,8 @@ par_binary(
     name = "control_sender",
     srcs = ["control_sender.py"],
     zip_safe = False,
-    deps = [":control_py_proto"],
+    deps = [
+        ":control_py_proto",
+        requirement("mido"),
+    ],
 )
