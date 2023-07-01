@@ -1,9 +1,9 @@
 #!/bin/bash
 
 source=microphone
-run_left=0
-run_right=0
-run_manual_controlled=1
+run_left=1
+run_right=1
+run_manual_controlled=0
 kill_needed=0
 
 pids_to_kill=()
@@ -45,33 +45,31 @@ function handle_term() {
 # }
 
 if [[ $run_left == 1 ]]; then
-  SDL_VIDEO_X11_WMCLASS=left_eye ./run_libopendrop.sh \
+  SDL_VIDEO_X11_WMCLASS=left_eye ./run_libopendrop.sh -B binaries/libopendrop_latest_ct_eyes \
     -s $source \
-    --nodraw_signal_viewer \
-    --control_state=$(pwd)/configs/kaleidoscope_config.textproto \
+    --control_state=$(pwd)/configs/interactive_eye_left.textproto \
     --control_port=9955 \
     --inject &
   pids_to_kill+="$! "
 fi
 
 if [[ $run_right == 1 ]]; then
-  SDL_VIDEO_X11_WMCLASS=right_eye ./run_libopendrop.sh \
+  SDL_VIDEO_X11_WMCLASS=right_eye ./run_libopendrop.sh -B binaries/libopendrop_latest_ct_eyes \
     -s $source \
-    --nodraw_signal_viewer \
-    --control_state=$(pwd)/configs/kaleidoscope_config.textproto \
+    --control_state=$(pwd)/configs/interactive_eye_right.textproto \
     --control_port=9945 \
     --inject &
   pids_to_kill+="$! "
 fi
 
 if [[ $run_manual_controlled == 1 ]]; then
-  SDL_VIDEO_X11_WMCLASS=left_main ./run_libopendrop.sh \
+  SDL_VIDEO_X11_WMCLASS=left_main ./run_libopendrop.sh -B binaries/libopendrop_for_ct_live_2023 \
     -s $source \
     --inject \
     --control_state=$(pwd)/configs/mpk_mini_config.textproto \
     --control_port=9964 &
   pids_to_kill+="$! "
-  SDL_VIDEO_X11_WMCLASS=right_main ./run_libopendrop.sh \
+  SDL_VIDEO_X11_WMCLASS=right_main ./run_libopendrop.sh -B binaries/libopendrop_for_ct_live_2023 \
     -s $source \
     --inject \
     --control_state=$(pwd)/configs/mpk_mini_config.textproto \
@@ -84,7 +82,7 @@ if [[ $run_left == 1 ]] || [[ $run_right == 1 ]]; then
   pids_to_kill+="$! "
 fi
 if [[ $run_left == 1 ]] || [[ $run_right == 1 ]] || [[ $run_manual_controlled == 1 ]]; then
-  ./binaries/control_sender.par --input_filter='.*MPK.*' --ports=9944 --ports=9965 --ports=9965 --ports=9988 &
+  ./binaries/control_sender.par --input_filter='.*MPK.*' --ports=9944 --ports=9964 --ports=9965 --ports=9988 &
   pids_to_kill+="$! "
 fi
 
